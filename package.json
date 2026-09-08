@@ -1,0 +1,9 @@
+{
+  "name": "andrei-portfolio",
+  "private": true,
+  "scripts": {
+    "dev": "node serve.cjs",
+    "verify": "node verify.cjs",
+    "build": "node verify.cjs"
+  }
+}
