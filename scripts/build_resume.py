@@ -48,8 +48,8 @@ bullet('Automated payment-processing workflows that eliminated more than 11 hour
 section('SELECTED PROJECTS')
 p('<link href="https://github.com/AndreiBautin/dj-visualizer-generator">DJ Visualizer Generator</link> <font name="Helvetica">| .NET, React, TypeScript, FFmpeg | <link href="https://dj-visualizer.onrender.com/">Live demo</link></font>', 'role')
 bullet('Built an asynchronous audio-to-video pipeline that encodes one animation cycle and reuses it. Includes a bounded file-backed job queue, upload validation, expiring downloads, and real FFmpeg tests.')
-p('<link href="https://github.com/AndreiBautin/LifeOS">LifeOS</link> <font name="Helvetica">| React, TypeScript, IndexedDB, PWA | <link href="https://andreibautin.github.io/LifeOS/">Live demo</link></font>', 'role')
-bullet('Built a client-side productivity system with shared domain rules, deterministic training logic, lint-enforced architecture boundaries, and optional Firestore sync. Public demo uses generated data.')
+p('<link href="https://github.com/AndreiBautin/LiftOS">LiftOS</link> <font name="Helvetica">| React, TypeScript, IndexedDB, PWA | <link href="https://andreibautin.github.io/LiftOS/">Live demo</link></font>', 'role')
+bullet('Built an offline-first workout tracker that derives its training plan instead of storing it and applies double progression from logged history, with lint-enforced architecture boundaries. Public demo uses generated data.')
 section('TECHNICAL SKILLS')
 p('<b>Languages &amp; frameworks:</b> C#, TypeScript, JavaScript, SQL, ASP.NET Core, Entity Framework Core, React, Next.js, Vue.js, Blazor<br/>'
   '<b>Cloud &amp; delivery:</b> Azure OpenAI, AI Search, Service Bus, Functions, App Service, Blob Storage, Key Vault, Application Insights, Azure DevOps, GitHub Actions, Docker, CI/CD<br/>'
