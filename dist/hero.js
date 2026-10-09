@@ -66,13 +66,53 @@ const start = async () => {
     // never repeats, rather than a bounce on the spot.
     g.userData = { x, y, z, scale, label, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
       fx: 0.11 + hash(i, 4) * 0.09, fy: 0.08 + hash(i, 5) * 0.08, fz: 0.06 + hash(i, 6) * 0.06,
-      gx: 0.23 + hash(i, 7) * 0.1, gy: 0.19 + hash(i, 8) * 0.1 };
+      gx: 0.23 + hash(i, 7) * 0.1, gy: 0.19 + hash(i, 8) * 0.1,
+      spin: new THREE.Quaternion(), vx: 0, vy: 0 };
     cluster.add(g);
     return g;
   });
 
   const pointer = { x: 0, y: 0 };
   addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
+
+  // A press on a sphere grabs it: dragging spins it about the screen's
+  // axes, and letting go leaves it turning, slowing on its own.
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
+  const turn = new THREE.Quaternion();
+  let held = null, lastX = 0, lastY = 0, lastT = 0;
+  const under = (e) => {
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(spheres.map((g) => g.children[0]), false)[0];
+    return hit ? hit.object.parent : null;
+  };
+  const spinBy = (g, dx, dy) => {
+    const u = g.userData;
+    turn.setFromAxisAngle(axisY, dx * 0.012); u.spin.premultiply(turn);
+    turn.setFromAxisAngle(axisX, dy * 0.012); u.spin.premultiply(turn);
+  };
+  canvas.addEventListener('pointerdown', (e) => {
+    const g = under(e);
+    if (!g) return;
+    held = g; held.userData.vx = held.userData.vy = 0;
+    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('is-holding');
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!held) { canvas.classList.toggle('is-over', !!under(e)); return; }
+    const dx = e.clientX - lastX, dy = e.clientY - lastY, dt = Math.max(8, performance.now() - lastT);
+    spinBy(held, dx, dy);
+    held.userData.vx = dx / dt * 16; held.userData.vy = dy / dt * 16;
+    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+  });
+  const letGo = () => { held = null; canvas.classList.remove('is-holding'); };
+  canvas.addEventListener('pointerup', letGo);
+  canvas.addEventListener('pointercancel', letGo);
 
   const fit = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -97,7 +137,13 @@ const start = async () => {
       g.position.x = u.x + Math.sin(s * u.fx + u.phase) * 0.55 + Math.sin(s * u.gx + u.tilt) * 0.2;
       g.position.y = u.y + Math.cos(s * u.fy + u.tilt) * 0.5 + Math.sin(s * u.gy + u.phase) * 0.18;
       g.position.z = u.z + Math.sin(s * u.fz + u.phase * 0.5) * 0.5;
+      if (g !== held && (u.vx || u.vy)) {
+        spinBy(g, u.vx, u.vy);
+        u.vx *= 0.975; u.vy *= 0.975;
+        if (Math.abs(u.vx) + Math.abs(u.vy) < 0.02) u.vx = u.vy = 0;
+      }
       g.rotation.set(Math.sin(s * 0.17 + u.tilt) * 0.3, Math.sin(s * 0.13 + u.phase) * 0.35, Math.sin(s * 0.09 + u.tilt) * 0.12);
+      g.quaternion.premultiply(u.spin);
     }
     cluster.rotation.y += ((pointer.x * 0.14) - cluster.rotation.y) * 0.04;
     cluster.rotation.x += ((pointer.y * 0.1) - cluster.rotation.x) * 0.04;

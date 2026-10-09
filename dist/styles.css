@@ -63,3 +63,6 @@ html{overflow-x:hidden}
 body.light .hero-tech{opacity:0}
 body.light .hero-tech.is-live{opacity:.9}
 @media(max-width:760px){.wrap{width:min(100% - 28px,1180px)}.hero-copy{min-height:calc(90svh - 70px);padding:5vh 0 42vh}.hero-copy>.eyebrow,.hero-copy>h1,.hero-copy>.hero-tagline,.hero-copy>.hero-bottom{max-width:none}.hero-bottom>p{max-width:none}}
+/* The spheres can be grabbed and spun: the canvas takes the pointer, and the copy over it only where there is something to press. */
+.hero-tech{pointer-events:auto;touch-action:pan-y}.hero-tech.is-over{cursor:grab}.hero-tech.is-holding{cursor:grabbing}
+.hero-copy{pointer-events:none}.hero-copy a,.hero-copy p,.hero-copy h1,.hero-copy .eyebrow{pointer-events:auto}
