@@ -66,3 +66,8 @@ body.light .hero-tech.is-live{opacity:.9}
 /* The spheres can be grabbed and spun: the canvas takes the pointer, and the copy over it only where there is something to press. */
 .hero-tech{pointer-events:auto;touch-action:pan-y}.hero-tech.is-over{cursor:grab}.hero-tech.is-holding{cursor:grabbing}
 .hero-copy{pointer-events:none}.hero-copy a,.hero-copy p,.hero-copy h1,.hero-copy .eyebrow{pointer-events:auto}
+/* The independent work mirrors the employer grid: one large card across the row, two beneath. The large one's photograph fills its band, centred on its upper half, and the copy sits in two columns. */
+.project-large.project .visual-side{min-height:460px}.project-large .visual-side img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%}
+.project-large .project-copy{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr);gap:24px 48px;align-items:start}.project-large .project-copy>p{margin:0}.project-large .project-copy .tags{grid-column:1/-1}
+@media(max-width:760px){.project-large.project .visual-side{min-height:0}.project-large .visual-side img{position:static;height:auto}.project-large .project-copy{grid-template-columns:1fr}}
+.project-large .visual-side.thumb{aspect-ratio:auto;min-height:460px}.project-large .project-copy>p{max-width:none}
