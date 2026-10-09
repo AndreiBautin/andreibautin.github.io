@@ -62,10 +62,11 @@ const start = async () => {
     const sticker = new THREE.Mesh(face, new THREE.MeshBasicMaterial({ map: textures[i], transparent: true, depthWrite: false }));
     sticker.position.z = 1.005;
     g.add(sticker);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1.06, 64), new THREE.MeshBasicMaterial({ color: 0x4aeaff, transparent: true, opacity: 0.14, side: THREE.DoubleSide }));
-    ring.position.z = 1.002;
-    g.add(ring);
-    g.userData = { x, y, z, scale, label, drift: 0.6 + hash(i, 1) * 0.9, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283 };
+    // Three slow sines of unrelated periods on each axis: a wander that
+    // never repeats, rather than a bounce on the spot.
+    g.userData = { x, y, z, scale, label, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
+      fx: 0.11 + hash(i, 4) * 0.09, fy: 0.08 + hash(i, 5) * 0.08, fz: 0.06 + hash(i, 6) * 0.06,
+      gx: 0.23 + hash(i, 7) * 0.1, gy: 0.19 + hash(i, 8) * 0.1 };
     cluster.add(g);
     return g;
   });
@@ -93,9 +94,10 @@ const start = async () => {
     const s = t / 1000;
     for (const g of spheres) {
       const u = g.userData;
-      g.position.y = u.y + Math.sin(s * u.drift + u.phase) * 0.28;
-      g.position.x = u.x + Math.cos(s * u.drift * 0.7 + u.phase) * 0.12;
-      g.rotation.set(Math.sin(s * 0.5 + u.tilt) * 0.22, Math.cos(s * 0.4 + u.phase) * 0.28, 0);
+      g.position.x = u.x + Math.sin(s * u.fx + u.phase) * 0.55 + Math.sin(s * u.gx + u.tilt) * 0.2;
+      g.position.y = u.y + Math.cos(s * u.fy + u.tilt) * 0.5 + Math.sin(s * u.gy + u.phase) * 0.18;
+      g.position.z = u.z + Math.sin(s * u.fz + u.phase * 0.5) * 0.5;
+      g.rotation.set(Math.sin(s * 0.17 + u.tilt) * 0.3, Math.sin(s * 0.13 + u.phase) * 0.35, Math.sin(s * 0.09 + u.tilt) * 0.12);
     }
     cluster.rotation.y += ((pointer.x * 0.14) - cluster.rotation.y) * 0.04;
     cluster.rotation.x += ((pointer.y * 0.1) - cluster.rotation.x) * 0.04;
