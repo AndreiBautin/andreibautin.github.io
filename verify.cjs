@@ -10,7 +10,14 @@ const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 assert.equal(ids.length, new Set(ids).size, 'Duplicate IDs');
 for (const [, href] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
   if (href.startsWith('#')) assert(ids.includes(href.slice(1)), href);
-  if (href.startsWith('./')) assert(fs.existsSync('dist/' + href.slice(2)), href);
+  if (href.startsWith('./')) assert(fs.existsSync('dist/' + href.slice(2).split('?')[0]), href);
+}
+// The stylesheet and script links carry a hash of the file they point to
+// (scripts/stamp.cjs): a page served fresh with a stylesheet from a
+// browser's cache drew the hero as a block image once.
+for (const file of ['styles.css', 'script.js']) {
+  const hash = require('crypto').createHash('sha256').update(fs.readFileSync('dist/' + file)).digest('hex').slice(0, 10);
+  assert(html.includes(`./${file}?v=${hash}`), `${file} link must be stamped ./${file}?v=${hash} (run node scripts/stamp.cjs)`);
 }
 for (const path of ['dist/index.html', 'dist/styles.css', 'dist/script.js']) {
   const text = fs.readFileSync(path, 'utf8');
