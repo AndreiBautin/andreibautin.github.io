@@ -20,3 +20,13 @@ a.project-visual{display:block;transition:transform .5s cubic-bezier(.2,.7,.2,1)
 .project-copy p a,.contact-note a{text-decoration:none;background-image:linear-gradient(var(--acid),var(--acid));background-repeat:no-repeat;background-size:100% 1px;background-position:0 100%;transition:background-size .3s cubic-bezier(.2,.7,.2,1),color .2s;padding-bottom:1px}.project-copy p a:hover,.contact-note a:hover{background-size:0 1px;color:var(--ink)}
 .project-copy p a[href^="http"]:not([href*="github"])::after{content:" a0→";display:inline-block;transition:transform .3s}.project-copy p a[href^="http"]:not([href*="github"]):hover::after{transform:translateX(4px)}
 @media(prefers-reduced-motion:reduce){.visual-ai .orbit,.visual-ai .core,.ticker div,.stream i{animation:none}.hero>*{animation:none}a.project-visual,a.project-visual img,nav a::after{transition:none}}
+/* Keyboard focus in the site's own colour, not the browser's ring. */
+:focus-visible{outline:2px solid var(--acid);outline-offset:3px;border-radius:2px}
+/* The theme flips over a quarter second, and the toggle shows the theme it would switch to. */
+body,.nav-shell,.project-visual,.theme-toggle,.about{transition:background-color .25s ease,color .25s ease,border-color .25s ease}
+.theme-toggle .icon-moon{display:none}body.light .theme-toggle .icon-sun{display:none}body.light .theme-toggle .icon-moon{display:block}
+/* Experience: the skills as chips, and the groups set apart on a phone. */
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{border:1px solid var(--line);padding:5px 10px;font:400 .78rem var(--mono);letter-spacing:.02em;color:var(--muted);background:color-mix(in srgb,var(--paper) 50%,transparent)}
+@media(max-width:760px){.resume-grid h3{border-top:1px solid var(--line);padding-top:28px;margin-top:40px}.resume-grid>div:first-child h3:first-child{border-top:0;padding-top:0;margin-top:0}}
+/* The ticker's seam: the track must be exactly two copies and two gaps wide for a half-width slide to join. */
+.ticker div::after{content:"";width:0;flex:none}

@@ -12,16 +12,21 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      if (!reduceMotion) entry.target.animate([
-        { opacity: 0, transform: 'translateY(24px)' },
-        { opacity: 1, transform: 'translateY(0)' }
-      ], { duration: 650, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'both' });
+      if (!reduceMotion) {
+        // A section's intro comes in as a sequence, kicker then heading,
+        // 80 ms apart; everything else as one.
+        const parts = entry.target.classList.contains('section-intro') ? [...entry.target.children] : [entry.target];
+        parts.forEach((part, index) => part.animate([
+          { opacity: 0, transform: 'translateY(24px)' },
+          { opacity: 1, transform: 'translateY(0)' }
+        ], { duration: 650, delay: index * 80, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'both' }));
+      }
       observer.unobserve(entry.target);
     }
   });
 }, { threshold: .12 });
 
-document.querySelectorAll('.project, .about-grid, .contact-row').forEach((el) => observer.observe(el));
+document.querySelectorAll('.project, .about-grid, .contact-row, .section-intro').forEach((el) => observer.observe(el));
 
 // The nav marks the section in view: each section's link is current while
 // its top half crosses the upper part of the viewport.
