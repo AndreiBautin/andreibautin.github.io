@@ -51,3 +51,15 @@ body.light .hero-planet{opacity:.9;-webkit-mask-image:radial-gradient(circle at 
 /* What follows the hero stands over the planet's lower edge. */
 .proof,.ticker,.work,.about,.resume-details,.contact,footer{position:relative;z-index:1;background:var(--bg)}.about{background:var(--ink)}body.light .about{background:#0b0f14}
 html{overflow-x:hidden}
+/* The hero runs edge to edge: the copy in the wrap, the technology spheres (hero.js) over the right of the band, the Explore button under the copy where it covers nothing. The page is wider too. */
+.wrap{width:min(1760px,calc(100% - 80px))}
+.hero{position:relative;isolation:isolate;display:block;padding:0;min-height:0}
+.hero-copy{position:relative;z-index:1;min-height:calc(86vh - 84px);padding:8vh 0 7vh;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,4vh,3.5rem);max-width:none}
+.hero-copy>.eyebrow,.hero-copy>h1,.hero-copy>.hero-tagline,.hero-copy>.hero-bottom{max-width:min(58%,860px)}
+.hero-bottom{flex-direction:column;align-items:flex-start;gap:36px}
+.hero-planet{display:none}
+.hero-tech{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+.hero-tech.is-live{opacity:1}
+body.light .hero-tech{opacity:0}
+body.light .hero-tech.is-live{opacity:.9}
+@media(max-width:760px){.wrap{width:min(100% - 28px,1180px)}.hero-copy{min-height:calc(90svh - 70px);padding:5vh 0 42vh}.hero-copy>.eyebrow,.hero-copy>h1,.hero-copy>.hero-tagline,.hero-copy>.hero-bottom{max-width:none}.hero-bottom>p{max-width:none}}

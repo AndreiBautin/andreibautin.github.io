@@ -97,3 +97,15 @@ planet in the hero** (a 1000 px frame from the generator, masked and
 turning, over a star field) and **an at-a-glance strip** of four
 resume numbers under it. Left: 17 (print stylesheet), 18 (self-hosted
 fonts), a skip link.
+
+## The hero, again (2026-10-09)
+
+The planet was rejected as a random space vibe and a lazy reuse. The hero
+now runs edge to edge (the page's wrap is `min(1760px, 100% - 80px)`) with
+**a cluster of faceted spheres in Three.js** (`dist/hero.js`, three vendored
+in `dist/vendor/`), each wearing one technology's mark from the CC0 Simple
+Icons set (`dist/images/tech/`), floating and tilting, with a slight
+parallax to the pointer, in the dark-blue palette with the acid rim light.
+The Explore button sits under the copy, over nothing. On a phone the
+cluster drops below the button into space reserved for it. Seen at 1440 and
+375. Not seen: a real phone's frame rate.

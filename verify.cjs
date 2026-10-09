@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
 const html = fs.readFileSync('dist/index.html', 'utf8');
 execFileSync(process.execPath, ['--check', 'dist/script.js']);
+execFileSync(process.execPath, ['--input-type=module', '--check'], { input: fs.readFileSync('dist/hero.js') });
 execFileSync(process.execPath, ['--check', 'serve.cjs']);
 assert(!/hello@example|Electron|01\.4 TB|0\.98|evidence matching/.test(html));
 for (const text of ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University']) assert(html.includes(text), text);
@@ -15,11 +16,11 @@ for (const [, href] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
 // The stylesheet and script links carry a hash of the file they point to
 // (scripts/stamp.cjs): a page served fresh with a stylesheet from a
 // browser's cache drew the hero as a block image once.
-for (const file of ['styles.css', 'script.js']) {
+for (const file of ['styles.css', 'script.js', 'hero.js']) {
   const hash = require('crypto').createHash('sha256').update(fs.readFileSync('dist/' + file)).digest('hex').slice(0, 10);
   assert(html.includes(`./${file}?v=${hash}`), `${file} link must be stamped ./${file}?v=${hash} (run node scripts/stamp.cjs)`);
 }
-for (const path of ['dist/index.html', 'dist/styles.css', 'dist/script.js']) {
+for (const path of ['dist/index.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js']) {
   const text = fs.readFileSync(path, 'utf8');
   assert(!text.includes('\ufffd'), 'Invalid Unicode');
   assert(!/[\t ]+$/m.test(text), 'Trailing whitespace');
