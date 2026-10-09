@@ -9,3 +9,14 @@
 nav a{position:relative;padding-bottom:4px}nav a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--acid);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.2,.7,.2,1)}nav a:hover::after,nav a[aria-current="true"]::after{transform:scaleX(1)}nav a[aria-current="true"]{color:var(--ink)}
 section[id],#projects{scroll-margin-top:96px}
 @media(max-width:760px){nav a:nth-child(2),nav a:nth-child(3){display:none}#projects{scroll-margin-top:80px}}
+/* Cards that respond: the thumbnail is the link, lifts a little and its picture eases in; the heading is a link too. */
+a.project-visual{display:block;transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .5s}a.project-visual:hover{transform:translateY(-4px);box-shadow:0 24px 60px -30px #000}a.project-visual img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}a.project-visual:hover img{transform:scale(1.035)}
+.project-copy h3 a{transition:color .2s}.project-copy h3 a:hover{color:var(--acid)}
+/* The large card's visual: the orbits turn slowly and the core breathes, and it is shorter on desktop; it was 620 px of near-empty space. */
+.project-large .project-visual{min-height:460px}
+.visual-ai .orbit{animation:orbit-turn 40s linear infinite;border-style:dashed}.orbit-b{animation-duration:70s;animation-direction:reverse}.visual-ai .orbit::before{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3px;border-radius:50%;background:var(--acid);box-shadow:0 0 14px var(--acid)}@keyframes orbit-turn{to{transform:rotate(360deg)}}
+.visual-ai .core{animation:core-breathe 4s ease-in-out infinite}@keyframes core-breathe{50%{box-shadow:0 0 110px #4aeaff55;transform:scale(1.04)}}
+/* Links in copy: the underline grows from the left, and an arrow slides after a live-app link. */
+.project-copy p a,.contact-note a{text-decoration:none;background-image:linear-gradient(var(--acid),var(--acid));background-repeat:no-repeat;background-size:100% 1px;background-position:0 100%;transition:background-size .3s cubic-bezier(.2,.7,.2,1),color .2s;padding-bottom:1px}.project-copy p a:hover,.contact-note a:hover{background-size:0 1px;color:var(--ink)}
+.project-copy p a[href^="http"]:not([href*="github"])::after{content:" a0→";display:inline-block;transition:transform .3s}.project-copy p a[href^="http"]:not([href*="github"]):hover::after{transform:translateX(4px)}
+@media(prefers-reduced-motion:reduce){.visual-ai .orbit,.visual-ai .core,.ticker div,.stream i{animation:none}.hero>*{animation:none}a.project-visual,a.project-visual img,nav a::after{transition:none}}
