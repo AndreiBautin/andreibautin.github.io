@@ -30,3 +30,24 @@ body,.nav-shell,.project-visual,.theme-toggle,.about{transition:background-color
 @media(max-width:760px){.resume-grid h3{border-top:1px solid var(--line);padding-top:28px;margin-top:40px}.resume-grid>div:first-child h3:first-child{border-top:0;padding-top:0;margin-top:0}}
 /* The ticker's seam: the track must be exactly two copies and two gaps wide for a half-width slide to join. */
 .ticker div::after{content:"";width:0;flex:none}
+/* The hero has a planet in it: a thousand-pixel frame from the generator, at the right behind the type, faded into the dark at its edge, turning once in four minutes, over a star field drawn by the script. */
+.hero{position:relative;isolation:isolate}
+.stars{position:absolute;inset:0;width:100%;height:100%;z-index:-2;pointer-events:none}
+.hero-planet{position:absolute;right:0;top:34%;width:min(46vw,600px);aspect-ratio:1;transform:translateY(-50%);z-index:-1;pointer-events:none;-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 42%,transparent 66%);mask-image:radial-gradient(circle at 50% 50%,#000 42%,transparent 66%)}
+.hero-planet img{width:100%;height:100%;display:block;animation:planet-turn 240s linear infinite;filter:saturate(1.05)}
+@keyframes planet-turn{to{transform:rotate(360deg)}}
+.hero-bottom>p{text-shadow:0 2px 24px var(--bg)}
+body.light .hero-planet{opacity:.9;-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 40%,transparent 62%);mask-image:radial-gradient(circle at 50% 50%,#000 40%,transparent 62%)}
+/* At a glance: four numbers, ruled, in the display face. */
+.proof{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding:36px 0 44px;border-top:1px solid var(--line)}
+.proof b{display:block;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:600;letter-spacing:-.05em;line-height:1;color:var(--ink)}.proof b::after{content:"";display:block;width:28px;height:2px;background:var(--acid);margin:12px 0 10px}
+.proof span{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);line-height:1.6}
+/* Proof tags under each independent project. */
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}.tags span{border:1px solid var(--line);padding:5px 10px;font:400 .7rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* Experience as a timeline: a rail down the left, a node at each role. */
+.timeline{position:relative;padding-left:28px;border-left:1px solid var(--line)}.timeline h4{position:relative}.timeline h4::before{content:"";position:absolute;left:-33px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--acid);box-shadow:0 0 0 4px var(--bg),0 0 16px var(--acid)}.timeline h3{margin-left:-28px;padding-left:28px}
+@media(max-width:760px){.hero-planet{width:84vw;right:-30vw;top:70%;opacity:.62}.proof{grid-template-columns:1fr 1fr;gap:28px 16px}.timeline{padding-left:22px}.timeline h4::before{left:-27px}.timeline h3{margin-left:-22px;padding-left:22px}}
+@media(prefers-reduced-motion:reduce){.hero-planet img{animation:none}}
+/* What follows the hero stands over the planet's lower edge. */
+.proof,.ticker,.work,.about,.resume-details,.contact,footer{position:relative;z-index:1;background:var(--bg)}.about{background:var(--ink)}body.light .about{background:#0b0f14}
+html{overflow-x:hidden}

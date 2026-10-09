@@ -46,3 +46,32 @@ const markCurrent = () => {
 };
 window.addEventListener('scroll', markCurrent, { passive: true });
 markCurrent();
+
+// A star field behind the hero: a few hundred points by a hash, drawn
+// once, twinkling slowly unless motion is reduced.
+const stars = document.querySelector('.stars');
+if (stars) {
+  const ctx = stars.getContext('2d');
+  const points = Array.from({ length: 260 }, (_, k) => {
+    const h = (n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
+    return { x: h(1), y: h(2), r: 0.4 + h(3) * 1.1, a: 0.25 + h(4) * 0.6, p: h(5) * 6.283 };
+  });
+  const draw = (t) => {
+    const w = stars.clientWidth, h = stars.clientHeight;
+    if (stars.width !== w * devicePixelRatio || stars.height !== h * devicePixelRatio) {
+      stars.width = w * devicePixelRatio; stars.height = h * devicePixelRatio;
+    }
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const light = document.body.classList.contains('light');
+    for (const s of points) {
+      const tw = reduceMotion ? 1 : 0.7 + 0.3 * Math.sin(t / 1400 + s.p);
+      ctx.globalAlpha = s.a * tw * (light ? 0.35 : 1);
+      ctx.fillStyle = light ? '#1e5d66' : '#e9edf2';
+      ctx.beginPath(); ctx.arc(s.x * w, s.y * h, s.r, 0, 6.283); ctx.fill();
+    }
+    if (!reduceMotion) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+  window.addEventListener('resize', () => { if (reduceMotion) requestAnimationFrame(draw); });
+}

@@ -86,3 +86,14 @@ Nothing here touches the resume facts.
 - No horizontal overflow at 375 px (`scrollWidth` 375).
 - Page height 7,397 px at 1440 wide, 8,902 px at 375.
 - Verify passes; the only JavaScript is 23 lines.
+
+## Done (2026-10-09)
+
+Tier 1 (1–5) and tier 2 (6–10, 12) as listed; 11 kept as is (the pill and
+the meta line carry different text). From tier 3: 13 (`aria-current`),
+14 (the timeline rail), 15 (a planet OG image) and 16 (proof tags). And
+beyond the list, because the first two tiers read as no change: **a
+planet in the hero** (a 1000 px frame from the generator, masked and
+turning, over a star field) and **an at-a-glance strip** of four
+resume numbers under it. Left: 17 (print stylesheet), 18 (self-hosted
+fonts), a skip link.
