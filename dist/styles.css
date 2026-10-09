@@ -71,3 +71,4 @@ body.light .hero-tech.is-live{opacity:.9}
 .project-large .project-copy{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr);gap:24px 48px;align-items:start}.project-large .project-copy>p{margin:0}.project-large .project-copy .tags{grid-column:1/-1}
 @media(max-width:760px){.project-large.project .visual-side{min-height:0}.project-large .visual-side img{position:static;height:auto}.project-large .project-copy{grid-template-columns:1fr}}
 .project-large .visual-side.thumb{aspect-ratio:auto;min-height:460px}.project-large .project-copy>p{max-width:none}
+.project-large .visual-side img{object-position:50% 50%}@media(max-width:760px){.project-large .visual-side.thumb{aspect-ratio:1760/608}}
