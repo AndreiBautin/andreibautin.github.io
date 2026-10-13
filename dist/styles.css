@@ -168,3 +168,5 @@ html,body{overflow-x:clip}
   .project-copy p a[href^="http"]::after,.contact-links a[href^="http"]::after{content:" (" attr(href) ")";font-size:.8em}
   *{animation:none!important;transition:none!important}
 }
+/* In the light theme the ledger fades into the card's own light ground, not the dark one. */
+body.light .visual-match::before{background:linear-gradient(180deg,rgba(244,247,250,0),#eef2f6 80%)}
