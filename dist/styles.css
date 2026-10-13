@@ -251,3 +251,6 @@ body.light .about::before{box-shadow:none}
   .project-visual:active,.contact-links a:active,.footer-social a:active,.copy-email:active,.menu-toggle:active,.theme-toggle:active{transform:scale(.97)}
   .round-link:active{transform:scale(.94)}
 }
+/* On very wide screens the name grows past the 7 rem cap, with spacing opened a touch so the larger letters do not collide, and lines balanced. */
+.hero h1,.hero-tagline{text-wrap:balance}
+@media(min-width:1500px){.hero h1{font-size:clamp(7rem,6.2vw,8.75rem);letter-spacing:-.068em;line-height:.88}}
