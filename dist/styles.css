@@ -254,3 +254,6 @@ body.light .about::before{box-shadow:none}
 /* On very wide screens the name grows past the 7 rem cap, with spacing opened a touch so the larger letters do not collide, and lines balanced. */
 .hero h1,.hero-tagline{text-wrap:balance}
 @media(min-width:1500px){.hero h1{font-size:clamp(7rem,6.2vw,8.75rem);letter-spacing:-.068em;line-height:.88}}
+/* Project titles read as headlines: larger, tighter, and largest on the wide card. */
+.project-copy h3{font-size:clamp(1.55rem,2.2vw,2.2rem);line-height:1.08;letter-spacing:-.045em;font-weight:600;text-wrap:balance}
+.project-large .project-copy h3{font-size:clamp(1.8rem,3vw,3rem)}
