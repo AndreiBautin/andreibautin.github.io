@@ -312,3 +312,6 @@ body.light .hero h1{background-image:linear-gradient(100deg,#0b0f14 20%,#0e7c8c 
 .nav-shell::after{content:"";position:absolute;inset:0;z-index:-1;-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);pointer-events:none}
 /* iOS 26 Safari paints the status-bar strip itself, tinted from a top fixed/sticky element's background colour; a translucent colour lets page content show through there. On phones the header is opaque. */
 @media(max-width:760px){.nav-shell,.nav-shell.is-scrolled{background:var(--bg)}}
+/* Safari 26 draws the status-bar strip itself and colours it only from a position:fixed element touching the top edge; a sticky header does not count, so the page scrolled past showed there. This bar is that element. */
+.status-bar{position:fixed;left:0;right:0;top:0;height:max(1px,env(safe-area-inset-top));z-index:51;background:var(--bg);pointer-events:none}
+@media print{.status-bar{display:none}}
