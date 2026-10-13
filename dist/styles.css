@@ -306,5 +306,5 @@ body.light .hero h1{background-image:linear-gradient(100deg,#0b0f14 20%,#0e7c8c 
 .nav-shell::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:120px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;pointer-events:none}
 .skip-link{top:calc(12px + env(safe-area-inset-top))}
 @media(max-width:760px){.nav-shell nav{height:calc(100svh - 100%)}}
-/* On phones the header is position:fixed rather than sticky: iOS 26 Safari showed scrolled content in a strip above the sticky one. The body is padded by the header's unscrolled height (70px bar, 1px border, safe-area inset) so the page starts below it. */
-@media(max-width:760px){.nav-shell{position:fixed;left:0;right:0;top:0}body{padding-top:calc(71px + env(safe-area-inset-top))}}
+/* On phones the header scrolls away with the page. iOS 26 Safari shows scrolled content in a strip above a pinned header, sticky or fixed, and nothing the page draws covers it; with nothing pinned there is no gap. */
+@media(max-width:760px){.nav-shell{position:relative}}
