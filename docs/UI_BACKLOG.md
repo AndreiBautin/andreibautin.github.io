@@ -172,3 +172,25 @@ fonts); the share image is a capture of the current hero
 Not checked: the press response with a real finger (the preview sends
 mouse clicks), the load change on a throttled connection, and how a
 given site (LinkedIn, Slack) renders the new preview.
+
+## Round 5 (2026-10-13)
+
+Done: the hero name grows to 8.75 rem at 1500 px and up (kept on two
+balanced lines; widening its column put it across a sphere); project
+titles are headlines; Live app and Source are a pair of pill buttons;
+the theme spreads as a circle from the toggle (view transitions, plain
+switch elsewhere); a ring trails the pointer and swells over clickable
+things; skills used in the projects are lit, with a key; an
+accessibility pass (contrast of every text node in both themes, tab
+order) fixed the light theme's skip link and payments tag and gave the
+three thumbnail links distinct names.
+
+Found on the way, older than this round: **on a phone the independent
+projects were 1330 px wide**, clipped by `overflow-x: clip`, so their
+text ran off the right edge. A desktop `min-height: 460px` on the
+planet card outranked the phone override and, with the card's aspect
+ratio, set the column's width. Fixed at the source (4:3 card on a
+phone) and guarded (`minmax(0, 1fr)` tracks).
+
+Not checked: the theme circle mid-animation (too quick to capture), a
+screen reader on the new link names, a real phone.
