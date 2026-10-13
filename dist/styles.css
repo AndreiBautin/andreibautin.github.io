@@ -92,4 +92,4 @@ body.light .visual-match{background:linear-gradient(135deg,#e8edf3,#f4f7fa)}
 /* The About band is a dark panel now, not a white one: the inverted band was reported as blinding. */
 .about{background:var(--paper);color:var(--ink);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.about .kicker{color:var(--muted)}.about h2 em{color:var(--acid)}.about-copy>p:not(.lead){color:var(--muted)}.about .lead{color:var(--ink)}body.light .about{background:#eef2f6;color:#0b0f14;border-color:#d7dde4}body.light .about h2 em{color:#0e7c8c}body.light .about .kicker,body.light .about-copy>p:not(.lead){color:#535a61}
 /* On a phone the spheres take a square band under the Explore button, as wide as the screen. */
-@media(max-width:760px){.hero-copy{padding-bottom:calc(min(100vw,460px) + 8px)}}
+@media(max-width:760px){.hero-copy{padding-bottom:calc(min(100vw,460px) - 72px)}}

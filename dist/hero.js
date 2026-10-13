@@ -147,7 +147,7 @@ const start = async () => {
     const halfH = camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     const halfW = halfH * camera.aspect;
     const button = document.querySelector('.round-link');
-    const top = button ? button.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top + 8 : h * 0.6;
+    const top = button ? button.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top - 72 : h * 0.6;
     const band = Math.max(160, h - top);
     const middle = top + band / 2;
     // The ring's centres sit 2.05 out, a sphere's radius is under 0.9 and
