@@ -51,11 +51,18 @@ const start = async () => {
   // nearer ones larger, so the cluster has a front and a back.
   const layout = [[0, 0.1, 1.5], [2.6, 1.6, 0.4], [-2.5, 1.9, -0.2], [2.9, -1.7, 0.8], [-2.8, -1.5, 0.2],
     [0.2, 3.1, -1.4], [0.1, -3.0, -0.8], [4.8, 0.2, -1.6], [-4.7, 0.3, -1.4], [3.9, 3.4, -2.6], [-4.0, -3.2, -2.4], [4.3, -3.6, -2.2]];
+  // A phone's portrait band is too narrow for that spread: it keeps the
+  // first seven marks, C# in the middle and six round it, close enough to
+  // fit the band under the copy whole.
+  const PHONE_MARKS = 7;
+  const ring = (k) => [Math.cos(Math.PI / 2 - k * Math.PI / 3) * 2.05, Math.sin(Math.PI / 2 - k * Math.PI / 3) * 2.05, [0.5, -0.2, 0.6, 0.1, -0.3, 0.4][k]];
+  const phoneLayout = [[0, 0, 1.2], ...[0, 1, 2, 3, 4, 5].map(ring)];
+  const scaleAt = (z, i) => 0.72 + z * 0.09 + (i === 0 ? 0.22 : 0);
   const spheres = marks.map(([, label], i) => {
     const g = new THREE.Group();
     const [x, y, z] = layout[i];
     g.position.set(x, y, z);
-    const scale = 0.72 + z * 0.09 + (i === 0 ? 0.22 : 0);
+    const scale = scaleAt(z, i);
     g.scale.setScalar(scale);
     const body = new THREE.Mesh(ball, new THREE.MeshStandardMaterial({ color: 0x101c2e, roughness: 0.42, metalness: 0.25, flatShading: true }));
     g.add(body);
@@ -64,7 +71,7 @@ const start = async () => {
     g.add(sticker);
     // Three slow sines of unrelated periods on each axis: a wander that
     // never repeats, rather than a bounce on the spot.
-    g.userData = { x, y, z, scale, label, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
+    g.userData = { x, y, z, scale, label, reach: 1, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
       fx: 0.11 + hash(i, 4) * 0.09, fy: 0.08 + hash(i, 5) * 0.08, fz: 0.06 + hash(i, 6) * 0.06,
       gx: 0.23 + hash(i, 7) * 0.1, gy: 0.19 + hash(i, 8) * 0.1,
       spin: new THREE.Quaternion(), vx: 0, vy: 0 };
@@ -86,7 +93,7 @@ const start = async () => {
     const r = canvas.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
-    const hit = ray.intersectObjects(spheres.map((g) => g.children[0]), false)[0];
+    const hit = ray.intersectObjects(spheres.filter((g) => g.visible).map((g) => g.children[0]), false)[0];
     return hit ? hit.object.parent : null;
   };
   const spinBy = (g, dx, dy) => {
@@ -120,11 +127,36 @@ const start = async () => {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    // The cluster stands on the right of a wide view and fills a narrow one.
+    // The cluster stands on the right of a wide view. On a phone it takes
+    // the band between the Explore button and the foot of the hero, sized
+    // so its widest wander stays on the screen.
     const narrow = w < 760;
-    cluster.position.set(narrow ? 0 : 4.3, narrow ? -3.6 : 0, 0);
-    cluster.scale.setScalar(narrow ? Math.min(0.62, w / 600) : Math.min(0.92, w / 1600));
-    camera.position.z = narrow ? 17 : 14;
+    spheres.forEach((g, i) => {
+      const u = g.userData;
+      const [x, y, z] = narrow ? (phoneLayout[i] || layout[i]) : layout[i];
+      u.x = x; u.y = y; u.z = z; u.scale = scaleAt(z, i); u.reach = narrow ? 0.45 : 1;
+      g.scale.setScalar(u.scale);
+      g.visible = !narrow || i < PHONE_MARKS;
+    });
+    camera.position.z = 14;
+    if (!narrow) {
+      cluster.position.set(4.3, 0, 0);
+      cluster.scale.setScalar(Math.min(0.92, w / 1600));
+      return;
+    }
+    const halfH = camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const halfW = halfH * camera.aspect;
+    const button = document.querySelector('.round-link');
+    const top = button ? button.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top + 8 : h * 0.6;
+    const band = Math.max(160, h - top);
+    const middle = top + band / 2;
+    // The ring's centres sit 2.05 out, a sphere's radius is under 0.9 and
+    // a phone's wander under 0.35: 3.3 either way covers all of it.
+    const extent = 3.3;
+    const fitW = (halfW * 0.98) / extent;
+    const fitH = ((band / h) * halfH * 0.98) / extent;
+    cluster.scale.setScalar(Math.min(fitW, fitH));
+    cluster.position.set(0, (1 - (2 * middle) / h) * halfH, 0);
   };
   new ResizeObserver(fit).observe(canvas);
   fit();
@@ -134,9 +166,9 @@ const start = async () => {
     const s = t / 1000;
     for (const g of spheres) {
       const u = g.userData;
-      g.position.x = u.x + Math.sin(s * u.fx + u.phase) * 0.55 + Math.sin(s * u.gx + u.tilt) * 0.2;
-      g.position.y = u.y + Math.cos(s * u.fy + u.tilt) * 0.5 + Math.sin(s * u.gy + u.phase) * 0.18;
-      g.position.z = u.z + Math.sin(s * u.fz + u.phase * 0.5) * 0.5;
+      g.position.x = u.x + (Math.sin(s * u.fx + u.phase) * 0.55 + Math.sin(s * u.gx + u.tilt) * 0.2) * u.reach;
+      g.position.y = u.y + (Math.cos(s * u.fy + u.tilt) * 0.5 + Math.sin(s * u.gy + u.phase) * 0.18) * u.reach;
+      g.position.z = u.z + Math.sin(s * u.fz + u.phase * 0.5) * 0.5 * u.reach;
       if (g !== held && (u.vx || u.vy)) {
         spinBy(g, u.vx, u.vy);
         u.vx *= 0.975; u.vy *= 0.975;
