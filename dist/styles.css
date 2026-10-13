@@ -170,3 +170,6 @@ html,body{overflow-x:clip}
 }
 /* In the light theme the ledger fades into the card's own light ground, not the dark one. */
 body.light .visual-match::before{background:linear-gradient(180deg,rgba(244,247,250,0),#eef2f6 80%)}
+/* The eyebrow's dot stays beside the text: wrapping put it alone on a line at phone width. */
+.eyebrow{flex-wrap:nowrap;align-items:baseline}
+.eyebrow span{flex:none;transform:translateY(-1px)}
