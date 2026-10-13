@@ -153,3 +153,22 @@ plus `scroll-margin-top`). Dropped from the footer: a "built with" line.
 
 Seen at 1024 and 375, dark and light. Not checked: a real phone, the
 menu with a screen reader.
+
+## Round 4 (2026-10-13)
+
+Asked for alongside: the at-a-glance strip drops the certifications
+count (three numbers now; the certifications stay under Experience).
+
+Done: the LiftOS and DJ screenshots sit in browser-window frames, tipped
+back and settling on hover; experience timeline nodes light as they pass
+mid-screen; the ticker is in the display face with faded edges and
+pauses under the pointer; the About panel's edges are lit hairlines;
+touch screens get a press response on cards and buttons; Three.js is
+fetched after `load` instead of at once (690 KB that competed with the
+fonts); the share image is a capture of the current hero
+(`images/og-hero.jpg`, made with headless Chrome at 1600 × 840 scaled to
+1200 × 630), replacing the planet from the rejected first hero.
+
+Not checked: the press response with a real finger (the preview sends
+mouse clicks), the load change on a throttled connection, and how a
+given site (LinkedIn, Slack) renders the new preview.
