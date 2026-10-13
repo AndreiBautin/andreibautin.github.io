@@ -238,8 +238,15 @@ if (stars) {
       ctx.fillStyle = light ? '#1e5d66' : '#e9edf2';
       ctx.beginPath(); ctx.arc(s.x * w, s.y * h, s.r, 0, 6.283); ctx.fill();
     }
-    if (!reduceMotion) requestAnimationFrame(draw);
+    if (!reduceMotion && starsOnScreen) requestAnimationFrame(draw);
   };
+  // The twinkle stops while the hero is out of view.
+  let starsOnScreen = true;
+  new IntersectionObserver(([entry]) => {
+    const resumed = entry.isIntersecting && !starsOnScreen;
+    starsOnScreen = entry.isIntersecting;
+    if (resumed && !reduceMotion) requestAnimationFrame(draw);
+  }).observe(stars);
   requestAnimationFrame(draw);
   window.addEventListener('resize', () => { if (reduceMotion) requestAnimationFrame(draw); });
 }

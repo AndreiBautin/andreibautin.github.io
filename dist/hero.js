@@ -182,9 +182,17 @@ const start = async () => {
     cluster.rotation.y += ((pointer.x * 0.14) - cluster.rotation.y) * 0.04;
     cluster.rotation.x += ((pointer.y * 0.1) - cluster.rotation.x) * 0.04;
     renderer.render(scene, camera);
-    if (!reduce) requestAnimationFrame(frame);
+    if (!reduce && onScreen) requestAnimationFrame(frame);
     last = t;
   };
+  // Rendering stops while the hero is scrolled out of view, and resumes
+  // when it returns: a WebGL frame every 16 ms nobody sees costs battery.
+  let onScreen = true;
+  new IntersectionObserver(([entry]) => {
+    const resumed = entry.isIntersecting && !onScreen;
+    onScreen = entry.isIntersecting;
+    if (resumed && !reduce) requestAnimationFrame(frame);
+  }).observe(canvas);
   canvas.classList.add('is-live');
   requestAnimationFrame(frame);
   if (reduce) addEventListener('resize', () => requestAnimationFrame(frame));
