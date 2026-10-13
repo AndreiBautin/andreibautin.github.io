@@ -135,7 +135,7 @@ nav a::after{display:none}
 /* Sticky needs the page itself to scroll: overflow-x hidden on html and body made body a scroll container that never scrolls, so the header scrolled away. clip trims the sideways overflow without that. */
 html,body{overflow-x:clip}
 /* The calls to action are pulled toward the pointer (script.js) and spring back. */
-.round-link,.contact-row a{transition:transform .5s cubic-bezier(.2,1.4,.4,1),box-shadow .3s}
+.round-link{transition:transform .5s cubic-bezier(.2,1.4,.4,1),box-shadow .3s}
 .round-link:hover{box-shadow:0 0 0 8px color-mix(in srgb,var(--acid) 18%,transparent),0 12px 40px -8px color-mix(in srgb,var(--acid) 55%,transparent)}
 /* Contact as a card: the address large with a copy button, the other links as pills. */
 .contact-card{margin-top:56px;padding:36px;border:1px solid var(--edge);border-top-color:var(--edge-top);border-radius:var(--radius);background:color-mix(in srgb,var(--paper) 70%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 5%,transparent)}
@@ -188,3 +188,7 @@ body.menu-open .menu-toggle span:last-child{transform:translateY(-3.25px) rotate
   .nav-pill{display:none}
   body.menu-open{overflow:hidden}
 }
+/* The address is the one call to action: an arrow after it slides on hover. */
+.contact-email a{display:inline-flex;align-items:center;gap:.4em}
+.contact-email svg{width:.8em;height:.8em;fill:none;stroke:var(--acid);stroke-width:2;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.contact-email a:hover svg{transform:translateX(6px)}

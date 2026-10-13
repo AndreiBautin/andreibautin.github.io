@@ -118,9 +118,9 @@ if (copyButton) {
   });
 }
 
-// The two calls to action lean toward the pointer and spring back.
+// The Explore button leans toward the pointer and springs back.
 if (finePointer && !reduceMotion) {
-  document.querySelectorAll('.round-link, .contact-row a').forEach((button) => {
+  document.querySelectorAll('.round-link').forEach((button) => {
     button.addEventListener('pointermove', (event) => {
       const box = button.getBoundingClientRect();
       const dx = (event.clientX - box.left - box.width / 2) * 0.25;
