@@ -221,3 +221,6 @@ body.light .match-tag{color:#0e7c8c}
 .footer-social .to-top{width:auto;padding:0 14px;border-radius:999px}
 @media(max-width:760px){.site-footer span:nth-child(2){display:inline}.site-footer{justify-content:space-between}}
 @media(max-width:760px){.visual-ai .orbit-a{width:236px;height:236px;--r:118px}.visual-ai .core{width:110px;height:110px}.visual-ai>p{bottom:20px;left:20px}.orbit-a .orbit-label:nth-child(2){--a:160deg!important}}
+/* Three numbers at a glance, not four. */
+.proof{grid-template-columns:repeat(3,1fr)}
+@media(max-width:760px){.proof{grid-template-columns:repeat(3,1fr);gap:20px 12px}}
