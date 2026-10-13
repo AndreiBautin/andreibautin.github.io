@@ -173,3 +173,18 @@ body.light .visual-match::before{background:linear-gradient(180deg,rgba(244,247,
 /* The eyebrow's dot stays beside the text: wrapping put it alone on a line at phone width. */
 .eyebrow{flex-wrap:nowrap;align-items:baseline}
 .eyebrow span{flex:none;transform:translateY(-1px)}
+/* On a phone every link lives in a sheet under the header, opened by a two-line button that turns into a cross. Absolute, not fixed: the header's backdrop filter is the containing block for fixed children. */
+.nav-actions{display:flex;align-items:center;gap:10px}
+.menu-toggle{display:none;width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--ink);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.menu-toggle span{display:block;width:16px;height:1.5px;background:currentColor;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+body.menu-open .menu-toggle span:first-child{transform:translateY(3.25px) rotate(45deg)}
+body.menu-open .menu-toggle span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
+@media(max-width:760px){
+  .menu-toggle{display:flex}
+  .nav-shell nav{position:absolute;left:0;right:0;top:100%;height:calc(100svh - 100%);flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:4px;padding:28px 14px;background:var(--bg);border-top:1px solid var(--line);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .3s,transform .3s cubic-bezier(.2,.7,.2,1),visibility 0s .3s}
+  body.menu-open .nav-shell nav{opacity:1;visibility:visible;transform:none;transition:opacity .3s,transform .3s cubic-bezier(.2,.7,.2,1)}
+  .nav-shell nav a,.nav-shell nav a:nth-child(2),.nav-shell nav a:nth-child(3){display:block;font:600 2.2rem var(--display);text-transform:none;letter-spacing:-.04em;padding:10px 0}
+  .nav-shell nav a[aria-current="true"]{color:var(--acid)}
+  .nav-pill{display:none}
+  body.menu-open{overflow:hidden}
+}

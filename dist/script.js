@@ -85,6 +85,18 @@ if (finePointer && !reduceMotion) {
   });
 }
 
+// On a phone the nav is a sheet under the header, opened by the menu
+// button and closed by choosing a link or pressing Escape.
+const menuButton = document.querySelector('.menu-toggle');
+const setMenu = (open) => {
+  document.body.classList.toggle('menu-open', open);
+  menuButton.setAttribute('aria-expanded', String(open));
+  menuButton.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+};
+menuButton.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+nav.addEventListener('click', (event) => { if (event.target.closest('a')) setMenu(false); });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape') setMenu(false); });
+
 // Copy the email address, for anyone without a mail client set up.
 const copyButton = document.querySelector('.copy-email');
 if (copyButton) {
