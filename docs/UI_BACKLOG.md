@@ -134,3 +134,22 @@ Seen at 1024 and 375 wide, dark and light. Not checked: the clipboard
 success path (the preview browser refuses clipboard writes; the fallback
 that selects the address is what was seen), print output on paper, a
 real phone.
+
+## Round 3 (2026-10-13)
+
+Done: the eyebrow dot no longer wraps alone on a phone; a phone menu
+(every link in a sheet) replaces hiding Work and Projects; the email
+address is the contact section's single call to action; the light
+theme's ledger rows are readable; the AI card's rings carry Azure
+OpenAI, AI Search, Blob Storage and App Insights (and the outer ring now
+turns at the 70 s reverse it was written for, which a more specific
+shorthand had overridden); the at-a-glance numbers count up; section
+intros read from the left under a ruled kicker; the footer has the mark
+and profile icons.
+
+No change needed: the hero in the light theme (dark glass spheres read
+as intended), and smooth anchor scrolling (already `scroll-behavior`
+plus `scroll-margin-top`). Dropped from the footer: a "built with" line.
+
+Seen at 1024 and 375, dark and light. Not checked: a real phone, the
+menu with a screen reader.
