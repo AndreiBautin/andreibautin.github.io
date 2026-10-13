@@ -112,3 +112,12 @@ body::before{content:"";position:fixed;inset:0;z-index:89;pointer-events:none;ba
 body.light::after{opacity:.035}
 body.light::before{display:none}
 @media print{body::before,body::after{display:none}}
+/* The hero arrives in sequence: the eyebrow, then the name wiped up from beneath a mask with its blur clearing, then the tagline and the rest. */
+.hero>.hero-copy{animation:none}
+@keyframes hero-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes hero-wipe{from{opacity:0;clip-path:inset(0 0 100% 0);transform:translateY(.25em);filter:blur(8px)}to{opacity:1;clip-path:inset(-10% -5% -20% -5%);transform:none;filter:none}}
+.hero-copy>.eyebrow{animation:hero-rise .7s cubic-bezier(.16,1,.3,1) .05s both}
+.hero-copy>h1{animation:hero-wipe 1.1s cubic-bezier(.16,1,.3,1) .15s both}
+.hero-copy>.hero-tagline{animation:hero-rise .8s cubic-bezier(.16,1,.3,1) .45s both}
+.hero-copy>.hero-bottom{animation:hero-rise .8s cubic-bezier(.16,1,.3,1) .6s both}
+@media(prefers-reduced-motion:reduce){.hero-copy>*{animation:none}}
