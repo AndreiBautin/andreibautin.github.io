@@ -45,8 +45,28 @@ const markCurrent = () => {
     else link.removeAttribute('aria-current');
   });
 };
-window.addEventListener('scroll', markCurrent, { passive: true });
-markCurrent();
+// The current link sits on a pill that slides between links, and the
+// header tightens once the page has left the top.
+const nav = document.querySelector('nav');
+const header = document.querySelector('.nav-shell');
+nav.insertAdjacentHTML('afterbegin', '<span class="nav-pill" aria-hidden="true"></span>');
+const pill = nav.querySelector('.nav-pill');
+const placePill = () => {
+  const current = nav.querySelector('a[aria-current="true"]');
+  if (!current || current.offsetParent === null) { pill.style.opacity = '0'; return; }
+  pill.style.opacity = '1';
+  pill.style.width = `${current.offsetWidth}px`;
+  pill.style.transform = `translateX(${current.offsetLeft}px)`;
+};
+const onScroll = () => {
+  markCurrent();
+  header.classList.toggle('is-scrolled', window.scrollY > 24);
+  placePill();
+};
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', placePill);
+document.fonts.ready.then(placePill);
+onScroll();
 
 // A soft light follows the pointer over each project card. Only for a
 // real pointer: on touch there is nothing to follow.

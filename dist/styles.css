@@ -121,3 +121,16 @@ body.light::before{display:none}
 .hero-copy>.hero-tagline{animation:hero-rise .8s cubic-bezier(.16,1,.3,1) .45s both}
 .hero-copy>.hero-bottom{animation:hero-rise .8s cubic-bezier(.16,1,.3,1) .6s both}
 @media(prefers-reduced-motion:reduce){.hero-copy>*{animation:none}}
+/* The header tightens and darkens once scrolled, and the current section's link sits on a pill that slides between links (script.js). */
+.nav-shell{border-bottom-color:transparent;transition:background-color .3s ease,border-color .3s ease}
+.nav-shell.is-scrolled{background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom-color:var(--edge,var(--line))}
+.nav-inner{transition:height .35s cubic-bezier(.2,.7,.2,1)}
+.nav-shell.is-scrolled .nav-inner{height:64px}
+nav{position:relative;align-items:center;gap:6px}
+nav a{padding:8px 14px;border-radius:999px;z-index:1}
+nav a::after{display:none}
+.nav-pill{position:absolute;left:0;top:50%;height:34px;margin-top:-17px;border-radius:999px;background:color-mix(in srgb,var(--ink) 9%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 8%,transparent);opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1),opacity .3s;pointer-events:none}
+@media(max-width:760px){nav{gap:0}nav a{padding:8px 10px}.nav-shell.is-scrolled .nav-inner{height:58px}}
+@media(prefers-reduced-motion:reduce){.nav-pill,.nav-inner{transition:none}}
+/* Sticky needs the page itself to scroll: overflow-x hidden on html and body made body a scroll container that never scrolls, so the header scrolled away. clip trims the sideways overflow without that. */
+html,body{overflow-x:clip}
