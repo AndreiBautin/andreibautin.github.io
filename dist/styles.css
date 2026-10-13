@@ -234,3 +234,8 @@ body.light .match-tag{color:#0e7c8c}
 .timeline h4::before{background:var(--line);box-shadow:0 0 0 4px var(--bg);transition:background-color .5s,box-shadow .5s}
 .timeline h4.is-lit::before{background:var(--acid);box-shadow:0 0 0 4px var(--bg),0 0 16px var(--acid);animation:node-ping .9s cubic-bezier(.2,.7,.2,1)}
 @keyframes node-ping{0%{box-shadow:0 0 0 4px var(--bg),0 0 0 4px color-mix(in srgb,var(--acid) 60%,transparent)}100%{box-shadow:0 0 0 4px var(--bg),0 0 0 16px transparent,0 0 16px var(--acid)}}
+/* The ticker: larger type in the display face, edges that fade out, and it holds still under the pointer. */
+.ticker{padding:26px 0;font:500 clamp(1.1rem,2vw,1.6rem) var(--display);text-transform:none;letter-spacing:-.02em;color:var(--ink);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.ticker div{gap:44px}
+.ticker i{font-size:.7em;opacity:.8}
+.ticker:hover div{animation-play-state:paused}
