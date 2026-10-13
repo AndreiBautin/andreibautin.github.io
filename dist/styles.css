@@ -192,3 +192,9 @@ body.menu-open .menu-toggle span:last-child{transform:translateY(-3.25px) rotate
 .contact-email a{display:inline-flex;align-items:center;gap:.4em}
 .contact-email svg{width:.8em;height:.8em;fill:none;stroke:var(--acid);stroke-width:2;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
 .contact-email a:hover svg{transform:translateX(6px)}
+/* The ledger in the light theme: the rows were the dark theme's greys on a near-white card. */
+body.light .ledger li{color:#4a525a;border-bottom-color:#d3d9e0}
+body.light .ledger li span:nth-child(3){color:#0b0f14}
+body.light .ledger em{color:#0e7c8c}
+body.light .ledger em::before{background:#0e7c8c;box-shadow:none}
+body.light .match-tag{color:#0e7c8c}
