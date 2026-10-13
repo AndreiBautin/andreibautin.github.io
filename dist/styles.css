@@ -307,3 +307,6 @@ body.light .hero h1{background-image:linear-gradient(100deg,#0b0f14 20%,#0e7c8c 
 /* Solid, not inherited: a child of a backdrop-filtered header cannot blur the page behind it, so a translucent backstop let the page show through above the header. */
 .skip-link{top:calc(12px + env(safe-area-inset-top))}
 @media(max-width:760px){.nav-shell nav{height:calc(100svh - 100%)}}
+/* WebKit clips a backdrop-filtered element's descendants to its box, which hid the backstop above. The blur moves to its own layer behind the header's content so the header itself no longer clips. */
+.nav-shell{-webkit-backdrop-filter:none;backdrop-filter:none}
+.nav-shell::after{content:"";position:absolute;inset:0;z-index:-1;-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);pointer-events:none}
