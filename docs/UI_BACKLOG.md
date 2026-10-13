@@ -109,3 +109,28 @@ parallax to the pointer, in the dark-blue palette with the acid rim light.
 The Explore button sits under the copy, over nothing. On a phone the
 cluster drops below the button into space reserved for it. Seen at 1440 and
 375. Not seen: a real phone's frame rate.
+
+## Round 2: sleeker and more premium (2026-10-13)
+
+Done, one commit each: the `Live app` arrow (a CSS escape stored as a raw
+NUL byte, so it drew `�0→`; verify now fails on control characters),
+lit-glass cards with pill chips, a pointer spotlight on cards, film grain
+and a vignette, self-hosted fonts (no third-party requests left), a masked
+hero name reveal, scroll reveals for the proof strip, experience and
+contact, a magnetic Explore and Email button, a contact card with a
+copyable address, a skip link, and a print stylesheet.
+
+Found on the way: **the sticky header never stuck.** `overflow-x: hidden`
+on both `html` and `body` makes `body` a scroll container that does not
+scroll; `overflow-x: clip` fixes it. With it sticking, the header now
+compacts on scroll and marks the section with a sliding pill. Contact was
+never marked current (too short to reach the line); it is now at the
+bottom of the page. The light theme's ledger fade was dark.
+
+Dropped: the "dead space above the planet card" was the heading caught
+mid-fade, not a gap (70 px, like every intro).
+
+Seen at 1024 and 375 wide, dark and light. Not checked: the clipboard
+success path (the preview browser refuses clipboard writes; the fallback
+that selects the address is what was seen), print output on paper, a
+real phone.
