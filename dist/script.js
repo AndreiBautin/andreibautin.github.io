@@ -15,7 +15,8 @@ const observer = new IntersectionObserver((entries) => {
       if (!reduceMotion) {
         // A section's intro comes in as a sequence, kicker then heading,
         // 80 ms apart; everything else as one.
-        const parts = entry.target.classList.contains('section-intro') ? [...entry.target.children] : [entry.target];
+        const staggered = entry.target.matches('.section-intro, .proof, .resume-grid');
+        const parts = staggered ? [...entry.target.children] : [entry.target];
         parts.forEach((part, index) => part.animate([
           { opacity: 0, transform: 'translateY(24px)' },
           { opacity: 1, transform: 'translateY(0)' }
@@ -26,7 +27,7 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: .12 });
 
-document.querySelectorAll('.project, .about-grid, .contact-row, .section-intro').forEach((el) => observer.observe(el));
+document.querySelectorAll('.project, .about-grid, .contact-row, .section-intro, .proof, .resume-details > h2, .resume-grid, .contact-note').forEach((el) => observer.observe(el));
 
 // The nav marks the section in view: each section's link is current while
 // its top half crosses the upper part of the viewport.
