@@ -52,6 +52,19 @@ if (proof && !reduceMotion) {
   }, { threshold: .4 }).observe(proof);
 }
 
+// Each role's node on the experience timeline lights as it scrolls past
+// the middle of the screen, and stays lit.
+const nodes = document.querySelectorAll('.timeline h4');
+if (reduceMotion) nodes.forEach((node) => node.classList.add('is-lit'));
+else {
+  const nodeObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) { entry.target.classList.add('is-lit'); nodeObserver.unobserve(entry.target); }
+    });
+  }, { rootMargin: '0px 0px -45% 0px' });
+  nodes.forEach((node) => nodeObserver.observe(node));
+}
+
 // The nav marks the section in view: each section's link is current while
 // its top half crosses the upper part of the viewport.
 const navLinks = [...document.querySelectorAll('nav a[href^="#"]')];

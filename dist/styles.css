@@ -230,3 +230,7 @@ body.light .match-tag{color:#0e7c8c}
 .project:not(.project-large) .visual-side.thumb img{top:30px;height:calc(100% - 30px);transform-origin:50% 100%;transform:rotateX(5deg) scale(.96);transition:transform .9s cubic-bezier(.2,.7,.2,1)}
 .project:not(.project-large) a.visual-side.thumb:hover img{transform:none}
 @media(prefers-reduced-motion:reduce){.project:not(.project-large) .visual-side.thumb img{transform:none;transition:none}}
+/* Timeline nodes wait unlit and light, with a ring pulse, as they pass the middle of the screen (script.js). */
+.timeline h4::before{background:var(--line);box-shadow:0 0 0 4px var(--bg);transition:background-color .5s,box-shadow .5s}
+.timeline h4.is-lit::before{background:var(--acid);box-shadow:0 0 0 4px var(--bg),0 0 16px var(--acid);animation:node-ping .9s cubic-bezier(.2,.7,.2,1)}
+@keyframes node-ping{0%{box-shadow:0 0 0 4px var(--bg),0 0 0 4px color-mix(in srgb,var(--acid) 60%,transparent)}100%{box-shadow:0 0 0 4px var(--bg),0 0 0 16px transparent,0 0 16px var(--acid)}}
