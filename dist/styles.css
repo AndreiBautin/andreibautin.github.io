@@ -198,3 +198,12 @@ body.light .ledger li span:nth-child(3){color:#0b0f14}
 body.light .ledger em{color:#0e7c8c}
 body.light .ledger em::before{background:#0e7c8c;box-shadow:none}
 body.light .match-tag{color:#0e7c8c}
+/* The AI card's orbits carry the system's parts: each label sits on its ring at an angle and counter-turns so it stays upright as the ring turns. */
+.orbit-label{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(var(--a)) translateY(calc(var(--r) * -1)) rotate(calc(var(--a) * -1))}
+.orbit-a{--r:180px}.orbit-b{--r:285px}
+.orbit-label i{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font:400 .68rem var(--mono);font-style:normal;text-transform:uppercase;letter-spacing:.1em;color:var(--ink);padding:6px 11px;border:1px solid var(--edge-top);border-radius:999px;background:color-mix(in srgb,var(--paper) 85%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:orbit-counter 40s linear infinite}
+.visual-ai .orbit-b{animation-duration:70s;animation-direction:reverse}
+.orbit-b .orbit-label i{animation-duration:70s;animation-direction:reverse}
+@keyframes orbit-counter{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@media(prefers-reduced-motion:reduce){.orbit-label i{animation:none}}
+@media(max-width:760px){.orbit-b .orbit-label{display:none}}
