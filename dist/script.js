@@ -29,6 +29,29 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.project, .about-grid, .contact-row, .section-intro, .proof, .resume-details > h2, .resume-grid, .contact-card').forEach((el) => observer.observe(el));
 
+// The at-a-glance numbers count up from zero the first time they are
+// seen. The final text is in the HTML, so without script they just show.
+const proof = document.querySelector('.proof');
+if (proof && !reduceMotion) {
+  const numbers = [...proof.querySelectorAll('b')].map((el) => {
+    const [, value, suffix] = el.textContent.match(/^(\d+)(.*)$/) || [];
+    return value ? { el, value: Number(value), suffix } : null;
+  }).filter(Boolean);
+  numbers.forEach((n) => { n.el.textContent = `0${n.suffix}`; });
+  new IntersectionObserver((entries, self) => {
+    if (!entries[0].isIntersecting) return;
+    self.disconnect();
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / 1200);
+      const eased = 1 - Math.pow(1 - t, 3);
+      numbers.forEach((n) => { n.el.textContent = `${Math.round(n.value * eased)}${n.suffix}`; });
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, { threshold: .4 }).observe(proof);
+}
+
 // The nav marks the section in view: each section's link is current while
 // its top half crosses the upper part of the viewport.
 const navLinks = [...document.querySelectorAll('nav a[href^="#"]')];
