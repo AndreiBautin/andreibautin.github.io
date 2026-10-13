@@ -303,15 +303,6 @@ body.light .hero h1{background-image:linear-gradient(100deg,#0b0f14 20%,#0e7c8c 
 .contact-links a small{font:400 .68rem var(--mono);letter-spacing:.06em;color:var(--muted);margin-left:6px}
 /* iOS Safari lets the page show through the status-bar strip above a top:0 sticky header. With viewport-fit=cover the page reaches the screen's top edge, and the header pads itself by the safe-area inset so its own background fills the strip; a backstop extends that background upward for browsers that still leave a gap. */
 .nav-shell{padding-top:env(safe-area-inset-top)}
-.nav-shell::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:120px;background:var(--bg);pointer-events:none}
-/* Solid, not inherited: a child of a backdrop-filtered header cannot blur the page behind it, so a translucent backstop let the page show through above the header. */
+.nav-shell::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:120px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;pointer-events:none}
 .skip-link{top:calc(12px + env(safe-area-inset-top))}
 @media(max-width:760px){.nav-shell nav{height:calc(100svh - 100%)}}
-/* WebKit clips a backdrop-filtered element's descendants to its box, which hid the backstop above. The blur moves to its own layer behind the header's content so the header itself no longer clips. */
-.nav-shell{-webkit-backdrop-filter:none;backdrop-filter:none}
-.nav-shell::after{content:"";position:absolute;inset:0;z-index:-1;-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);pointer-events:none}
-/* iOS 26 Safari paints the status-bar strip itself, tinted from a top fixed/sticky element's background colour; a translucent colour lets page content show through there. On phones the header is opaque. */
-@media(max-width:760px){.nav-shell,.nav-shell.is-scrolled{background:var(--bg)}}
-/* On iOS 26 Safari the layout viewport starts below the status bar and env(safe-area-inset-top) is 0, so the strip under the clock lies above top:0 and shows whatever scrolled past. This fixed bar reaches 200px above the viewport to cover it, ending behind the opaque phone header so it stays invisible. */
-.status-bar{position:fixed;left:0;right:0;top:-200px;height:calc(258px + env(safe-area-inset-top));z-index:49;background:var(--bg);pointer-events:none}
-@media print,(min-width:761px){.status-bar{display:none}}
