@@ -300,3 +300,4 @@ body.light .match-tag{color:#0a5f6b}
 .visual-migrate:hover .storage.two{box-shadow:0 0 60px color-mix(in srgb,var(--acid) 35%,transparent)}
 /* In the light theme the name's gradient runs from ink to a deep teal inside the letters, rather than toward a pale acid that ended off the word. */
 body.light .hero h1{background-image:linear-gradient(100deg,#0b0f14 20%,#0e7c8c 95%)}
+.contact-links a small{font:400 .68rem var(--mono);letter-spacing:.06em;color:var(--muted);margin-left:6px}
