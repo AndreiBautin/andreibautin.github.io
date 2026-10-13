@@ -280,3 +280,6 @@ body.light .project-copy p a.pill-live{color:#fff}
 .chips span.in-work{color:var(--ink);border-color:color-mix(in srgb,var(--acid) 55%,transparent);background:color-mix(in srgb,var(--acid) 9%,transparent)}
 .chips-key{display:flex;align-items:center;gap:10px;margin:-4px 0 8px;font:400 .72rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
 .chips-key i{width:8px;height:8px;border-radius:50%;background:var(--acid);box-shadow:0 0 10px var(--acid)}
+/* Contrast fixes found by an audit of every text node in both themes (WCAG AA). */
+body.light .skip-link{color:#fff}
+body.light .match-tag{color:#0a5f6b}
