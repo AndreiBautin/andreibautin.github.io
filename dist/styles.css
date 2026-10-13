@@ -270,3 +270,9 @@ body.light .project-copy p a.pill-live{color:#fff}
 /* The theme's circular reveal (script.js): the snapshots swap without the default cross-fade, and nothing else transitions during it. */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 .theme-flipping *{transition:none!important}
+/* The ring that trails the pointer (script.js): small and faint, larger and acid over something clickable. */
+.cursor-ring{position:fixed;left:0;top:0;z-index:95;pointer-events:none;width:0;height:0;opacity:0;transition:opacity .3s}
+.cursor-ring.is-on{opacity:1}
+.cursor-ring::before{content:"";position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 35%,transparent);transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .3s,background-color .3s}
+.cursor-ring.is-over::before{transform:scale(1.8);border-color:var(--acid);background:color-mix(in srgb,var(--acid) 8%,transparent)}
+@media print{.cursor-ring{display:none}}

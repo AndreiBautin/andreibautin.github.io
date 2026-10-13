@@ -169,6 +169,28 @@ if (copyButton) {
   });
 }
 
+// A soft ring trails the pointer and swells over anything clickable. The
+// system cursor stays: this is decoration, not a replacement.
+if (finePointer && !reduceMotion) {
+  const ring = document.createElement('div');
+  ring.className = 'cursor-ring';
+  ring.setAttribute('aria-hidden', 'true');
+  document.body.append(ring);
+  let x = -100, y = -100, rx = x, ry = y;
+  addEventListener('pointermove', (event) => {
+    x = event.clientX; y = event.clientY;
+    ring.classList.toggle('is-over', !!event.target.closest('a, button, .project-visual'));
+    ring.classList.add('is-on');
+  }, { passive: true });
+  document.addEventListener('pointerleave', () => ring.classList.remove('is-on'));
+  const follow = () => {
+    rx += (x - rx) * 0.2; ry += (y - ry) * 0.2;
+    ring.style.transform = `translate(${rx}px, ${ry}px)`;
+    requestAnimationFrame(follow);
+  };
+  requestAnimationFrame(follow);
+}
+
 // The Explore button leans toward the pointer and springs back.
 if (finePointer && !reduceMotion) {
   document.querySelectorAll('.round-link').forEach((button) => {
