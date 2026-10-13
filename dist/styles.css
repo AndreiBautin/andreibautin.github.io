@@ -239,3 +239,9 @@ body.light .match-tag{color:#0e7c8c}
 .ticker div{gap:44px}
 .ticker i{font-size:.7em;opacity:.8}
 .ticker:hover div{animation-play-state:paused}
+/* Where the About panel meets the page: a hairline that brightens toward the middle, with a faint glow spilling into the panel. */
+.about{position:relative;overflow:hidden}
+.about::before,.about::after{content:"";position:absolute;left:0;right:0;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--acid) 55%,transparent) 50%,transparent)}
+.about::before{top:-1px;box-shadow:0 0 60px 10px color-mix(in srgb,var(--acid) 10%,transparent)}
+.about::after{bottom:-1px}
+body.light .about::before{box-shadow:none}
