@@ -194,3 +194,17 @@ phone) and guarded (`minmax(0, 1fr)` tracks).
 
 Not checked: the theme circle mid-animation (too quick to capture), a
 screen reader on the new link names, a real phone.
+
+## Round 6 (2026-10-13)
+
+Done: one spacing rhythm for all six project cards on a phone (the wide
+ones kept their desktop gap); the replication and payments visuals run
+three times as fast under the pointer (`playbackRate`, so no jump); the
+name's gradient is ink to deep teal in the light theme; the resume PDF
+was checked against the site (every fact matches) and its button says
+"PDF · 54 KB"; the favicon follows the theme and the tab title names the
+section being read; a branded `404.html` (live: a missing path answers
+404 with it).
+
+Not checked: the 404 page in the light theme on the live site, a real
+phone.
