@@ -195,3 +195,7 @@ if (stars) {
   requestAnimationFrame(draw);
   window.addEventListener('resize', () => { if (reduceMotion) requestAnimationFrame(draw); });
 }
+
+// iOS Safari only applies :active to a touched element when some touch
+// listener exists on the page; this empty one switches the press styles on.
+document.addEventListener('touchstart', () => {}, { passive: true });

@@ -245,3 +245,9 @@ body.light .match-tag{color:#0e7c8c}
 .about::before{top:-1px;box-shadow:0 0 60px 10px color-mix(in srgb,var(--acid) 10%,transparent)}
 .about::after{bottom:-1px}
 body.light .about::before{box-shadow:none}
+/* On touch screens, where hover never comes, pressing a card, button or pill gives way slightly. */
+@media(hover:none){
+  .project-visual,.round-link,.copy-email,.contact-links a,.footer-social a,.menu-toggle,.theme-toggle{transition:transform .15s ease}
+  .project-visual:active,.contact-links a:active,.footer-social a:active,.copy-email:active,.menu-toggle:active,.theme-toggle:active{transform:scale(.97)}
+  .round-link:active{transform:scale(.94)}
+}
