@@ -134,3 +134,6 @@ nav a::after{display:none}
 @media(prefers-reduced-motion:reduce){.nav-pill,.nav-inner{transition:none}}
 /* Sticky needs the page itself to scroll: overflow-x hidden on html and body made body a scroll container that never scrolls, so the header scrolled away. clip trims the sideways overflow without that. */
 html,body{overflow-x:clip}
+/* The calls to action are pulled toward the pointer (script.js) and spring back. */
+.round-link,.contact-row a{transition:transform .5s cubic-bezier(.2,1.4,.4,1),box-shadow .3s}
+.round-link:hover{box-shadow:0 0 0 8px color-mix(in srgb,var(--acid) 18%,transparent),0 12px 40px -8px color-mix(in srgb,var(--acid) 55%,transparent)}

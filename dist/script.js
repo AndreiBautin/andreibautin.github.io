@@ -82,6 +82,19 @@ if (finePointer && !reduceMotion) {
   });
 }
 
+// The two calls to action lean toward the pointer and spring back.
+if (finePointer && !reduceMotion) {
+  document.querySelectorAll('.round-link, .contact-row a').forEach((button) => {
+    button.addEventListener('pointermove', (event) => {
+      const box = button.getBoundingClientRect();
+      const dx = (event.clientX - box.left - box.width / 2) * 0.25;
+      const dy = (event.clientY - box.top - box.height / 2) * 0.25;
+      button.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+    button.addEventListener('pointerleave', () => { button.style.transform = ''; });
+  });
+}
+
 // A star field behind the hero: a few hundred points by a hash, drawn
 // once, twinkling slowly unless motion is reduced.
 const stars = document.querySelector('.stars');
