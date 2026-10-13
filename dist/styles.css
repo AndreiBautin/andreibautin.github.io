@@ -207,3 +207,7 @@ body.light .match-tag{color:#0e7c8c}
 @keyframes orbit-counter{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(-360deg)}}
 @media(prefers-reduced-motion:reduce){.orbit-label i{animation:none}}
 @media(max-width:760px){.orbit-b .orbit-label{display:none}}
+/* Section intros read from the left like the rest of the page: the kicker above the heading with a short acid rule, instead of the kicker far left and the heading pushed far right. */
+.section-intro{display:block}
+.section-intro .kicker,.resume-details>.kicker,.contact>.kicker,.about .kicker{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.section-intro .kicker::before,.resume-details>.kicker::before,.contact>.kicker::before,.about .kicker::before{content:"";width:28px;height:1px;background:var(--acid)}
