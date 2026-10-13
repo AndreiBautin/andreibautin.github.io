@@ -100,3 +100,6 @@ a.project-visual:hover{box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 8%,transp
 .chips span,.tags span{border-radius:999px;border-color:var(--edge);padding:5px 12px}
 .visual-side.thumb p{border-radius:10px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);background:rgba(10,14,19,.6)}
 .visual-match .match-card{border-radius:14px}
+/* A light that follows the pointer over a card (script.js adds the span). */
+.spotlight{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .4s;background:radial-gradient(420px circle at var(--spot-x,50%) var(--spot-y,50%),color-mix(in srgb,var(--acid) 14%,transparent),transparent 60%)}
+.project-visual:hover .spotlight{opacity:1}

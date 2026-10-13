@@ -47,6 +47,20 @@ const markCurrent = () => {
 window.addEventListener('scroll', markCurrent, { passive: true });
 markCurrent();
 
+// A soft light follows the pointer over each project card. Only for a
+// real pointer: on touch there is nothing to follow.
+const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+if (finePointer && !reduceMotion) {
+  document.querySelectorAll('.project-visual').forEach((card) => {
+    card.insertAdjacentHTML('beforeend', '<span class="spotlight" aria-hidden="true"></span>');
+    card.addEventListener('pointermove', (event) => {
+      const box = card.getBoundingClientRect();
+      card.style.setProperty('--spot-x', `${event.clientX - box.left}px`);
+      card.style.setProperty('--spot-y', `${event.clientY - box.top}px`);
+    });
+  });
+}
+
 // A star field behind the hero: a few hundred points by a hash, drawn
 // once, twinkling slowly unless motion is reduced.
 const stars = document.querySelector('.stars');
