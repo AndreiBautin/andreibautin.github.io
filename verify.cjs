@@ -23,6 +23,8 @@ for (const file of ['styles.css', 'script.js', 'hero.js']) {
 for (const path of ['dist/index.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js']) {
   const text = fs.readFileSync(path, 'utf8');
   assert(!text.includes('\ufffd'), 'Invalid Unicode');
+  // A CSS escape like "\00a0" once landed as a raw NUL byte and drew "\ufffd0\u2192".
+  assert(!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text), `${path}: control character`);
   assert(!/[\t ]+$/m.test(text), 'Trailing whitespace');
 }
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));

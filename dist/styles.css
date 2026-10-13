@@ -18,7 +18,7 @@ a.project-visual{display:block;transition:transform .5s cubic-bezier(.2,.7,.2,1)
 .visual-ai .core{animation:core-breathe 4s ease-in-out infinite}@keyframes core-breathe{50%{box-shadow:0 0 110px #4aeaff55;transform:scale(1.04)}}
 /* Links in copy: the underline grows from the left, and an arrow slides after a live-app link. */
 .project-copy p a,.contact-note a{text-decoration:none;background-image:linear-gradient(var(--acid),var(--acid));background-repeat:no-repeat;background-size:100% 1px;background-position:0 100%;transition:background-size .3s cubic-bezier(.2,.7,.2,1),color .2s;padding-bottom:1px}.project-copy p a:hover,.contact-note a:hover{background-size:0 1px;color:var(--ink)}
-.project-copy p a[href^="http"]:not([href*="github"])::after{content:" a0→";display:inline-block;transition:transform .3s}.project-copy p a[href^="http"]:not([href*="github"]):hover::after{transform:translateX(4px)}
+.project-copy p a[href^="http"]:not([href*="github"])::after{content:"\00a0→";display:inline-block;transition:transform .3s}.project-copy p a[href^="http"]:not([href*="github"]):hover::after{transform:translateX(4px)}
 @media(prefers-reduced-motion:reduce){.visual-ai .orbit,.visual-ai .core,.ticker div,.stream i{animation:none}.hero>*{animation:none}a.project-visual,a.project-visual img,nav a::after{transition:none}}
 /* Keyboard focus in the site's own colour, not the browser's ring. */
 :focus-visible{outline:2px solid var(--acid);outline-offset:3px;border-radius:2px}
