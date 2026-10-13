@@ -1,1 +1,5 @@
 *.pdf binary
+# The stamp hashes file bytes; CI checks out LF, so the working copy must too.
+dist/*.css text eol=lf
+dist/*.js text eol=lf
+dist/*.html text eol=lf
