@@ -1,9 +1,11 @@
 // The hero's visual: a cluster of faceted spheres, each wearing the mark of
 // one technology, floating in the dark over the star field. Three.js from
-// ./vendor, loaded as a module after the page has painted, so a slow device
-// still reads the text at once. Nothing random: every sphere's place, drift
-// and spin come from its index.
-import * as THREE from './vendor/three.module.min.js';
+// ./vendor, fetched only once the page has loaded: a static import started
+// its 690 KB download at once, competing with the fonts and images on a slow
+// connection. The canvas fades in when ready. Nothing random: every
+// sphere's place, drift and spin come from its index.
+if (document.readyState !== 'complete') await new Promise((resolve) => addEventListener('load', resolve, { once: true }));
+const THREE = await import('./vendor/three.module.min.js');
 
 const canvas = document.querySelector('.hero-tech');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
