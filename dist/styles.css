@@ -257,3 +257,13 @@ body.light .about::before{box-shadow:none}
 /* Project titles read as headlines: larger, tighter, and largest on the wide card. */
 .project-copy h3{font-size:clamp(1.55rem,2.2vw,2.2rem);line-height:1.08;letter-spacing:-.045em;font-weight:600;text-wrap:balance}
 .project-large .project-copy h3{font-size:clamp(1.8rem,3vw,3rem)}
+/* Live app and Source as a pair of buttons under each description: the live one filled, the source one outlined. */
+.project-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.project-copy p a.pill-link{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid var(--edge-top);background-image:none;color:var(--ink);font:500 .75rem var(--mono);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;transition:border-color .2s,color .2s,background-color .2s}
+.project-copy p a.pill-link:hover{border-color:var(--acid);color:var(--acid)}
+.project-copy p a.pill-live{background:var(--acid);border-color:var(--acid);color:#080c11}
+.project-copy p a.pill-live:hover{background:color-mix(in srgb,var(--acid) 85%,#fff);color:#080c11}
+body.light .project-copy p a.pill-live{color:#fff}
+.project-copy p a.pill-link::after{content:"\2192";display:inline-block;transition:transform .3s}
+.project-copy p a.pill-link:not(.pill-live)::after{content:"\2197"}
+.project-copy p a.pill-link:hover::after{transform:translateX(3px)}
