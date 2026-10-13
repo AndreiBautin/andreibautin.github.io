@@ -169,6 +169,17 @@ if (copyButton) {
   });
 }
 
+// The replication and payments visuals run faster under the pointer:
+// messages stream quicker, payments clear quicker. playbackRate keeps the
+// running animation in place; changing its duration would make it jump.
+if (finePointer && !reduceMotion) {
+  document.querySelectorAll('.visual-migrate, .visual-match').forEach((card) => {
+    const animations = () => [...card.querySelectorAll('.stream i, .ledger')].flatMap((el) => el.getAnimations());
+    card.addEventListener('pointerenter', () => animations().forEach((a) => a.updatePlaybackRate(3)));
+    card.addEventListener('pointerleave', () => animations().forEach((a) => a.updatePlaybackRate(1)));
+  });
+}
+
 // A soft ring trails the pointer and swells over anything clickable. The
 // system cursor stays: this is decoration, not a replacement.
 if (finePointer && !reduceMotion) {

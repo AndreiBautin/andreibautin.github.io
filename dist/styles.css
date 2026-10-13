@@ -295,3 +295,6 @@ body.light .match-tag{color:#0a5f6b}
   .project-copy .tags{margin-top:18px}
 }
 @media(max-width:760px){.project-copy>p.tags,.project-large .project-copy>p.tags{margin-top:18px}}
+/* Under the pointer the replication card's target store glows brighter as the stream speeds up (script.js). */
+.storage.two{transition:box-shadow .4s,border-color .4s}
+.visual-migrate:hover .storage.two{box-shadow:0 0 60px color-mix(in srgb,var(--acid) 35%,transparent)}
