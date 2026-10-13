@@ -20,7 +20,7 @@ for (const file of ['styles.css', 'script.js', 'hero.js']) {
   const hash = require('crypto').createHash('sha256').update(fs.readFileSync('dist/' + file)).digest('hex').slice(0, 10);
   assert(html.includes(`./${file}?v=${hash}`), `${file} link must be stamped ./${file}?v=${hash} (run node scripts/stamp.cjs)`);
 }
-for (const path of ['dist/index.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js']) {
+for (const path of ['dist/index.html', 'dist/404.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js']) {
   const text = fs.readFileSync(path, 'utf8');
   assert(!text.includes('\ufffd'), 'Invalid Unicode');
   // A CSS escape like "\00a0" once landed as a raw NUL byte and drew "\ufffd0\u2192".
