@@ -151,3 +151,20 @@ html,body{overflow-x:clip}
 .contact-links a{border:1px solid var(--edge);border-radius:999px;padding:9px 16px;font-size:.92rem;transition:border-color .2s,color .2s,background-color .2s}
 .contact-links a:hover{border-color:var(--acid);color:var(--acid);background:color-mix(in srgb,var(--acid) 8%,transparent)}
 @media(max-width:760px){.contact-card{padding:24px;margin-top:40px}}
+/* A skip link for keyboard users: off screen until focused. */
+.skip-link{position:fixed;left:16px;top:12px;z-index:100;padding:10px 16px;border-radius:999px;background:var(--acid);color:#080c11;font:500 .78rem var(--mono);text-transform:uppercase;letter-spacing:.1em;transform:translateY(-200%);transition:transform .2s}
+.skip-link:focus{transform:none}
+
+/* Printing: black on white, no canvases, ticker or chrome, links followed by their address. */
+@media print{
+  :root,body,body.light{--bg:#fff;--paper:#fff;--ink:#000;--muted:#333;--line:#bbb;--acid:#000}
+  body{background:#fff;color:#000}
+  .nav-shell,.skip-link,.ticker,.stars,.hero-tech,.round-link,.project-visual,.copy-email,.copy-status,.contact-row a,footer a{display:none!important}
+  .hero-copy{min-height:0;padding:0 0 24px}
+  .hero h1{background:none;color:#000}
+  .section-pad{padding-top:28px;padding-bottom:28px}
+  .proof,.ticker,.work,.about,.resume-details,.contact,footer,.contact-card{background:#fff!important;box-shadow:none}
+  .project,.resume-grid>div{break-inside:avoid}
+  .project-copy p a[href^="http"]::after,.contact-links a[href^="http"]::after{content:" (" attr(href) ")";font-size:.8em}
+  *{animation:none!important;transition:none!important}
+}
