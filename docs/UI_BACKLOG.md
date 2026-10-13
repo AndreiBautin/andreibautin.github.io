@@ -208,3 +208,22 @@ section being read; a branded `404.html` (live: a missing path answers
 
 Not checked: the 404 page in the light theme on the live site, a real
 phone.
+
+## Round 7 (2026-10-13)
+
+From a real iPhone: the page showed through a strip between the status
+bar and the sticky header. Now `viewport-fit=cover` with the header
+padded by `env(safe-area-inset-top)` and its background extended upward.
+Not yet confirmed on the phone (an emulator's inset is 0).
+
+Done: the hero's WebGL spheres and star canvas stop drawing while
+scrolled away (62 frames a second in the hero, 0 below it). Lighthouse
+on the live site, mobile: Accessibility, Best Practices and SEO 100;
+the one accessibility failure (label-in-name, six links) is fixed.
+Performance ran 90, 77, 64 and 75 on the same code: total blocking time
+swings 180 ms to 1.3 s, mostly the hero's WebGL setup, which headless
+Chrome renders in software. Left alone: cache lifetimes (GitHub Pages
+sets them) and "unused JavaScript" (Three.js, unbundled).
+
+Skipped: a 3Cloud logo and company line under Experience; no logo file
+to use, and the description of an employer is the owner's to write.
