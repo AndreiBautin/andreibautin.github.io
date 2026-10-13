@@ -286,3 +286,12 @@ body.light .match-tag{color:#0a5f6b}
 /* On a phone the project column is the screen's width, not its widest item's: a bare 1fr track let the copy's intrinsic width (1300 px) push text off the right edge. */
 @media(max-width:760px){.project-grid{grid-template-columns:minmax(0,1fr)}.project-copy{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.project-large .visual-side.thumb{min-height:0;aspect-ratio:4/3}.project-large .visual-side.thumb img{position:absolute;height:100%;object-fit:cover}}
+/* Phone spacing on project cards: one rhythm for all six (the wide ones had twice the gap under the title), and the copy closer to its picture. */
+@media(max-width:760px){
+  .project-copy,.project-large .project-copy{gap:0;margin-top:20px}
+  .project-copy h3{margin-bottom:14px}
+  .project-copy .meta{margin-bottom:8px}
+  .project-copy>p{margin-bottom:0}
+  .project-copy .tags{margin-top:18px}
+}
+@media(max-width:760px){.project-copy>p.tags,.project-large .project-copy>p.tags{margin-top:18px}}
