@@ -301,3 +301,8 @@ body.light .match-tag{color:#0a5f6b}
 /* In the light theme the name's gradient runs from ink to a deep teal inside the letters, rather than toward a pale acid that ended off the word. */
 body.light .hero h1{background-image:linear-gradient(100deg,#0b0f14 20%,#0e7c8c 95%)}
 .contact-links a small{font:400 .68rem var(--mono);letter-spacing:.06em;color:var(--muted);margin-left:6px}
+/* iOS Safari lets the page show through the status-bar strip above a top:0 sticky header. With viewport-fit=cover the page reaches the screen's top edge, and the header pads itself by the safe-area inset so its own background fills the strip; a backstop extends that background upward for browsers that still leave a gap. */
+.nav-shell{padding-top:env(safe-area-inset-top)}
+.nav-shell::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:120px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;pointer-events:none}
+.skip-link{top:calc(12px + env(safe-area-inset-top))}
+@media(max-width:760px){.nav-shell nav{height:calc(100svh - 100%)}}
