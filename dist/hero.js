@@ -5,6 +5,9 @@
 // connection. The canvas fades in when ready. Nothing random: every
 // sphere's place, drift and spin come from its index.
 if (document.readyState !== 'complete') await new Promise((resolve) => addEventListener('load', resolve, { once: true }));
+// Then wait for the main thread to go quiet, so parsing Three.js and
+// compiling shaders do not land on the page's first interactions.
+await new Promise((resolve) => (window.requestIdleCallback ? requestIdleCallback(resolve, { timeout: 1500 }) : setTimeout(resolve, 300)));
 const THREE = await import('./vendor/three.module.min.js');
 
 const canvas = document.querySelector('.hero-tech');
@@ -35,8 +38,13 @@ const logoTexture = (name) => fetch(`./images/tech/${name}.svg`).then((r) => r.t
 }));
 
 const start = async () => {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // On dense phone screens antialiasing is invisible and costly, and 1.5x
+  // is indistinguishable from 3x on soft dark spheres: about a quarter of
+  // the pixels to shade.
+  const dense = devicePixelRatio >= 2;
+  const phone = matchMedia('(max-width: 760px)').matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !dense, alpha: true, powerPreference: 'low-power' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, phone ? 1.5 : 2));
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
   camera.position.set(0, 0, 14);
