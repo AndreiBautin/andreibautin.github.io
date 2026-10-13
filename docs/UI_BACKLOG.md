@@ -227,3 +227,12 @@ sets them) and "unused JavaScript" (Three.js, unbundled).
 
 Skipped: a 3Cloud logo and company line under Experience; no logo file
 to use, and the description of an employer is the owner's to write.
+
+## Round 8 (2026-10-13)
+
+The hero's 3D waits for an idle moment after load, renders at 1.5x on
+phones and skips antialiasing on dense screens. Lighthouse mobile,
+three runs each on the live site: before 77 / 64 / 75 (blocking time
+0.86 to 1.3 s, LCP 2.3 to 3.6 s); after 88 / 79 / 82 (blocking time
+0.46 to 0.78 s, LCP 1.6 to 2.2 s). Still noisy, still mostly WebGL setup
+in a software-rendered headless browser.
