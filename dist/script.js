@@ -247,3 +247,16 @@ if (stars) {
 // iOS Safari only applies :active to a touched element when some touch
 // listener exists on the page; this empty one switches the press styles on.
 document.addEventListener('touchstart', () => {}, { passive: true });
+
+// The tab carries the site's theme in its icon, and names the section
+// being read once the page has left the hero.
+const icon = document.querySelector('link[rel="icon"]');
+const baseTitle = document.title;
+const syncTab = () => {
+  icon.href = document.body.classList.contains('light') ? './images/favicon-light.svg' : './images/favicon.svg';
+  const current = document.querySelector('nav a[aria-current="true"]');
+  document.title = current ? `${current.textContent} · Andrei Bautin` : baseTitle;
+};
+new MutationObserver(syncTab).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+new MutationObserver(syncTab).observe(nav, { attributes: true, subtree: true, attributeFilter: ['aria-current'] });
+syncTab();
