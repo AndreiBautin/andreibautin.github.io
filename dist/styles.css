@@ -211,3 +211,12 @@ body.light .match-tag{color:#0e7c8c}
 .section-intro{display:block}
 .section-intro .kicker,.resume-details>.kicker,.contact>.kicker,.about .kicker{display:flex;align-items:center;gap:14px;margin-bottom:28px}
 .section-intro .kicker::before,.resume-details>.kicker::before,.contact>.kicker::before,.about .kicker::before{content:"";width:28px;height:1px;background:var(--acid)}
+/* The footer signs off: the mark, one line, and the two profiles as icon buttons. */
+.site-footer{height:auto;padding-block:36px;gap:20px;flex-wrap:wrap}
+.site-footer .mark{font:700 1.25rem var(--display);letter-spacing:-.06em;text-transform:none;color:var(--ink)}
+.footer-social{display:flex;align-items:center;gap:10px}
+.footer-social a{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--edge);border-radius:50%;color:var(--muted);transition:color .2s,border-color .2s}
+.footer-social a:hover{color:var(--acid);border-color:var(--acid)}
+.footer-social svg{width:16px;height:16px;fill:currentColor}
+.footer-social .to-top{width:auto;padding:0 14px;border-radius:999px}
+@media(max-width:760px){.site-footer span:nth-child(2){display:inline}.site-footer{justify-content:space-between}}
