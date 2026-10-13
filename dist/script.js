@@ -27,7 +27,7 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: .12 });
 
-document.querySelectorAll('.project, .about-grid, .contact-row, .section-intro, .proof, .resume-details > h2, .resume-grid, .contact-note').forEach((el) => observer.observe(el));
+document.querySelectorAll('.project, .about-grid, .contact-row, .section-intro, .proof, .resume-details > h2, .resume-grid, .contact-card').forEach((el) => observer.observe(el));
 
 // The nav marks the section in view: each section's link is current while
 // its top half crosses the upper part of the viewport.
@@ -39,6 +39,9 @@ const markCurrent = () => {
   for (const section of sections) {
     if (section.getBoundingClientRect().top <= line) current = section;
   }
+  // The last section is too short to reach the line; at the bottom of the
+  // page it is the one being read.
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) current = sections[sections.length - 1];
   navLinks.forEach((link) => {
     const isCurrent = current !== null && link.getAttribute('href') === `#${current.id}`;
     if (isCurrent) link.setAttribute('aria-current', 'true');
@@ -79,6 +82,27 @@ if (finePointer && !reduceMotion) {
       card.style.setProperty('--spot-x', `${event.clientX - box.left}px`);
       card.style.setProperty('--spot-y', `${event.clientY - box.top}px`);
     });
+  });
+}
+
+// Copy the email address, for anyone without a mail client set up.
+const copyButton = document.querySelector('.copy-email');
+if (copyButton) {
+  const status = document.querySelector('.copy-status');
+  copyButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(copyButton.dataset.email);
+      status.textContent = 'Copied';
+    } catch {
+      // No clipboard permission: select the address so a keystroke copies it.
+      const range = document.createRange();
+      range.selectNodeContents(document.querySelector('.contact-email a'));
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+      status.textContent = 'Selected, press Ctrl+C';
+    }
+    status.classList.add('is-shown');
+    setTimeout(() => status.classList.remove('is-shown'), 1800);
   });
 }
 
