@@ -283,3 +283,6 @@ body.light .project-copy p a.pill-live{color:#fff}
 /* Contrast fixes found by an audit of every text node in both themes (WCAG AA). */
 body.light .skip-link{color:#fff}
 body.light .match-tag{color:#0a5f6b}
+/* On a phone the project column is the screen's width, not its widest item's: a bare 1fr track let the copy's intrinsic width (1300 px) push text off the right edge. */
+@media(max-width:760px){.project-grid{grid-template-columns:minmax(0,1fr)}.project-copy{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.project-large .visual-side.thumb{min-height:0;aspect-ratio:4/3}.project-large .visual-side.thumb img{position:absolute;height:100%;object-fit:cover}}
