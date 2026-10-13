@@ -1,9 +1,24 @@
 document.getElementById('year').textContent = new Date().getFullYear();
 
 const button = document.querySelector('.theme-toggle');
-button.addEventListener('click', () => {
+const flipTheme = () => {
   document.body.classList.toggle('light');
   localStorage.setItem('portfolio-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+};
+// Where the browser has view transitions, the new theme spreads as a
+// circle from the toggle; elsewhere it fades as before.
+button.addEventListener('click', () => {
+  if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { flipTheme(); return; }
+  const box = button.getBoundingClientRect();
+  const x = box.left + box.width / 2, y = box.top + box.height / 2;
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  document.documentElement.classList.add('theme-flipping');
+  const transition = document.startViewTransition(flipTheme);
+  transition.ready.then(() => document.documentElement.animate(
+    { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+    { duration: 600, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
+  ));
+  transition.finished.finally(() => document.documentElement.classList.remove('theme-flipping'));
 });
 
 if (localStorage.getItem('portfolio-theme') === 'light') document.body.classList.add('light');

@@ -267,3 +267,6 @@ body.light .project-copy p a.pill-live{color:#fff}
 .project-copy p a.pill-link::after{content:"\2192";display:inline-block;transition:transform .3s}
 .project-copy p a.pill-link:not(.pill-live)::after{content:"\2197"}
 .project-copy p a.pill-link:hover::after{transform:translateX(3px)}
+/* The theme's circular reveal (script.js): the snapshots swap without the default cross-fade, and nothing else transitions during it. */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+.theme-flipping *{transition:none!important}
