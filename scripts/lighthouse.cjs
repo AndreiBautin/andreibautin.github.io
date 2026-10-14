@@ -1,19 +1,17 @@
 // Runs Lighthouse (mobile, performance only) several times and prints the
 // medians: single runs of this page vary by 2x in TBT, so one run proves
 // nothing. Usage: node scripts/lighthouse.cjs [url] [runs]
-const { execFileSync } = require('node:child_process');
+const { execSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const url = process.argv[2] || 'https://andreibautin.github.io/';
 const runs = Number(process.argv[3]) || 5;
 const out = path.join(os.tmpdir(), 'lh-run.json');
-const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 const rows = [];
 for (let i = 0; i < runs; i++) {
-  execFileSync(npx, ['--yes', 'lighthouse@12.2.1', url, '--quiet', '--chrome-flags=--headless=new',
-    '--only-categories=performance', '--output=json', `--output-path=${out}`], { stdio: 'ignore', shell: true });
+  execSync(`npx --yes lighthouse@12.2.1 ${JSON.stringify(url)} --quiet --chrome-flags=--headless=new --only-categories=performance --output=json --output-path=${JSON.stringify(out)}`, { stdio: 'ignore' });
   const j = JSON.parse(fs.readFileSync(out, 'utf8'));
   const a = j.audits;
   rows.push({ score: j.categories.performance.score * 100, lcp: a['largest-contentful-paint'].numericValue,

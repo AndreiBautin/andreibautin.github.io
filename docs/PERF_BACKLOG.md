@@ -118,18 +118,46 @@ layout per run.
 
 1. **Repeatable measurement.** A `scripts/lighthouse.cjs` that runs 5
    times and prints medians, so no item is judged on one noisy run again.
+   **Done.** `npm run lighthouse -- [url] [runs]`.
 2. **script.js's 1.2 s of style/layout.** Only ~230 ms of script.js's
    1.7 s is JavaScript; the rest is style and layout it triggers, in two
    long tasks (~300 ms at 1.8 s, ~430 ms at 3.1 s). Take a Performance
    trace and find the forced layouts — suspects: the reveal animations
    started together on load, the nav pill's `offsetLeft` reads at
    `fonts.ready`, the star canvas resize.
+   **Finding, no change.** A CPU-profiled trace shows most "long task"
+   time is not the page: ~500 ms per run is Chrome's own headless UI code
+   (`lit.rollup.js`, mojo `bindings.js`), and ~380 ms is WebGL calls,
+   which headless Chrome runs on a software renderer (SwiftShader). The
+   page's own JS in those tasks is ~25 ms (`markCurrent`'s first layout,
+   which is the page's first layout happening early, not extra work).
+   Lighthouse TBT from this machine therefore overstates real phones,
+   which render WebGL on a GPU.
 3. **Three.js evaluation (~450 ms "Unattributable" at 2.6 s).** Module
    evaluation of the vendor bundle is one long task. Options: start it
    later (after first interaction or a longer idle), or split hero setup
    across frames with `scheduler.yield()`.
+   **Dropped.** Module evaluation itself is small in the profile; the cost
+   is software WebGL (above), which real devices do not pay.
 4. **hero.js's 0.9 s of scripting.** Texture rasterising and scene setup;
    profile and spread across frames, or rasterise logos once into an atlas.
+   **Dropped**, same reason: the samples are WebGL calls, not setup code.
 5. **LCP 2.6 s.** Identify the LCP element in the trace; if it is the h1,
    check whether the hero entrance animation (opacity 0 → 1) delays it, and
    start that animation from a visible state on load.
+   **Tested, no change.** The LCP element is hero text. A/B locally, 3 runs
+   each: fade from opacity 0 → median LCP 2117 ms; from 0.01 → 2112 ms.
+   The animation is not the cause; the live 2.6 s vs local 2.1 s gap is
+   network (fonts and CSS from Pages under throttling).
+
+# Round 4
+
+Drafted 2026-10-13. The remaining cost is either the measurement
+environment or the network; there is little left in the code.
+
+1. **Field data, not lab data.** Check PageSpeed Insights / CrUX for real
+   devices with GPUs. If field LCP and INP are green, stop here.
+2. **Subset Manrope to the glyphs used** (25 KB → likely ~12 KB): the hero
+   text is the LCP element and waits on it.
+3. **Inline the above-the-fold CSS** if field LCP is not green: styles.css
+   (12 KB gzipped) is the only render-blocking request.
