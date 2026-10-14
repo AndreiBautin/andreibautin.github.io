@@ -19,6 +19,7 @@ const [THREE, { default: svgs }] = wanted
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const marks = ['csharp', 'dotnet', 'typescript', 'react', 'azure', 'sqlserver', 'docker', 'nodedotjs',
   'blazor', 'postgresql', 'vuedotjs', 'github'];
+// Also in script.js's star field, deliberately copied: see the note there.
 const hash = (k, n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
 
 // A logo as a texture: the SVG filled in the ink colour, drawn to a square

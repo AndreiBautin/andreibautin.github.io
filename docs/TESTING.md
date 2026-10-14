@@ -55,3 +55,10 @@ shows on first click, which is the cost accepted.
   answer.
 - **`build_three.cjs` and `subset_fonts.py` themselves.** They need the
   network and Python; their *outputs* are pinned by verify instead.
+- **`build_resume.py`.** It builds an alternate one-page resume that is not
+  published; it needs Python and ReportLab, and nothing depends on its
+  output. Kept as a tool, not checked; run it by hand when that version is
+  wanted, and inspect the PDF as CLAUDE.md describes.
+- **The backup site behind `.openai/hosting.json`.** Kept for the original
+  hosting; verify checks only that it still points at `dist`, not that the
+  backup is up.

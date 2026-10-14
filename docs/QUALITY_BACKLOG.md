@@ -232,10 +232,19 @@ what is left is mostly decisions only the owner can make.
    one-page resume that is never published, needs Python and ReportLab, and
    nothing checks it still runs. Either delete it, or add it to TESTING.md as
    deliberately unchecked. Owner's call.
+   **Done: kept** (owner's "go" on the default), listed in TESTING.md as
+   deliberately not tested.
 2. **Keep or remove `.openai/hosting.json`.** It serves a backup site on the
    original hosting and costs a `verify` group. If that backup is retired,
    both go. Owner's call.
+   **Done: kept**, and TESTING.md says verify checks only where it points,
+   not that the backup is up.
 3. **One star-field hash.** `script.js` (stars) and `hero.js` (spheres)
    each define the same `sin`-based hash. `script.js` is a classic script,
    so sharing it means a module and one more request on the critical path;
    either accept the duplicate with a comment in both, or move it.
+   **Done: duplicate kept**, with a comment at each copy saying why.
+
+The quality backlog is complete after round 6. A further round would be
+invented work; the next useful pass is the open items in the performance
+and UI backlogs, or new features.

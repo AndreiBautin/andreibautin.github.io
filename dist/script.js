@@ -266,6 +266,8 @@ function initStars() {
   if (stars) {
     const ctx = stars.getContext('2d');
     const points = Array.from({ length: 260 }, (_, k) => {
+      // The same hash as hero.js; copied, because sharing it would make this
+      // a module and add a request to the critical path.
       const h = (n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
       return { x: h(1), y: h(2), r: 0.4 + h(3) * 1.1, a: 0.25 + h(4) * 0.6, p: h(5) * 6.283 };
     });
