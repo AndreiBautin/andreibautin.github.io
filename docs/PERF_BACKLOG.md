@@ -49,6 +49,8 @@ number is recorded here.
    requests → 1; verify fails if the module is stale.
 5. **Skip WebGL where it cannot pay off.** On `saveData` or
    `deviceMemory <= 2`, never download Three.js; keep the static hero.
+   **Done.** Checked in the browser with `deviceMemory` forced to 1: no
+   vendor request, canvas removed, hero copy unchanged.
 6. **`content-visibility: auto`** on below-the-fold sections (with
    `contain-intrinsic-size`) so first render skips their layout/paint.
 7. **Dev server content types.** `serve.cjs` serves `.svg`, `.webp`,

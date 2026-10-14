@@ -8,9 +8,14 @@ if (document.readyState !== 'complete') await new Promise((resolve) => addEventL
 // Then wait for the main thread to go quiet, so parsing Three.js and
 // compiling shaders do not land on the page's first interactions.
 await new Promise((resolve) => (window.requestIdleCallback ? requestIdleCallback(resolve, { timeout: 1500 }) : setTimeout(resolve, 300)));
-const [THREE, { default: svgs }] = await Promise.all([import('./vendor/three.hero.min.js'), import('./tech-marks.js')]);
-
 const canvas = document.querySelector('.hero-tech');
+// With data saver on, or on a device with 2 GB or less, the hero stays
+// static: the visual is decoration, and Three.js is most of the page's bytes.
+const lite = navigator.connection?.saveData || (navigator.deviceMemory ?? 8) <= 2;
+const wanted = Boolean(canvas && window.WebGLRenderingContext && !lite);
+const [THREE, { default: svgs }] = wanted
+  ? await Promise.all([import('./vendor/three.hero.min.js'), import('./tech-marks.js')])
+  : [null, { default: {} }];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const marks = [
   ['csharp', 'C#'], ['dotnet', '.NET'], ['typescript', 'TypeScript'], ['react', 'React'],
@@ -207,4 +212,5 @@ const start = async () => {
   return last;
 };
 
-if (canvas && window.WebGLRenderingContext) start().catch((e) => { console.warn('hero visual skipped', e); canvas.remove(); });
+if (wanted) start().catch((e) => { console.warn('hero visual skipped', e); canvas.remove(); });
+else canvas?.remove();
