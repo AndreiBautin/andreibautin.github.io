@@ -151,6 +151,12 @@ comment nits; start-app.bat does not enable the pre-push hook.
    after the push, recording the grade and anything header-only that a
    static Pages site cannot fix, so it is a known limit rather than a
    surprise.
+   **Done.** Mozilla Observatory 2026-10-14: **B, 75/100**. Credit: CSP
+   with no unsafe sources (+5), private referrer policy (+5), HSTS and
+   https redirect (Pages). The only penalties are X-Frame-Options (−20)
+   and X-Content-Type-Options (−5), both header-only; Pages cannot send
+   them and meta equivalents are ignored. B is the ceiling on Pages; A
+   needs a host with custom headers (e.g. Cloudflare in front).
 5. **`build_three.cjs` without `shell: true`.** Node 24 warns that the
    shell concatenates arguments unescaped; they are constants today, but
    the temp directory is also left behind when the integrity check throws.
