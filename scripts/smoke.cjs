@@ -18,7 +18,11 @@ async function check() {
     if (!html.includes(expected)) problems.push(`${page}: Content-Security-Policy missing or different`);
     if (!html.includes('<meta name="referrer" content="strict-origin-when-cross-origin" />')) problems.push(`${page}: referrer policy missing`);
     if (page !== 'index.html') continue;
-    for (const [, href] of html.matchAll(/(?:href|src)="\.\/([^"#]+)"/g)) {
+    // hero.js imports its modules at idle, so they are not linked from the
+    // page; read the dynamic imports to check them too.
+    const imports = [...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/import\('\.\/([^']+)'\)/g)].map((m) => m[1]);
+    if (!imports.length) problems.push('hero.js: no dynamic imports found; the smoke check has lost track of them');
+    for (const href of [...[...html.matchAll(/(?:href|src)="\.\/([^"#]+)"/g)].map((m) => m[1]), ...imports]) {
       const asset = await fetch(new URL(href, base), { method: 'HEAD', cache: 'no-store' });
       if (!asset.ok) problems.push(`${href}: HTTP ${asset.status}`);
     }
