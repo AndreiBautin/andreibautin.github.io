@@ -135,3 +135,32 @@ Drafted 2026-10-14 after round 1.
    called in order, makes the file scannable and lets one feature's
    failure (e.g. a missing element) be guarded without stopping the rest.
    **Done.** Fifteen `init*` functions; each is run under try/`reportError`. Checked in the browser against the previous version: year, nav pill element, six spotlights, cursor ring, menu open/Escape all match, no errors besides a skipped view transition both versions show in a hidden pane. **Unchecked:** frame-driven behaviour (star field drawing, pill placement, the theme transition) — the pane stopped delivering animation frames to both versions, so those were compared by reading the moved code, not by running it. Browser testing also found `createServer` returned 403 for every path given an unresolved root; fixed and tested.
+
+## Round 3
+
+Drafted 2026-10-14 after round 2.
+
+1. **Run the `script.js` refactor's frame-driven behaviour in a visible
+   browser.** Round 2 could not: the star field, nav pill placement and
+   theme transition need animation frames, which a hidden pane withholds.
+   Load the page with the pane shown, compare against the live site, and
+   record the result.
+2. **`404.html` links are checked.** It links with root-absolute paths
+   (`/404.css`, `/404.js`, `/images/favicon.svg`), which the `links` group
+   ignores — it only reads `index.html` and only `./` paths. A renamed file
+   would 404 on the 404 page with verify green.
+3. **One name for the theme key.** `'portfolio-theme'` is written three
+   times across `script.js` and `404.js`; rename it in one and the 404 page
+   silently loses the visitor's theme. Add a group that every
+   `localStorage` key read is also written somewhere, with its defect.
+4. **Test `smoke.cjs` offline.** It is the only check of the live site
+   and has no test: export `check(base)` and run it against `createServer`
+   in `tools.test.cjs`, passing on a faithful copy and failing on a missing
+   asset or changed policy.
+5. **Dead CSS check.** `styles.css` is 311 lines and nothing notices a
+   selector whose class no page or script uses any more. A group that
+   every class selector appears in `index.html`, `404.html` or a script
+   (allowing classes added at runtime by name).
+6. **Break up `hero.js`'s `start()`.** One 175-line async function builds
+   the renderer, spheres, lights, pointer handling and the frame loop.
+   Same treatment as `script.js`: named steps, shared state passed in.
