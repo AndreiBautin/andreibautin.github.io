@@ -61,7 +61,12 @@ const defects = {
   'unreferenced files': (root) => fs.writeFileSync(path.join(root, 'dist/images/orphan.png'), ''),
   'doc paths': (root) => edit(root, 'docs/TESTING.md', (s) => s + '\nSee `scripts/renamed.cjs`.\n'),
   'stamp': (root) => edit(root, 'dist/styles.css', (s) => s + '/* changed */\n'),
-  'text formatting': (root) => edit(root, 'dist/404.css', (s) => s.replace('}', '} ')),
+  'text formatting': [
+    (root) => edit(root, 'dist/404.css', (s) => s.replace('}', '} ')),
+    // Outside dist/: the backspace byte that once replaced a \b in a doc.
+    (root) => edit(root, 'docs/TESTING.md', (s) => s + 'a\x08b\n'),
+  ],
+  'regex escapes': (root) => edit(root, 'scripts/checks/content.cjs', (s) => s.replace('`(^|[^\\\\w-])', '`(^|[^\\w-])')),
   'generated files': (root) => edit(root, 'assets/tech/react.svg', (s) => s.replace('<svg', '<svg data-x="1"')),
   'byte budgets': (root) => edit(root, 'dist/vendor/three.hero.min.js', (s) => `${s}/*${crypto.randomBytes(200_000).toString('base64')}*/\n`),
   'font subset': (root) => edit(root, 'dist/404.html', (s) => s.replace('</body>', Buffer.from('Ж').toString('latin1') + '</body>')),

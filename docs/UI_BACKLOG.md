@@ -113,7 +113,7 @@ cluster drops below the button into space reserved for it. Seen at 1440 and
 ## Round 2: sleeker and more premium (2026-10-13)
 
 Done, one commit each: the `Live app` arrow (a CSS escape stored as a raw
-NUL byte, so it drew `�0→`; verify now fails on control characters),
+NUL byte, so it drew a replacement character, then `0→`; verify now fails on control characters),
 lit-glass cards with pill chips, a pointer spotlight on cards, film grain
 and a vignette, self-hosted fonts (no third-party requests left), a masked
 hero name reveal, scroll reveals for the proof strip, experience and
