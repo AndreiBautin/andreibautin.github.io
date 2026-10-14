@@ -65,3 +65,28 @@ number is recorded here.
    past a set ceiling. A regression should be red, not discovered.
    **Done.** Gzipped budgets: critical path 30 KB (now 22 KB), hero
    visual 150 KB (now 139 KB).
+
+# Round 2
+
+Drafted 2026-10-13 after round 1, from what round 1 turned up. Not started.
+
+1. **Re-measure live.** Round 1 is committed but not pushed; deploy, re-run
+   the same Lighthouse command, and record the delta against the baseline.
+2. **Find script.js's 1.6 s.** The baseline's largest boot-up cost was
+   not Three.js. Profile under 4x throttling and attribute it — likely
+   suspects are below.
+3. **Scroll handler layout reads.** Every scroll event calls
+   `getBoundingClientRect` on each section and reads `offsetWidth` for the
+   nav pill. Coalesce to one rAF per frame, or drive `markCurrent` from an
+   IntersectionObserver.
+4. **Cursor ring runs forever.** Its `requestAnimationFrame(follow)` loop
+   never stops on desktop, even with the pointer still or the tab idle.
+   Stop when it has caught up; restart on `pointermove`.
+5. **Spotlight reads layout per move.** `pointermove` on each project card
+   calls `getBoundingClientRect`; cache the box on `pointerenter`.
+6. **Shader compile off the first frame.** Use `renderer.compileAsync`
+   before the first render so the hero's first frame doesn't block —
+   a likely part of the 450 ms TBT.
+7. **Font weight audit.** DM Mono 500 (15 KB) loads on the first view but
+   isn't preloaded; either preload it or replace the few 500-weight uses
+   with 400 and drop the file.
