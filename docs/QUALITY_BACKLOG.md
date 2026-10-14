@@ -190,7 +190,7 @@ Drafted 2026-10-14 after round 3.
    `userData` and never read.
    **Done.** `marks` is a list of logo names.
 4. **`unused css` covers `404.css` too.** It only reads `styles.css`.
-   **Done.** `unused css` reads each stylesheet against the files that use it. Writing its defects exposed that the class and `@keyframes` regexes had lost their backslashes to template-literal escaping (`\w`, ``), so the keyframes test never matched; fixed, and a suffix-only class name is now a planted defect.
+   **Done.** `unused css` reads each stylesheet against the files that use it. Writing its defects exposed that the class and `@keyframes` regexes had lost their backslashes to template-literal escaping (`\w`, `\b`), so the keyframes test never matched; fixed, and a suffix-only class name is now a planted defect.
 5. **Every file in `dist/` is referenced.** A check that each shipped
    file is linked from a page, stylesheet or script (pages excepted).
    Nothing is orphaned today; this keeps it so, since an orphan is
