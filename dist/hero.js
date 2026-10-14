@@ -17,11 +17,8 @@ const [THREE, { default: svgs }] = wanted
   ? await Promise.all([import('./vendor/three.hero.min.js'), import('./tech-marks.js')])
   : [null, { default: {} }];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const marks = [
-  ['csharp', 'C#'], ['dotnet', '.NET'], ['typescript', 'TypeScript'], ['react', 'React'],
-  ['azure', 'Azure'], ['sqlserver', 'SQL Server'], ['docker', 'Docker'], ['nodedotjs', 'Node.js'],
-  ['blazor', 'Blazor'], ['postgresql', 'PostgreSQL'], ['vuedotjs', 'Vue'], ['github', 'GitHub'],
-];
+const marks = ['csharp', 'dotnet', 'typescript', 'react', 'azure', 'sqlserver', 'docker', 'nodedotjs',
+  'blazor', 'postgresql', 'vuedotjs', 'github'];
 const hash = (k, n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
 
 // A logo as a texture: the SVG filled in the ink colour, drawn to a square
@@ -90,7 +87,7 @@ function createStage() {
 function buildSpheres(cluster, textures) {
   const ball = new THREE.IcosahedronGeometry(1, 1);
   const face = new THREE.CircleGeometry(0.78, 48);
-  return marks.map(([, label], i) => {
+  return marks.map((_, i) => {
     const g = new THREE.Group();
     const [x, y, z] = layout[i];
     g.position.set(x, y, z);
@@ -103,7 +100,7 @@ function buildSpheres(cluster, textures) {
     g.add(sticker);
     // Three slow sines of unrelated periods on each axis: a wander that
     // never repeats, rather than a bounce on the spot.
-    g.userData = { x, y, z, scale, label, reach: 1, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
+    g.userData = { x, y, z, scale, reach: 1, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
       fx: 0.11 + hash(i, 4) * 0.09, fy: 0.08 + hash(i, 5) * 0.08, fz: 0.06 + hash(i, 6) * 0.06,
       gx: 0.23 + hash(i, 7) * 0.1, gy: 0.19 + hash(i, 8) * 0.1,
       spin: new THREE.Quaternion(), vx: 0, vy: 0 };
@@ -194,7 +191,7 @@ const start = async () => {
   const { renderer, scene, camera } = createStage();
   const cluster = new THREE.Group();
   scene.add(cluster);
-  const spheres = buildSpheres(cluster, await Promise.all(marks.map(([name]) => logoTexture(name))));
+  const spheres = buildSpheres(cluster, await Promise.all(marks.map(logoTexture)));
   const pointer = { x: 0, y: 0 };
   addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
   const spinBy = makeSpinner();
