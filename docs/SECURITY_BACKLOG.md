@@ -93,6 +93,9 @@ Dependabot security updates are off; http:// redirects to https.
 5. **Vendored Three.js provenance:** record the npm integrity hash of
    three@0.170.0 in `build_three.cjs` and fail the rebuild on mismatch,
    so the 487 KB file can be traced to a known package.
+   **Done.** Integrity for three and esbuild checked against the install
+   lockfile; a wrong hash stops the build (tested). A rebuild today is
+   byte-identical to the committed file, so it is reproducible.
 6. **Outbound link ownership check:** `dj-visualizer.onrender.com` is a
    third-party subdomain; if that service is deleted the name can be
    claimed by someone else. A script that flags non-200 outbound links.

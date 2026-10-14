@@ -11,11 +11,22 @@ const EXPORTS = ['CanvasTexture', 'CircleGeometry', 'DirectionalLight', 'Group',
   'IcosahedronGeometry', 'MathUtils', 'Mesh', 'MeshBasicMaterial', 'MeshStandardMaterial',
   'PerspectiveCamera', 'PointLight', 'Quaternion', 'Raycaster', 'SRGBColorSpace', 'Scene',
   'Vector2', 'Vector3', 'WebGLRenderer'];
+// npm's published integrity for the exact packages the subset is built
+// from. A rebuild refuses anything else, so the vendored file is traceable to
+// these two tarballs.
+const INTEGRITY = {
+  three: 'sha512-FQK+LEpYc0fBD+J8g6oSEyyNzjp+Q7Ks1C568WWaoMRLW+TkNNWmenWeGgJjV105Gd+p/2ql1ZcjYvNiPZBhuQ==',
+  esbuild: 'sha512-FuLPevChGDshgSicjisSooU0cemp/sGXR841D5LHMB7mTVOmsEHcAxaH3irL53+8YDIeVNQEySh4DaYU/iuPqQ==',
+};
 module.exports = { EXPORTS };
 if (require.main === module) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'three-'));
   const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   execFileSync(npm, ['install', '--no-save', '--prefix', dir, 'three@0.170.0', 'esbuild@0.24.0'], { stdio: 'inherit', shell: true });
+  const lock = JSON.parse(fs.readFileSync(path.join(dir, 'node_modules/.package-lock.json'), 'utf8')).packages;
+  for (const [name, integrity] of Object.entries(INTEGRITY)) {
+    if (lock[`node_modules/${name}`]?.integrity !== integrity) throw new Error(`${name} integrity mismatch: got ${lock[`node_modules/${name}`]?.integrity}`);
+  }
   fs.writeFileSync(path.join(dir, 'entry.js'), `export { ${EXPORTS.join(', ')} } from 'three';\n`);
   const out = path.resolve(__dirname, '../dist/vendor/three.hero.min.js');
   execFileSync(process.execPath, [path.join(dir, 'node_modules/esbuild/bin/esbuild'), path.join(dir, 'entry.js'),
