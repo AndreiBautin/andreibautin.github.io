@@ -87,6 +87,9 @@ Dependabot security updates are off; http:// redirects to https.
 4. **Post-deploy smoke check:** fetch the live page after deploy and
    assert the CSP meta and referrer meta are present and every asset
    returns 200 — proves the policy shipped, not just that it built.
+   **Done.** `scripts/smoke.cjs`, last step of the deploy job, retrying
+   for ~2 min while Pages swaps builds. Passes against a local server;
+   fails against today's live site, as it should until this is pushed.
 5. **Vendored Three.js provenance:** record the npm integrity hash of
    three@0.170.0 in `build_three.cjs` and fail the rebuild on mismatch,
    so the 487 KB file can be traced to a known package.
