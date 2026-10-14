@@ -33,6 +33,13 @@ const used = new Set([...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/THREE
 for (const name of used) assert(EXPORTS.includes(name), `THREE.${name} is not in scripts/build_three.cjs EXPORTS`);
 for (const name of EXPORTS) assert(new RegExp(` as ${name}[,}]`).test(fs.readFileSync('dist/vendor/three.hero.min.js', 'utf8')), `vendor subset lacks ${name}; run node scripts/build_three.cjs`);
 assert.equal(fs.readFileSync('dist/tech-marks.js', 'utf8'), require('./scripts/build_marks.cjs').render(), 'dist/tech-marks.js is stale; run node scripts/build_marks.cjs');
+// Byte budgets, gzipped as Pages serves them: a regression fails here rather
+// than being found in a Lighthouse run. Raise one only on purpose.
+const gz = (files) => files.reduce((sum, f) => sum + require('node:zlib').gzipSync(fs.readFileSync('dist/' + f), { level: 9 }).length, 0);
+for (const [name, files, limit] of [
+  ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
+  ['hero visual', ['hero.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
+]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
 assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
 console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');

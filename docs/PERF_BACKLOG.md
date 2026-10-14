@@ -56,9 +56,12 @@ number is recorded here.
 7. **Dev server content types.** `serve.cjs` serves `.svg`, `.webp`,
    `.woff2` as `application/octet-stream`; local measurements then differ
    from Pages. Add the types so item 1's local numbers are honest.
+   **Done.**
 
 ## Keep it fast
 
 8. **Byte budget in `verify`.** Fail the build if `index.html` + CSS + JS
    (excluding the lazily loaded vendor bundle) or the vendor bundle grows
    past a set ceiling. A regression should be red, not discovered.
+   **Done.** Gzipped budgets: critical path 30 KB (now 22 KB), hero
+   visual 150 KB (now 139 KB).
