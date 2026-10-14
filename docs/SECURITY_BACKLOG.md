@@ -50,6 +50,8 @@ recorded here.
 8. **Guard `localStorage` in `script.js`.** Unguarded reads throw when
    storage is blocked and stop the rest of the script — not an exploit,
    but a hardening/robustness gap the 404 page already handles.
+   **Done.** Checked in the browser with `localStorage` made to throw:
+   the toggle still flips the theme, no error.
 9. **Dev server hardening.** `serve.cjs` already binds to 127.0.0.1 and
    rejects path traversal; add `X-Content-Type-Options: nosniff` and the
    same CSP as a header so local runs exercise the real policy.

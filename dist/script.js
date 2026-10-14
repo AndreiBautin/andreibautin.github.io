@@ -3,7 +3,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 const button = document.querySelector('.theme-toggle');
 const flipTheme = () => {
   document.body.classList.toggle('light');
-  localStorage.setItem('portfolio-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  try { localStorage.setItem('portfolio-theme', document.body.classList.contains('light') ? 'light' : 'dark'); } catch {}
 };
 // Where the browser has view transitions, the new theme spreads as a
 // circle from the toggle; elsewhere it fades as before.
@@ -21,7 +21,9 @@ button.addEventListener('click', () => {
   transition.finished.finally(() => document.documentElement.classList.remove('theme-flipping'));
 });
 
-if (localStorage.getItem('portfolio-theme') === 'light') document.body.classList.add('light');
+// Storage throws when blocked (privacy modes, some embeds); the theme then
+// just isn't remembered, and the rest of the script still runs.
+try { if (localStorage.getItem('portfolio-theme') === 'light') document.body.classList.add('light'); } catch {}
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const observer = new IntersectionObserver((entries) => {
