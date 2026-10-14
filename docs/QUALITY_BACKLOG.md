@@ -170,3 +170,24 @@ Drafted 2026-10-14 after round 2.
    the renderer, spheres, lights, pointer handling and the frame loop.
    Same treatment as `script.js`: named steps, shared state passed in.
    **Done.** `createStage`, `buildSpheres`, `makeSpinner`, `enableGrab` (returns the held sphere), `fitter`, with the layout as module constants; `start()` is now the wiring and the frame loop. A dead `last` return value removed.
+
+## Round 4
+
+Drafted 2026-10-14 after round 3.
+
+1. **Docs name only files that exist.** README, CLAUDE.md and `docs/*.md`
+   name dozens of paths in backticks; nothing notices when one is renamed
+   (round 2 already moved `TYPES` and round 3 renamed hero.js internals).
+   A `doc paths` group: every backticked repo path resolves, with its
+   planted defect.
+2. **Update ARCHITECTURE.md for the new code shape.** The load trace
+   predates `script.js`'s init functions and `hero.js`'s named steps;
+   name them in the trace so it stays the map of the real code.
+3. **Drop the hero marks' unused labels.** `marks` carries a display label
+   per logo (`'C#'`, `'.NET'`…) that is stored in each sphere's
+   `userData` and never read.
+4. **`unused css` covers `404.css` too.** It only reads `styles.css`.
+5. **Every file in `dist/` is referenced.** A check that each shipped
+   file is linked from a page, stylesheet or script (pages excepted).
+   Nothing is orphaned today; this keeps it so, since an orphan is
+   published and cached forever without anyone noticing.
