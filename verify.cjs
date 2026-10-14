@@ -30,7 +30,7 @@ for (const path of ['dist/index.html', 'dist/404.html', 'dist/404.css', 'dist/40
 }
 // hero.js may only use THREE.* names the vendor subset exports.
 const { EXPORTS } = require('./scripts/build_three.cjs');
-const used = new Set([...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/THREE.(w+)/g)].map((m) => m[1]));
+const used = new Set([...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/\bTHREE\.(\w+)/g)].map((m) => m[1]));
 for (const name of used) assert(EXPORTS.includes(name), `THREE.${name} is not in scripts/build_three.cjs EXPORTS`);
 for (const name of EXPORTS) assert(new RegExp(` as ${name}[,}]`).test(fs.readFileSync('dist/vendor/three.hero.min.js', 'utf8')), `vendor subset lacks ${name}; run node scripts/build_three.cjs`);
 assert.equal(fs.readFileSync('dist/tech-marks.js', 'utf8'), require('./scripts/build_marks.cjs').render(), 'dist/tech-marks.js is stale; run node scripts/build_marks.cjs');
