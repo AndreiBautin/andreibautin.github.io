@@ -59,6 +59,47 @@ recorded here.
    cannot drift. Checked with curl and a page load: headers present, all
    8 assets 200, no violations.
 
+## Round 1 results
+
+All nine done. The policy is now a gate: `verify` fails on anything the
+CSP would have to loosen for, on unpinned actions, and on metadata in
+binaries. One find beyond the plan: verify's Three.js subset check had
+never matched anything.
+
+## Round 2
+
+Drafted 2026-10-13. Facts gathered: no pre-push hook installed; `main`
+has no branch protection; secret scanning and push protection are on;
+Dependabot security updates are off; http:// redirects to https.
+
+1. **Pre-push hook running `npm run verify`**, committed under
+   `.githooks/` with `core.hooksPath`, so a red build never reaches the
+   deploy job.
+2. **`persist-credentials: false`** on checkout. The job never pushes,
+   so the token should not sit in `.git/config` for later steps.
+3. **Lint the workflow with zizmor** in CI (template injection,
+   excessive permissions, cache poisoning). Pinned, read-only.
+4. **Post-deploy smoke check:** fetch the live page after deploy and
+   assert the CSP meta and referrer meta are present and every asset
+   returns 200 — proves the policy shipped, not just that it built.
+5. **Vendored Three.js provenance:** record the npm integrity hash of
+   three@0.170.0 in `build_three.cjs` and fail the rebuild on mismatch,
+   so the 487 KB file can be traced to a known package.
+6. **Outbound link ownership check:** `dj-visualizer.onrender.com` is a
+   third-party subdomain; if that service is deleted the name can be
+   claimed by someone else. A script that flags non-200 outbound links.
+7. **`SECURITY.md`** with a contact for reports (GitHub private
+   vulnerability reporting).
+8. **Dev server parity:** answer non-GET methods with 405 and serve
+   `404.html` for missing paths like Pages does, so the 404 page and its
+   policy are exercised locally.
+
+Needs you (GitHub settings, not code):
+
+9. **Branch protection on `main`** requiring the verify check.
+10. **Turn on Dependabot security updates** and private vulnerability
+    reporting.
+
 ## Deliberately not in scope
 
 - HSTS / `X-Frame-Options`: not settable on Pages, and `frame-ancestors`
