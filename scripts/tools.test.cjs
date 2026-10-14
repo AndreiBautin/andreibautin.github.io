@@ -50,3 +50,12 @@ test('dev server holds to the Pages contract', async (t) => {
   assert.equal((await fetch(`${base}/..%2f..%2fpackage.json`)).status, 403);
   assert.equal((await fetch(`${base}/%E0%A4%A`)).status, 400);
 });
+
+// A root given relative or with forward slashes on Windows once failed the
+// containment check for every path, serving 403 for the whole site.
+test('dev server accepts an unresolved root', async (t) => {
+  const server = createServer(path.relative(process.cwd(), dist).split(path.sep).join('/')).listen(0, '127.0.0.1');
+  await new Promise((resolve) => server.once('listening', resolve));
+  t.after(() => server.close());
+  assert.equal((await fetch(`http://127.0.0.1:${server.address().port}/`)).status, 200);
+});

@@ -4,7 +4,9 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const { PORT, TYPES } = require('./scripts/checks.cjs');
-function createServer(root = path.resolve(__dirname, 'dist')) {
+function createServer(dir = path.join(__dirname, 'dist')) {
+  // Resolved, so the containment check below compares like with like.
+  const root = path.resolve(dir);
   // The same policy the pages set in their meta tag, sent as a header so a
   // local run is held to it too.
   const csp = fs.readFileSync(path.join(root, 'index.html'), 'utf8').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
