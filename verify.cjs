@@ -53,6 +53,12 @@ for (const ch of new Set(shown)) {
 }
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
 assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
+// Shipped binaries carry no editor metadata: XMP packets and local paths
+// are where usernames and machine names leak from.
+for (const dir of ['dist', 'dist/images', 'dist/fonts']) for (const name of fs.readdirSync(dir).filter((f) => /\.(pdf|jpe?g|png|webp|woff2)$/.test(f))) {
+  const bytes = fs.readFileSync(`${dir}/${name}`).toString('latin1');
+  assert(!/<x:xmpmeta|[A-Za-z]:\\\\?Users\\|\/Users\/|\/home\//.test(bytes), `${dir}/${name} carries metadata or a local path; strip it`);
+}
 // The deploy job holds pages: write; a tag moved on an action would run with it.
 for (const [, ref] of fs.readFileSync('.github/workflows/pages.yml', 'utf8').matchAll(/uses: *(\S+)/g)) assert(/@[0-9a-f]{40}$/.test(ref), `${ref} must be pinned to a commit SHA`);
 console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');

@@ -37,6 +37,10 @@ recorded here.
 6. **Strip metadata from shipped binaries.** Check the résumé PDF and
    images for author paths, usernames, GPS/EXIF; make `verify` fail if
    any reappears.
+   **Done — nothing to strip.** PDF info is generic (author "Un-named",
+   pdf-lib producer, no XMP); `og-hero.jpg` EXIF is three resolution
+   tags, no GPS; others have none. `verify` now fails on an XMP packet or
+   a local user path in any shipped binary (checked by planting one).
 7. **`verify` guards:** fail on any `http://` URL, any external
    `<script src>`, any inline `<script>`/`on*=` handler, and any
    `target="_blank"` without `rel="noopener"`. Turns this round into a
