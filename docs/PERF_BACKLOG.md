@@ -104,3 +104,32 @@ Drafted 2026-10-13 after round 1, from what round 1 turned up.
    **Dropped.** Nothing above the fold uses the 500 weight (pill links,
    principles, the copy button — all lower down), so not preloading it is
    correct, and replacing it is a visual change, not a performance one.
+
+Round 2 result, live, 5 Lighthouse runs: score median 0.75 (0.73–0.89),
+LCP median 2.6 s, TBT median 780 ms (430–920), 216 KiB. Bytes are down 19 %
+from the baseline; main-thread time is not measurably better, and the
+single-run baseline (0.85 / 450 ms) was likely a good draw.
+
+# Round 3
+
+Drafted 2026-10-13 from round 2's Lighthouse traces. The main thread, not
+bytes, is now the whole problem: 2.0 s script evaluation, 1.1 s style and
+layout per run.
+
+1. **Repeatable measurement.** A `scripts/lighthouse.cjs` that runs 5
+   times and prints medians, so no item is judged on one noisy run again.
+2. **script.js's 1.2 s of style/layout.** Only ~230 ms of script.js's
+   1.7 s is JavaScript; the rest is style and layout it triggers, in two
+   long tasks (~300 ms at 1.8 s, ~430 ms at 3.1 s). Take a Performance
+   trace and find the forced layouts — suspects: the reveal animations
+   started together on load, the nav pill's `offsetLeft` reads at
+   `fonts.ready`, the star canvas resize.
+3. **Three.js evaluation (~450 ms "Unattributable" at 2.6 s).** Module
+   evaluation of the vendor bundle is one long task. Options: start it
+   later (after first interaction or a longer idle), or split hero setup
+   across frames with `scheduler.yield()`.
+4. **hero.js's 0.9 s of scripting.** Texture rasterising and scene setup;
+   profile and spread across frames, or rasterise logos once into an atlas.
+5. **LCP 2.6 s.** Identify the LCP element in the trace; if it is the h1,
+   check whether the hero entrance animation (opacity 0 → 1) delays it, and
+   start that animation from a visible state on load.
