@@ -42,7 +42,33 @@ const logoTexture = (name) => new Promise((resolve) => {
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgs[name].replace('<svg ', '<svg fill="#e9edf2" '));
 });
 
-const start = async () => {
+// Laid out on a loose ring with a middle, each at its own depth: the
+// nearer ones larger, so the cluster has a front and a back.
+const layout = [[0, 0.1, 1.5], [2.6, 1.6, 0.4], [-2.5, 1.9, -0.2], [2.9, -1.7, 0.8], [-2.8, -1.5, 0.2],
+  [0.2, 3.1, -1.4], [0.1, -3.0, -0.8], [4.8, 0.2, -1.6], [-4.7, 0.3, -1.4], [3.9, 3.4, -2.6], [-4.0, -3.2, -2.4], [4.3, -3.6, -2.2]];
+// A phone's portrait band is too narrow for that spread: it keeps the
+// first seven marks, C# in the middle and six round it, close enough to
+// fit the band under the copy whole.
+const PHONE_MARKS = 7;
+const ring = (k) => [Math.cos(Math.PI / 2 - k * Math.PI / 3) * 2.05, Math.sin(Math.PI / 2 - k * Math.PI / 3) * 2.05, [0.5, -0.2, 0.6, 0.1, -0.3, 0.4][k]];
+const phoneLayout = [[0, 0, 1.2], ...[0, 1, 2, 3, 4, 5].map(ring)];
+const scaleAt = (z, i) => 0.72 + z * 0.09 + (i === 0 ? 0.22 : 0);
+
+// spinBy(g, dx, dy) adds to a sphere's own spin a turn about the screen's
+// axes for a drag of dx, dy pixels; the frame loop calls it too, to keep a
+// let-go sphere turning. Made once Three.js has loaded.
+function makeSpinner() {
+  const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
+  const turn = new THREE.Quaternion();
+  return (g, dx, dy) => {
+    const u = g.userData;
+    turn.setFromAxisAngle(axisY, dx * 0.012); u.spin.premultiply(turn);
+    turn.setFromAxisAngle(axisX, dy * 0.012); u.spin.premultiply(turn);
+  };
+}
+
+// Renderer, camera and lights.
+function createStage() {
   // On dense phone screens antialiasing is invisible and costly, and 1.5x
   // is indistinguishable from 3x on soft dark spheres: about a quarter of
   // the pixels to shade.
@@ -56,24 +82,15 @@ const start = async () => {
   scene.add(new THREE.HemisphereLight(0x9fd9ff, 0x0a1220, 1.2));
   const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(4, 6, 8); scene.add(key);
   const rim = new THREE.PointLight(0x4aeaff, 40, 30); rim.position.set(-8, -3, 4); scene.add(rim);
+  return { renderer, scene, camera };
+}
 
-  const cluster = new THREE.Group();
-  scene.add(cluster);
+// One group per mark: a faceted ball with the logo on its face, and the
+// constants of its own wander.
+function buildSpheres(cluster, textures) {
   const ball = new THREE.IcosahedronGeometry(1, 1);
   const face = new THREE.CircleGeometry(0.78, 48);
-  const textures = await Promise.all(marks.map(([name]) => logoTexture(name)));
-  // Laid out on a loose ring with a middle, each at its own depth: the
-  // nearer ones larger, so the cluster has a front and a back.
-  const layout = [[0, 0.1, 1.5], [2.6, 1.6, 0.4], [-2.5, 1.9, -0.2], [2.9, -1.7, 0.8], [-2.8, -1.5, 0.2],
-    [0.2, 3.1, -1.4], [0.1, -3.0, -0.8], [4.8, 0.2, -1.6], [-4.7, 0.3, -1.4], [3.9, 3.4, -2.6], [-4.0, -3.2, -2.4], [4.3, -3.6, -2.2]];
-  // A phone's portrait band is too narrow for that spread: it keeps the
-  // first seven marks, C# in the middle and six round it, close enough to
-  // fit the band under the copy whole.
-  const PHONE_MARKS = 7;
-  const ring = (k) => [Math.cos(Math.PI / 2 - k * Math.PI / 3) * 2.05, Math.sin(Math.PI / 2 - k * Math.PI / 3) * 2.05, [0.5, -0.2, 0.6, 0.1, -0.3, 0.4][k]];
-  const phoneLayout = [[0, 0, 1.2], ...[0, 1, 2, 3, 4, 5].map(ring)];
-  const scaleAt = (z, i) => 0.72 + z * 0.09 + (i === 0 ? 0.22 : 0);
-  const spheres = marks.map(([, label], i) => {
+  return marks.map(([, label], i) => {
     const g = new THREE.Group();
     const [x, y, z] = layout[i];
     g.position.set(x, y, z);
@@ -93,16 +110,14 @@ const start = async () => {
     cluster.add(g);
     return g;
   });
+}
 
-  const pointer = { x: 0, y: 0 };
-  addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
-
-  // A press on a sphere grabs it: dragging spins it about the screen's
-  // axes, and letting go leaves it turning, slowing on its own.
+// A press on a sphere grabs it: dragging spins it about the screen's
+// axes, and letting go leaves it turning, slowing on its own. Returns the
+// sphere held now, which the frame loop leaves to the pointer.
+function enableGrab(camera, spheres, spinBy) {
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
-  const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
-  const turn = new THREE.Quaternion();
   let held = null, lastX = 0, lastY = 0, lastT = 0;
   const under = (e) => {
     const r = canvas.getBoundingClientRect();
@@ -110,11 +125,6 @@ const start = async () => {
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObjects(spheres.filter((g) => g.visible).map((g) => g.children[0]), false)[0];
     return hit ? hit.object.parent : null;
-  };
-  const spinBy = (g, dx, dy) => {
-    const u = g.userData;
-    turn.setFromAxisAngle(axisY, dx * 0.012); u.spin.premultiply(turn);
-    turn.setFromAxisAngle(axisX, dy * 0.012); u.spin.premultiply(turn);
   };
   canvas.addEventListener('pointerdown', (e) => {
     const g = under(e);
@@ -135,8 +145,13 @@ const start = async () => {
   const letGo = () => { held = null; canvas.classList.remove('is-holding'); };
   canvas.addEventListener('pointerup', letGo);
   canvas.addEventListener('pointercancel', letGo);
+  return () => held;
+}
 
-  const fit = () => {
+// Sizes the renderer to the canvas and places the cluster: on the right of
+// a wide view, in the band under the Explore button on a phone.
+function fitter(renderer, camera, cluster, spheres) {
+  return () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
@@ -173,10 +188,21 @@ const start = async () => {
     cluster.scale.setScalar(Math.min(fitW, fitH));
     cluster.position.set(0, (1 - (2 * middle) / h) * halfH, 0);
   };
+}
+
+const start = async () => {
+  const { renderer, scene, camera } = createStage();
+  const cluster = new THREE.Group();
+  scene.add(cluster);
+  const spheres = buildSpheres(cluster, await Promise.all(marks.map(([name]) => logoTexture(name))));
+  const pointer = { x: 0, y: 0 };
+  addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
+  const spinBy = makeSpinner();
+  const heldNow = enableGrab(camera, spheres, spinBy);
+  const fit = fitter(renderer, camera, cluster, spheres);
   new ResizeObserver(fit).observe(canvas);
   fit();
 
-  let last = 0;
   const frame = (t) => {
     const s = t / 1000;
     for (const g of spheres) {
@@ -184,7 +210,7 @@ const start = async () => {
       g.position.x = u.x + (Math.sin(s * u.fx + u.phase) * 0.55 + Math.sin(s * u.gx + u.tilt) * 0.2) * u.reach;
       g.position.y = u.y + (Math.cos(s * u.fy + u.tilt) * 0.5 + Math.sin(s * u.gy + u.phase) * 0.18) * u.reach;
       g.position.z = u.z + Math.sin(s * u.fz + u.phase * 0.5) * 0.5 * u.reach;
-      if (g !== held && (u.vx || u.vy)) {
+      if (g !== heldNow() && (u.vx || u.vy)) {
         spinBy(g, u.vx, u.vy);
         u.vx *= 0.975; u.vy *= 0.975;
         if (Math.abs(u.vx) + Math.abs(u.vy) < 0.02) u.vx = u.vy = 0;
@@ -196,7 +222,6 @@ const start = async () => {
     cluster.rotation.x += ((pointer.y * 0.1) - cluster.rotation.x) * 0.04;
     renderer.render(scene, camera);
     if (!reduce && onScreen) requestAnimationFrame(frame);
-    last = t;
   };
   // Rendering stops while the hero is scrolled out of view, and resumes
   // when it returns: a WebGL frame every 16 ms nobody sees costs battery.
@@ -212,7 +237,6 @@ const start = async () => {
   canvas.classList.add('is-live');
   requestAnimationFrame(frame);
   if (reduce) addEventListener('resize', () => requestAnimationFrame(frame));
-  return last;
 };
 
 if (wanted) start().catch((e) => { console.warn('hero visual skipped', e); canvas.remove(); });
