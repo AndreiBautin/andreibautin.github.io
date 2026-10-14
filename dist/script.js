@@ -103,9 +103,12 @@ const markCurrent = () => {
 };
 // The current link sits on a pill that slides between links, and the
 // header tightens once the page has left the top.
+// Decorative spans are built as elements, never from HTML strings: the CSP
+// requires Trusted Types, so a string-to-HTML call would be refused.
+const decoration = (className) => Object.assign(document.createElement('span'), { className, ariaHidden: 'true' });
 const nav = document.querySelector('nav');
 const header = document.querySelector('.nav-shell');
-nav.insertAdjacentHTML('afterbegin', '<span class="nav-pill" aria-hidden="true"></span>');
+nav.prepend(decoration('nav-pill'));
 const pill = nav.querySelector('.nav-pill');
 const placePill = () => {
   const current = nav.querySelector('a[aria-current="true"]');
@@ -135,7 +138,7 @@ onScroll();
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 if (finePointer && !reduceMotion) {
   document.querySelectorAll('.project-visual').forEach((card) => {
-    card.insertAdjacentHTML('beforeend', '<span class="spotlight" aria-hidden="true"></span>');
+    card.append(decoration('spotlight'));
     // The box is measured once per visit, not on every move.
     let box = card.getBoundingClientRect();
     card.addEventListener('pointerenter', () => { box = card.getBoundingClientRect(); });

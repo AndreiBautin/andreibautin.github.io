@@ -133,6 +133,10 @@ comment nits; start-app.bat does not enable the pre-push hook.
    CSP so the browser itself refuses any string-to-HTML sink. First
    replace script.js's two `insertAdjacentHTML` calls (constant strings
    today) with `createElement`, and check Three.js sets no such sink.
+   **Done.** Also `trusted-types 'none'` (no policies may be created).
+   Three.js, hero.js and tech-marks.js had no sinks; verify now fails on
+   any. In the browser: pill and 6 spotlights present, hero renders, a
+   probe `insertAdjacentHTML` is refused, page load causes no violation.
 2. **Enable the hook where people start the app.** `start-app.bat` sets
    `core.hooksPath` if it is unset, so a fresh clone is gated without
    reading the README.
