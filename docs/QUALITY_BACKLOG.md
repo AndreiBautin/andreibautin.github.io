@@ -196,3 +196,20 @@ Drafted 2026-10-14 after round 3.
    Nothing is orphaned today; this keeps it so, since an orphan is
    published and cached forever without anyone noticing.
    **Done.** Group `unreferenced files`; nothing orphaned. The test suite also caught a slip while adding these groups: three existing groups had been dropped from `checks.cjs`, and "every group has a planted defect" failed until they were restored.
+
+## Round 5
+
+Drafted 2026-10-14 after round 4.
+
+1. **`text formatting` covers the whole repository, not only `dist/`.**
+   Twice this session an editing layer turned `\b` into a raw backspace
+   byte — once in `checks.cjs`, once in this file — and nothing failed,
+   because the control-character check reads only shipped files.
+2. **Flag single backslashes in `new RegExp` template literals.** In a
+   template literal `\w` is `w` and `\b` is a backspace, so a regex built
+   that way silently matches something else; that is how the `unused css`
+   check ran weakened through round 3. A group that fails on
+   `` new RegExp(`…\w…`) `` with an undoubled backslash in `scripts/`.
+3. **Split `checks.cjs` by area.** At 18 groups and ~220 lines, the content,
+   policy, asset and repository checks each want their own file, with the
+   runner and shared lists in one place.
