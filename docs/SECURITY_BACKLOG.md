@@ -55,6 +55,9 @@ recorded here.
 9. **Dev server hardening.** `serve.cjs` already binds to 127.0.0.1 and
    rejects path traversal; add `X-Content-Type-Options: nosniff` and the
    same CSP as a header so local runs exercise the real policy.
+   **Done.** The header is read from index.html's meta tag, so the two
+   cannot drift. Checked with curl and a page load: headers present, all
+   8 assets 200, no violations.
 
 ## Deliberately not in scope
 
