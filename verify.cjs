@@ -20,7 +20,7 @@ for (const file of ['styles.css', 'script.js', 'hero.js']) {
   const hash = require('crypto').createHash('sha256').update(fs.readFileSync('dist/' + file)).digest('hex').slice(0, 10);
   assert(html.includes(`./${file}?v=${hash}`), `${file} link must be stamped ./${file}?v=${hash} (run node scripts/stamp.cjs)`);
 }
-for (const path of ['dist/index.html', 'dist/404.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js']) {
+for (const path of ['dist/index.html', 'dist/404.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js', 'dist/tech-marks.js']) {
   const text = fs.readFileSync(path, 'utf8');
   assert(!text.includes('\ufffd'), 'Invalid Unicode');
   // A CSS escape like "\00a0" once landed as a raw NUL byte and drew "\ufffd0\u2192".
@@ -32,6 +32,7 @@ const { EXPORTS } = require('./scripts/build_three.cjs');
 const used = new Set([...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/THREE.(w+)/g)].map((m) => m[1]));
 for (const name of used) assert(EXPORTS.includes(name), `THREE.${name} is not in scripts/build_three.cjs EXPORTS`);
 for (const name of EXPORTS) assert(new RegExp(` as ${name}[,}]`).test(fs.readFileSync('dist/vendor/three.hero.min.js', 'utf8')), `vendor subset lacks ${name}; run node scripts/build_three.cjs`);
+assert.equal(fs.readFileSync('dist/tech-marks.js', 'utf8'), require('./scripts/build_marks.cjs').render(), 'dist/tech-marks.js is stale; run node scripts/build_marks.cjs');
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
 assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
 console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');

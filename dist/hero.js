@@ -1,6 +1,6 @@
 // The hero's visual: a cluster of faceted spheres, each wearing the mark of
 // one technology, floating in the dark over the star field. Three.js from
-// ./vendor, fetched only once the page has loaded: a static import started
+// ./vendor (logos from ./tech-marks.js), fetched only once the page has loaded: a static import started
 // its 690 KB download at once, competing with the fonts and images on a slow
 // connection. The canvas fades in when ready. Nothing random: every
 // sphere's place, drift and spin come from its index.
@@ -8,7 +8,7 @@ if (document.readyState !== 'complete') await new Promise((resolve) => addEventL
 // Then wait for the main thread to go quiet, so parsing Three.js and
 // compiling shaders do not land on the page's first interactions.
 await new Promise((resolve) => (window.requestIdleCallback ? requestIdleCallback(resolve, { timeout: 1500 }) : setTimeout(resolve, 300)));
-const THREE = await import('./vendor/three.hero.min.js');
+const [THREE, { default: svgs }] = await Promise.all([import('./vendor/three.hero.min.js'), import('./tech-marks.js')]);
 
 const canvas = document.querySelector('.hero-tech');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -22,7 +22,7 @@ const hash = (k, n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453;
 // A logo as a texture: the SVG filled in the ink colour, drawn to a square
 // canvas with a margin, so a sphere's face is a round sticker with the mark
 // centred on it.
-const logoTexture = (name) => fetch(`./images/tech/${name}.svg`).then((r) => r.text()).then((svg) => new Promise((resolve) => {
+const logoTexture = (name) => new Promise((resolve) => {
   const img = new Image();
   img.onload = () => {
     const c = document.createElement('canvas');
@@ -34,8 +34,8 @@ const logoTexture = (name) => fetch(`./images/tech/${name}.svg`).then((r) => r.t
     t.anisotropy = 4;
     resolve(t);
   };
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.replace('<svg ', '<svg fill="#e9edf2" '));
-}));
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgs[name].replace('<svg ', '<svg fill="#e9edf2" '));
+});
 
 const start = async () => {
   // On dense phone screens antialiasing is invisible and costly, and 1.5x

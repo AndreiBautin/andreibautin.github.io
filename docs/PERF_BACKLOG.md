@@ -44,6 +44,9 @@ number is recorded here.
 4. **One request for the twelve logos.** `hero.js` fetches 12 SVGs before
    it can draw. Inline them as a map in a generated module (or one sprite
    file) — 12 round trips → 0–1.
+   **Done.** Sources moved to `assets/tech/`; `scripts/build_marks.cjs`
+   generates `dist/tech-marks.js`, imported alongside Three.js. 12
+   requests → 1; verify fails if the module is stale.
 5. **Skip WebGL where it cannot pay off.** On `saveData` or
    `deviceMemory <= 2`, never download Three.js; keep the static hero.
 6. **`content-visibility: auto`** on below-the-fold sections (with
