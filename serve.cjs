@@ -8,11 +8,15 @@ const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascrip
 const csp = fs.readFileSync(path.join(root, 'index.html'), 'utf8').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
 const security = { 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin' };
 http.createServer((req, res) => {
+  // Pages answers only reads; anything else here would be a local-only path.
+  if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
+  const send = (status, file, data) => res.writeHead(status, { ...security, 'Content-Type': types[path.extname(file)] || 'application/octet-stream' }).end(req.method === 'HEAD' ? undefined : data);
   const target = path.resolve(root, '.' + new URL(req.url, 'http://localhost').pathname.replace(/\/$/, '/index.html'));
   if (!target.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
   fs.readFile(target, (error, data) => {
-    if (error) { res.writeHead(404).end(); return; }
-    res.writeHead(200, { ...security, 'Content-Type': types[path.extname(target)] || 'application/octet-stream' }).end(data);
+    // Like Pages, a missing path gets the site's own 404 page.
+    if (error) { const page = path.join(root, '404.html'); send(404, page, fs.readFileSync(page)); return; }
+    send(200, target, data);
   });
 }).on('error', (error) => { console.error('Cannot start on port 4317:', error.message); process.exitCode = 1; })
   .listen(4317, '127.0.0.1', () => console.log('Local: http://127.0.0.1:4317'));

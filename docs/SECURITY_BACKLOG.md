@@ -108,12 +108,20 @@ Dependabot security updates are off; http:// redirects to https.
 8. **Dev server parity:** answer non-GET methods with 405 and serve
    `404.html` for missing paths like Pages does, so the 404 page and its
    policy are exercised locally.
+   **Done.** POST → 405, HEAD supported (the smoke check uses it), a deep
+   missing path → styled 404 page with all assets 200 in the browser.
 
 Needs you (GitHub settings, not code):
 
 9. **Branch protection on `main`** requiring the verify check.
 10. **Turn on Dependabot security updates** and private vulnerability
     reporting.
+
+## Round 2 results
+
+Items 1–8 done, verify green. Not yet observed on GitHub: the
+`workflow-lint` job, the post-deploy smoke step and `links.yml` have run
+only locally, because nothing has been pushed. Items 9–10 wait on you.
 
 ## Deliberately not in scope
 
