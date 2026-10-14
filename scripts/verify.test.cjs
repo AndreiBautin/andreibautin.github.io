@@ -8,6 +8,7 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { run, names } = require('./checks.cjs');
+const { stamp } = require('./stamp.cjs');
 
 const repo = path.resolve(__dirname, '..');
 const COPIED = ['dist', 'scripts', 'assets/tech', '.github', '.openai', 'README.md'];
@@ -40,7 +41,18 @@ const failing = (root) => run(root).filter((r) => r.error).map((r) => r.name);
 const defects = {
   'syntax': (root) => edit(root, 'dist/404.js', (s) => s + '}\n'),
   'resume facts': (root) => edit(root, 'dist/index.html', (s) => s.replaceAll('AZ-900', 'AZ-104')),
-  'links': (root) => edit(root, 'dist/index.html', (s) => s.replace('</main>', '<a href="#nowhere">x</a></main>')),
+  'links': [
+    (root) => edit(root, 'dist/index.html', (s) => s.replace('</main>', '<a href="#nowhere">x</a></main>')),
+    (root) => edit(root, 'dist/404.html', (s) => s.replace('/404.css', '/missing.css')),
+  ],
+  'storage keys': (root) => edit(root, 'dist/404.js', (s) => s.replace("'portfolio-theme'", "'theme'")),
+  // Restamped, so only the dead class is wrong; index.html is edited first to
+  // replace its link before stamp writes to it.
+  'unused css': (root) => {
+    edit(root, 'dist/styles.css', (s) => s + '.nobody-uses-this{color:red}\n');
+    edit(root, 'dist/index.html', (s) => s);
+    stamp(path.join(root, 'dist'));
+  },
   'stamp': (root) => edit(root, 'dist/styles.css', (s) => s + '/* changed */\n'),
   'text formatting': (root) => edit(root, 'dist/404.css', (s) => s.replace('}', '} ')),
   'generated files': (root) => edit(root, 'assets/tech/react.svg', (s) => s.replace('<svg', '<svg data-x="1"')),
@@ -59,10 +71,10 @@ test('every check group has a planted defect', () => assert.deepEqual(Object.key
 
 test('a clean copy passes every group', () => assert.deepEqual(failing(copy()), []));
 
-for (const [name, plant] of Object.entries(defects)) {
-  test(`${name} fails on its defect, and only it`, () => {
+for (const [name, plants] of Object.entries(defects)) {
+  [plants].flat().forEach((plant, i) => test(`${name} fails on its defect${i ? ` #${i + 1}` : ''}, and only it`, () => {
     const root = copy();
     plant(root);
     assert.deepEqual(failing(root), [name]);
-  });
+  }));
 }

@@ -64,14 +64,36 @@ const checks = [
     assert(!/hello@example|Electron|01\.4 TB|0\.98|evidence matching/.test(html), 'index.html carries a placeholder or retired claim');
     for (const text of RESUME_FACTS) assert(html.includes(text), `index.html lacks resume fact "${text}"`);
   }],
+  // Both pages. index.html links relative (./), 404.html root-absolute (/),
+  // because Pages serves it at whatever path was missing.
   ['links', (c) => {
-    const html = c.read('dist/index.html');
-    const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);
-    assert.equal(ids.length, new Set(ids).size, 'index.html has duplicate ids');
-    for (const [, href] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
-      if (href.startsWith('#')) assert(ids.includes(href.slice(1)), `${href}: no element with that id`);
-      if (href.startsWith('./')) assert(c.exists('dist/' + href.slice(2).split('?')[0]), `${href}: no such file in dist/`);
+    for (const page of PAGES) {
+      const html = c.read('dist/' + page);
+      const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);
+      assert.equal(ids.length, new Set(ids).size, `${page} has duplicate ids`);
+      for (const [, href] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
+        if (href.startsWith('#')) assert(ids.includes(href.slice(1)), `${page}: ${href}: no element with that id`);
+        const local = href.match(/^\.?\/(?!\/)([^?#]*)/);
+        if (local) assert(c.exists('dist/' + (local[1] || 'index.html')), `${page}: ${href}: no such file in dist/`);
+      }
     }
+  }],
+  // A key read but never written, or written under another spelling, loses
+  // the visitor's setting silently: 404.js reads the theme script.js saves.
+  ['storage keys', (c) => {
+    const calls = (verb) => new Set(SHIPPED_JS.flatMap((f) => [...c.read('dist/' + f).matchAll(new RegExp(`localStorage\\.${verb}\\('([^']+)'`, 'g'))].map((m) => m[1])));
+    const written = calls('setItem');
+    for (const key of calls('getItem')) assert(written.has(key), `localStorage key '${key}' is read but never written`);
+  }],
+  // A class the stylesheet styles but no page or script uses is dead weight
+  // on the critical path, and a sign of a renamed class whose styles were left behind.
+  ['unused css', (c) => {
+    const css = c.read('dist/styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
+    const preludes = [...css.matchAll(/(?:^|[{};])([^{};]+)\{/g)].map((m) => m[1]).filter((p) => !p.trim().startsWith('@'));
+    const classes = new Set(preludes.flatMap((p) => [...p.matchAll(/\.(-?[a-zA-Z_][\w-]*)/g)].map((m) => m[1])));
+    const used = ['index.html', 'script.js', 'hero.js'].map((f) => c.read('dist/' + f)).join('\n');
+    for (const name of classes) assert(new RegExp(`(^|[^\\w-])${name}(?![\\w-])`).test(used), `.${name} is styled in styles.css but used by no page or script`);
+    for (const [, name] of css.matchAll(/@keyframes ([\w-]+)/g)) assert(new RegExp(`animation(-name)?:[^;}]*\\b${name}\\b`).test(css) || used.includes(name), `@keyframes ${name} is never used`);
   }],
   // A page served fresh with a stylesheet from a browser's cache drew the
   // hero as a block image once; see scripts/stamp.cjs.
@@ -163,7 +185,7 @@ const checks = [
 // Runs every group rather than stopping at the first, so one push shows
 // every problem. Returns [{ name, error }] for the groups that failed.
 function run(root) {
-  const c = context(root);
+  const c = context(path.resolve(root));
   return checks.map(([name, check]) => { try { check(c); return { name }; } catch (error) { return { name, error }; } });
 }
 
