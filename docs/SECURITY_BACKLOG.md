@@ -171,6 +171,41 @@ comment nits; start-app.bat does not enable the pre-push hook.
    **Done.** Stronger than hashes: both live pages must equal this
    commit's `dist/` byte for byte.
 
+## Round 3 results
+
+All six done and deployed (push run for 4dc9697 green; live smoke passes
+byte-for-byte; live page loads with no console errors under Trusted
+Types). Observatory B is the ceiling on Pages.
+
+## Round 4
+
+Drafted 2026-10-14. Returns are now small: the code-side hardening a
+static Pages site allows is in place, and what is left is mostly upkeep
+or a hosting decision.
+
+1. **Review Dependabot PRs 1–3** (major bumps: checkout 7, upload-pages-
+   artifact 5, deploy-pages 5). Read each release's breaking changes;
+   their verify and workflow-lint checks are green, but deploy is skipped
+   on PRs, so the deploy-pages and upload-artifact pair is only proven by
+   a real deploy. Merge together, then watch the deploy.
+2. **Smoke-check the module graph too.** The live check covers files
+   index.html links; `tech-marks.js` and the Three.js subset are imported
+   by hero.js and are not checked. Include them.
+3. **Weekly Observatory regression check** in `links.yml`: fail if the
+   live score drops below 75, so a lost CSP is caught even without a
+   deploy.
+
+Needs you:
+
+4. **GitHub settings** (carried from round 2): branch protection on
+   `main` requiring verify and workflow-lint; Dependabot security
+   updates; private vulnerability reporting (SECURITY.md relies on it).
+5. **Decide whether grade A is worth a host change.** Only real headers
+   (X-Frame-Options, nosniff) close the gap, which means a proxy such as
+   Cloudflare in front of Pages or a different host. Not recommended for
+   a portfolio with nothing to click-jack; listed so it is a decision,
+   not an oversight.
+
 ## Deliberately not in scope
 
 - HSTS / `X-Frame-Options`: not settable on Pages, and `frame-ancestors`
