@@ -25,16 +25,20 @@ recorded here.
    name. Today the first failing `assert` stops the run, so a push shows
    one problem at a time and an error like `Invalid Unicode` doesn't say
    which file.
+   **Done.** `scripts/checks.cjs`, 13 groups; `verify` prints `ok`/`FAIL` per group and runs all of them.
 2. **Syntax-check every script by discovery, not by list.** The
    `node --check` list is hand-maintained and already misses
    `scripts/stamp.cjs`, `lighthouse.cjs`, `build_marks.cjs`,
    `build_three.cjs` and `verify.cjs` itself. Glob `dist/**/*.js`,
    `scripts/*.cjs`, root `*.cjs` (excluding `dist/vendor`).
+   **Done.** Found by walking the tree; `404.js` and `tech-marks.js` are now checked too.
 3. **Drop `npm run build`.** It is an alias for `verify` and there is no
    build; the name suggests a step that doesn't exist.
+   **Done.**
 4. **One source for the dev port.** `4317` is written three times in
    `serve.cjs` and once in the README; make it one constant and have
    `verify` assert the README states the same port.
+   **Done.** `PORT` in `checks.cjs`, used by `serve.cjs`; group `dev port`.
 
 ### Code cleanliness
 
@@ -43,9 +47,11 @@ recorded here.
    check runner removes the repetition and the drift between them (e.g.
    the "shown text" list and the "text formatting" list disagree on
    whether `404.js` is checked).
+   **Done.** `context(root)` caches reads.
 6. **Name the file lists.** The page list, the text-file list and the
    shipped-script list are each written inline more than once. Define
    them once in the runner so a new file is added in one place.
+   **Done.** `PAGES`, `STAMPED`, `TEXT`, `SHIPPED_JS` at the top of `checks.cjs`.
 
 ### Test coverage
 
@@ -56,13 +62,16 @@ recorded here.
    image, broken `#anchor`, over-budget file), and asserts that group
    fails. This is the test that would have caught the Three.js regex.
    Requires item 1 so checks can take a root directory.
+   **Done.** Asserts *exactly* the planted group fails (all 13 are specific) and that every group has a defect.
 8. **`stamp.cjs` is idempotent and `build_marks.cjs` is deterministic.**
    Running either twice yields byte-identical output; a non-deterministic
    generator makes the staleness check flap.
+   **Done.** `scripts/tools.test.cjs`; stamp is also shown to repair a stale stamp.
 9. **`serve.cjs` contract test.** Start it on an ephemeral port in the
    test, assert: CSP header equals the meta tag, `..` traversal is 403,
    POST is 405, a missing path returns the 404 page with status 404.
    These are the local-only behaviours nothing else exercises.
+   **Done.** A literal `..` never reaches the server (URL parsing resolves it), so the server now decodes the path before its guard and the test sends `..%2f`; a malformed escape gets 400.
 
 ### Documentation
 
@@ -70,15 +79,19 @@ recorded here.
     editing CSS/JS; no inline script or style (CSP); new glyphs need
     `subset_fonts.py`; new `THREE.*` names need `build_three.cjs`; facts
     must be in the resume; the published PDF is copied, never generated.
+    **Done.**
 11. **`docs/ARCHITECTURE.md`** — one request traced end to end naming
     real files: `index.html` → stamped `styles.css`/`script.js` →
     `hero.js` idle import → `vendor/three.hero.min.js` + `tech-marks.js`,
     plus the build-time generators and what `verify` pins about each.
+    **Done.**
 12. **`docs/TESTING.md`** — what `verify`, `smoke`, `links`, `observatory`
     and `lighthouse` each cover, and what is **deliberately not tested**
     (browser rendering, WebGL, animation feel, external profile pages)
     and why.
+    **Done.**
 13. **README to fifteen seconds.** It is one dense paragraph; split into
     what it is / how to run / the one idea (no build — `dist/` is the
     source, and `verify` pins every generated file to its generator), and
     move the PDF and hosting details to the docs above.
+    **Done.**
