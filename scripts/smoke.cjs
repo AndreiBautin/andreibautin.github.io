@@ -12,6 +12,9 @@ async function check() {
     const response = await fetch(new URL(page, base), { cache: 'no-store' });
     const html = await response.text();
     if (!response.ok) problems.push(`${page}: HTTP ${response.status}`);
+    // Byte-for-byte with this checkout: proves the commit being deployed is
+    // what Pages serves, stamped asset hashes included, not a cached build.
+    if (html !== fs.readFileSync(`dist/${page}`, 'utf8')) problems.push(`${page}: differs from this commit's dist/${page}`);
     if (!html.includes(expected)) problems.push(`${page}: Content-Security-Policy missing or different`);
     if (!html.includes('<meta name="referrer" content="strict-origin-when-cross-origin" />')) problems.push(`${page}: referrer policy missing`);
     if (page !== 'index.html') continue;

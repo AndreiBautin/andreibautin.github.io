@@ -168,6 +168,8 @@ comment nits; start-app.bat does not enable the pre-push hook.
 6. **Lock the CSP in the smoke check to the deployed commit** — smoke
    compares against the local `dist/`; in CI that is the same commit, but
    make it explicit by also checking the stamped asset hashes match.
+   **Done.** Stronger than hashes: both live pages must equal this
+   commit's `dist/` byte for byte.
 
 ## Deliberately not in scope
 
