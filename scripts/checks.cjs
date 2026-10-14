@@ -39,6 +39,9 @@ function context(root) {
   return { root, bytes, read: (rel) => bytes(rel).toString('utf8'), exists: (rel) => fs.existsSync(path.join(root, rel)) };
 }
 
+const walk = (root, dir) => fs.readdirSync(path.join(root, dir), { withFileTypes: true })
+  .flatMap((e) => (e.isDirectory() ? walk(root, `${dir}/${e.name}`) : [`${dir}/${e.name}`]));
+
 // Every script in the repository, found rather than listed, so a new one is
 // syntax-checked without anyone remembering to add it.
 function scripts(root) {
@@ -88,12 +91,32 @@ const checks = [
   // A class the stylesheet styles but no page or script uses is dead weight
   // on the critical path, and a sign of a renamed class whose styles were left behind.
   ['unused css', (c) => {
-    const css = c.read('dist/styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
-    const preludes = [...css.matchAll(/(?:^|[{};])([^{};]+)\{/g)].map((m) => m[1]).filter((p) => !p.trim().startsWith('@'));
-    const classes = new Set(preludes.flatMap((p) => [...p.matchAll(/\.(-?[a-zA-Z_][\w-]*)/g)].map((m) => m[1])));
-    const used = ['index.html', 'script.js', 'hero.js'].map((f) => c.read('dist/' + f)).join('\n');
-    for (const name of classes) assert(new RegExp(`(^|[^\\w-])${name}(?![\\w-])`).test(used), `.${name} is styled in styles.css but used by no page or script`);
-    for (const [, name] of css.matchAll(/@keyframes ([\w-]+)/g)) assert(new RegExp(`animation(-name)?:[^;}]*\\b${name}\\b`).test(css) || used.includes(name), `@keyframes ${name} is never used`);
+    for (const [sheet, users] of [['styles.css', ['index.html', 'script.js', 'hero.js']], ['404.css', ['404.html', '404.js']]]) {
+      const css = c.read('dist/' + sheet).replace(/\/\*[\s\S]*?\*\//g, '');
+      const preludes = [...css.matchAll(/(?:^|[{};])([^{};]+)\{/g)].map((m) => m[1]).filter((p) => !p.trim().startsWith('@'));
+      const classes = new Set(preludes.flatMap((p) => [...p.matchAll(/\.(-?[a-zA-Z_][\w-]*)/g)].map((m) => m[1])));
+      const used = users.map((f) => c.read('dist/' + f)).join('\n');
+      for (const name of classes) assert(new RegExp(`(^|[^\\w-])${name}(?![\\w-])`).test(used), `.${name} is styled in ${sheet} but used by no page or script`);
+      for (const [, name] of css.matchAll(/@keyframes ([\w-]+)/g)) assert(new RegExp(`animation(-name)?:[^;}]*\\b${name}\\b`).test(css) || used.includes(name), `@keyframes ${name} in ${sheet} is never used`);
+    }
+  }],
+  // An orphan is published and cached with nothing pointing at it. Pages
+  // are the entry points; everything else must be named by a shipped file.
+  ['unreferenced files', (c) => {
+    const files = walk(c.root, 'dist').map((f) => f.slice('dist/'.length));
+    const text = files.filter((f) => /\.(html|css|js)$/.test(f)).map((f) => c.read('dist/' + f)).join('\n');
+    for (const file of files) if (!PAGES.includes(file)) assert(text.includes(path.posix.basename(file)), `dist/${file} is referenced by no page, stylesheet or script`);
+  }],
+  // The living docs name files in backticks; a rename must not leave them
+  // pointing at nothing. The backlogs are history and may name removed files.
+  ['doc paths', (c) => {
+    const docs = ['README.md', 'CLAUDE.md', 'SECURITY.md', 'docs/ARCHITECTURE.md', 'docs/TESTING.md'];
+    const dirs = /^(dist|scripts|docs|assets|\.github|\.githooks|\.openai)\//;
+    for (const doc of docs) for (const [, token] of c.read(doc).matchAll(/`([^`\s*<>]+)`/g)) {
+      const rel = token.replace(/[?#].*$/, '').replace(/^\.?\//, '').replace(/\/$/, '');
+      if (!dirs.test(rel) && !/^[\w.-]+\.(c?js|css|html|md|py|json|ya?ml|bat|pdf)$/.test(rel)) continue;
+      assert(['', 'dist/', 'scripts/', '.github/workflows/'].some((base) => c.exists(base + rel)), `${doc} names \`${token}\`, which does not exist`);
+    }
   }],
   // A page served fresh with a stylesheet from a browser's cache drew the
   // hero as a block image once; see scripts/stamp.cjs.
@@ -174,8 +197,7 @@ const checks = [
     for (const workflow of fs.readdirSync(path.join(c.root, '.github/workflows'))) for (const [, ref] of c.read(`.github/workflows/${workflow}`).matchAll(/uses: *(\S+)/g)) assert(/@[0-9a-f]{40}$/.test(ref), `${workflow}: ${ref} must be pinned to a commit SHA`);
   }],
   ['mime types', (c) => {
-    const walk = (dir) => fs.readdirSync(path.join(c.root, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(`${dir}/${e.name}`) : [`${dir}/${e.name}`]));
-    for (const file of walk('dist')) assert(TYPES[path.extname(file)], `${file}: no content type for ${path.extname(file) || 'files without an extension'} in TYPES`);
+    for (const file of walk(c.root, 'dist')) assert(TYPES[path.extname(file)], `${file}: no content type for ${path.extname(file) || 'files without an extension'} in TYPES`);
   }],
   ['dev port', (c) => {
     assert(c.read('README.md').includes(`http://127.0.0.1:${PORT}`), `README.md must name the dev server port ${PORT}`);

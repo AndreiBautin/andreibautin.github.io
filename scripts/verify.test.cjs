@@ -11,7 +11,7 @@ const { run, names } = require('./checks.cjs');
 const { stamp } = require('./stamp.cjs');
 
 const repo = path.resolve(__dirname, '..');
-const COPIED = ['dist', 'scripts', 'assets/tech', '.github', '.openai', 'README.md'];
+const COPIED = ['dist', 'scripts', 'assets/tech', '.github', '.githooks', '.openai', 'docs', 'README.md', 'CLAUDE.md', 'SECURITY.md', 'serve.cjs', 'verify.cjs', 'package.json', 'start-app.bat'];
 const copies = [];
 test.after(() => { for (const root of copies) fs.rmSync(root, { recursive: true, force: true }); });
 const fresh = () => { const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-')); copies.push(root); return root; };
@@ -43,16 +43,23 @@ const defects = {
   'resume facts': (root) => edit(root, 'dist/index.html', (s) => s.replaceAll('AZ-900', 'AZ-104')),
   'links': [
     (root) => edit(root, 'dist/index.html', (s) => s.replace('</main>', '<a href="#nowhere">x</a></main>')),
-    (root) => edit(root, 'dist/404.html', (s) => s.replace('/404.css', '/missing.css')),
+    (root) => edit(root, 'dist/404.html', (s) => s.replace('/images/favicon.svg', '/images/missing.svg')),
   ],
   'storage keys': (root) => edit(root, 'dist/404.js', (s) => s.replace("'portfolio-theme'", "'theme'")),
   // Restamped, so only the dead class is wrong; index.html is edited first to
   // replace its link before stamp writes to it.
-  'unused css': (root) => {
-    edit(root, 'dist/styles.css', (s) => s + '.nobody-uses-this{color:red}\n');
-    edit(root, 'dist/index.html', (s) => s);
-    stamp(path.join(root, 'dist'));
-  },
+  'unused css': [
+    (root) => {
+      edit(root, 'dist/styles.css', (s) => s + '.nobody-uses-this{color:red}\n');
+      edit(root, 'dist/index.html', (s) => s);
+      stamp(path.join(root, 'dist'));
+    },
+    (root) => edit(root, 'dist/404.css', (s) => s + '@keyframes nobody-plays{to{opacity:0}}\n'),
+    // A class that only differs from a used one by a suffix must not pass as used.
+    (root) => edit(root, 'dist/404.css', (s) => s + '.light-x{color:red}\n'),
+  ],
+  'unreferenced files': (root) => fs.writeFileSync(path.join(root, 'dist/images/orphan.png'), ''),
+  'doc paths': (root) => edit(root, 'docs/TESTING.md', (s) => s + '\nSee `scripts/renamed.cjs`.\n'),
   'stamp': (root) => edit(root, 'dist/styles.css', (s) => s + '/* changed */\n'),
   'text formatting': (root) => edit(root, 'dist/404.css', (s) => s.replace('}', '} ')),
   'generated files': (root) => edit(root, 'assets/tech/react.svg', (s) => s.replace('<svg', '<svg data-x="1"')),
@@ -62,8 +69,12 @@ const defects = {
   'content security policy': (root) => edit(root, 'dist/404.html', (s) => s.replace('<body', '<body style="color:red"')),
   'binary metadata': (root) => edit(root, 'dist/images/apple-touch-icon.png', (s) => s + '<x:xmpmeta>'),
   'pinned actions': (root) => edit(root, '.github/workflows/pages.yml', (s) => s.replace(/(actions\/checkout)@[0-9a-f]{40}/, '$1@v7')),
-  // A new file, not an edit, so it cannot write through to the template.
-  'mime types': (root) => fs.writeFileSync(path.join(root, 'dist/images/new.avif'), ''),
+  // A new file, not an edit, so it cannot write through to the template;
+  // linked from the 404 page so it is not also an orphan.
+  'mime types': (root) => {
+    fs.writeFileSync(path.join(root, 'dist/images/new.avif'), '');
+    edit(root, 'dist/404.html', (s) => s.replace('</body>', '<img src="/images/new.avif" alt=""></body>'));
+  },
   'dev port': (root) => edit(root, 'README.md', (s) => s.replaceAll('127.0.0.1:4317', '127.0.0.1:8080')),
 };
 
