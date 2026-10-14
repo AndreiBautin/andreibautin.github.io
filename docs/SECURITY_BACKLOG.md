@@ -75,6 +75,7 @@ Dependabot security updates are off; http:// redirects to https.
 1. **Pre-push hook running `npm run verify`**, committed under
    `.githooks/` with `core.hooksPath`, so a red build never reaches the
    deploy job.
+   **Done.** Enabled in this clone; README says how for a new one.
 2. **`persist-credentials: false`** on checkout. The job never pushes,
    so the token should not sit in `.git/config` for later steps.
 3. **Lint the workflow with zizmor** in CI (template injection,

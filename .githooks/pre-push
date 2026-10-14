@@ -1,0 +1,4 @@
+#!/bin/sh
+# Same gate as CI and the deploy: a red verify never leaves this machine.
+# Enable once per clone: git config core.hooksPath .githooks
+exec npm run -s verify

@@ -3,3 +3,4 @@
 dist/*.css text eol=lf
 dist/*.js text eol=lf
 dist/*.html text eol=lf
+.githooks/* text eol=lf
