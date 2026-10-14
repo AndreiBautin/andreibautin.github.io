@@ -2,7 +2,7 @@
 
 | Command | Runs | Covers |
 |---|---|---|
-| `npm run verify` | every push, PR, deploy | 16 check groups over the repo (`scripts/checks.cjs`), then `scripts/*.test.cjs` |
+| `npm run verify` | every push, PR, deploy | 18 check groups over the repo (`scripts/checks.cjs`), then `scripts/*.test.cjs` |
 | `scripts/smoke.cjs` | after each deploy | live pages equal this commit's `dist/`, carry the CSP and referrer policy, every linked asset and dynamic import loads |
 | `npm run links` | weekly | outbound links still answer (a lapsed service's subdomain can be claimed) |
 | `scripts/observatory.cjs` | weekly | live Mozilla Observatory grade has not dropped |
