@@ -145,22 +145,28 @@ Drafted 2026-10-14 after round 2.
    theme transition need animation frames, which a hidden pane withholds.
    Load the page with the pane shown, compare against the live site, and
    record the result.
+   **Done.** Hero renders and goes live (`is-live`); theme toggle flips and clears its transition; scrolling to About places the nav pill under About, marks it current, retitles the tab and tightens the header; the star field draws at full width; the 404 page serves. The pane only drew frames while screenshotting, so this was driven step by step rather than watched.
 2. **`404.html` links are checked.** It links with root-absolute paths
    (`/404.css`, `/404.js`, `/images/favicon.svg`), which the `links` group
    ignores — it only reads `index.html` and only `./` paths. A renamed file
    would 404 on the 404 page with verify green.
+   **Done.** `links` reads both pages and resolves `./` and `/` paths; planted defects can now be a list and cover both.
 3. **One name for the theme key.** `'portfolio-theme'` is written three
    times across `script.js` and `404.js`; rename it in one and the 404 page
    silently loses the visitor's theme. Add a group that every
    `localStorage` key read is also written somewhere, with its defect.
+   **Done.** Group `storage keys`: every `localStorage.getItem` key must be written by some `setItem`. Chosen over a shared constant because `404.js` must stay a standalone pre-paint file.
 4. **Test `smoke.cjs` offline.** It is the only check of the live site
    and has no test: export `check(base)` and run it against `createServer`
    in `tools.test.cjs`, passing on a faithful copy and failing on a missing
    asset or changed policy.
+   **Done.** `check(base, dist)` exported; `tools.test.cjs` serves a copy and asserts a clean pass, then a missing `tech-marks.js` and a stripped 404 policy are both named.
 5. **Dead CSS check.** `styles.css` is 311 lines and nothing notices a
    selector whose class no page or script uses any more. A group that
    every class selector appears in `index.html`, `404.html` or a script
    (allowing classes added at runtime by name).
+   **Done.** Group `unused css` (classes and `@keyframes`). It found `.match-card`, `.ghost`, `.contact-note` and `.hero-planet` with its `planet-turn` keyframes styled but unused; all removed (styles.css 311 → 301 lines).
 6. **Break up `hero.js`'s `start()`.** One 175-line async function builds
    the renderer, spheres, lights, pointer handling and the frame loop.
    Same treatment as `script.js`: named steps, shared state passed in.
+   **Done.** `createStage`, `buildSpheres`, `makeSpinner`, `enableGrab` (returns the held sphere), `fitter`, with the layout as module constants; `start()` is now the wiring and the frame loop. A dead `last` return value removed.

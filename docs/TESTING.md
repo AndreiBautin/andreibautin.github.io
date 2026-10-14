@@ -2,7 +2,7 @@
 
 | Command | Runs | Covers |
 |---|---|---|
-| `npm run verify` | every push, PR, deploy | 13 check groups over the repo (`scripts/checks.cjs`), then `scripts/*.test.cjs` |
+| `npm run verify` | every push, PR, deploy | 16 check groups over the repo (`scripts/checks.cjs`), then `scripts/*.test.cjs` |
 | `scripts/smoke.cjs` | after each deploy | live pages equal this commit's `dist/`, carry the CSP and referrer policy, every linked asset and dynamic import loads |
 | `npm run links` | weekly | outbound links still answer (a lapsed service's subdomain can be claimed) |
 | `scripts/observatory.cjs` | weekly | live Mozilla Observatory grade has not dropped |
@@ -19,7 +19,9 @@ enforces that.
 `scripts/tools.test.cjs` covers what nothing else exercises: `stamp` is
 idempotent and repairs a stale stamp, `build_marks` is deterministic, and
 `serve.cjs` returns the CSP header, the 404 page, 405 for writes and 403 for
-an encoded path out of `dist/`.
+an encoded path out of `dist/`. It also runs `smoke.cjs`'s `check()` against a
+local copy, so the live-site check is proven to pass on a faithful copy and
+to name a missing asset or policy on a bad one.
 
 ## No linter, formatter or typechecker, on purpose
 
