@@ -222,3 +222,20 @@ Drafted 2026-10-14 after round 4.
    `scripts/checks.cjs` is the runner and keeps its exports, so `serve.cjs`,
    `smoke.cjs` and `stamp.cjs` are unchanged. Also added to `CLAUDE.md`:
    write backslash-heavy code with an editor, not through shell layers.
+
+## Round 6
+
+Drafted 2026-10-14 after round 5. The mechanical work is close to done;
+what is left is mostly decisions only the owner can make.
+
+1. **Keep or remove `scripts/build_resume.py`.** It builds an alternate
+   one-page resume that is never published, needs Python and ReportLab, and
+   nothing checks it still runs. Either delete it, or add it to TESTING.md as
+   deliberately unchecked. Owner's call.
+2. **Keep or remove `.openai/hosting.json`.** It serves a backup site on the
+   original hosting and costs a `verify` group. If that backup is retired,
+   both go. Owner's call.
+3. **One star-field hash.** `script.js` (stars) and `hero.js` (spheres)
+   each define the same `sin`-based hash. `script.js` is a classic script,
+   so sharing it means a module and one more request on the critical path;
+   either accept the duplicate with a comment in both, or move it.
