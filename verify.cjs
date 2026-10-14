@@ -1,83 +1,15 @@
+// The one gate: pre-push hook, CI and the deploy all run this. Every check
+// group runs and reports (scripts/checks.cjs), then the tests that prove the
+// groups and tools can fail (scripts/*.test.cjs). There is no TypeScript or
+// compilation step in this static site.
 const fs = require('node:fs');
-const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
-const html = fs.readFileSync('dist/index.html', 'utf8');
-execFileSync(process.execPath, ['--check', 'dist/script.js']);
-execFileSync(process.execPath, ['--input-type=module', '--check'], { input: fs.readFileSync('dist/hero.js') });
-execFileSync(process.execPath, ['--check', 'serve.cjs']);
-execFileSync(process.execPath, ['--check', 'dist/404.js']);
-execFileSync(process.execPath, ['--check', 'scripts/smoke.cjs']);
-execFileSync(process.execPath, ['--check', 'scripts/links.cjs']);
-execFileSync(process.execPath, ['--check', 'scripts/observatory.cjs']);
-assert(!/hello@example|Electron|01\.4 TB|0\.98|evidence matching/.test(html));
-for (const text of ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University']) assert(html.includes(text), text);
-const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
-assert.equal(ids.length, new Set(ids).size, 'Duplicate IDs');
-for (const [, href] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
-  if (href.startsWith('#')) assert(ids.includes(href.slice(1)), href);
-  if (href.startsWith('./')) assert(fs.existsSync('dist/' + href.slice(2).split('?')[0]), href);
-}
-// The stylesheet and script links carry a hash of the file they point to
-// (scripts/stamp.cjs): a page served fresh with a stylesheet from a
-// browser's cache drew the hero as a block image once.
-for (const file of ['styles.css', 'script.js', 'hero.js']) {
-  const hash = require('crypto').createHash('sha256').update(fs.readFileSync('dist/' + file)).digest('hex').slice(0, 10);
-  assert(html.includes(`./${file}?v=${hash}`), `${file} link must be stamped ./${file}?v=${hash} (run node scripts/stamp.cjs)`);
-}
-for (const path of ['dist/index.html', 'dist/404.html', 'dist/404.css', 'dist/404.js', 'dist/styles.css', 'dist/script.js', 'dist/hero.js', 'dist/tech-marks.js']) {
-  const text = fs.readFileSync(path, 'utf8');
-  assert(!text.includes('\ufffd'), 'Invalid Unicode');
-  // A CSS escape like "\00a0" once landed as a raw NUL byte and drew "\ufffd0\u2192".
-  assert(!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text), `${path}: control character`);
-  assert(!/[\t ]+$/m.test(text), 'Trailing whitespace');
-}
-// hero.js may only use THREE.* names the vendor subset exports.
-const { EXPORTS } = require('./scripts/build_three.cjs');
-const used = new Set([...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/\bTHREE\.(\w+)/g)].map((m) => m[1]));
-for (const name of used) assert(EXPORTS.includes(name), `THREE.${name} is not in scripts/build_three.cjs EXPORTS`);
-for (const name of EXPORTS) assert(new RegExp(` as ${name}[,}]`).test(fs.readFileSync('dist/vendor/three.hero.min.js', 'utf8')), `vendor subset lacks ${name}; run node scripts/build_three.cjs`);
-assert.equal(fs.readFileSync('dist/tech-marks.js', 'utf8'), require('./scripts/build_marks.cjs').render(), 'dist/tech-marks.js is stale; run node scripts/build_marks.cjs');
-// Byte budgets, gzipped as Pages serves them: a regression fails here rather
-// than being found in a Lighthouse run. Raise one only on purpose.
-const gz = (files) => files.reduce((sum, f) => sum + require('node:zlib').gzipSync(fs.readFileSync('dist/' + f), { level: 9 }).length, 0);
-for (const [name, files, limit] of [
-  ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
-  ['hero visual', ['hero.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
-]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
-// The fonts are subset (scripts/subset_fonts.py): every character a page
-// can show must be in that list, or it renders in a fallback face.
-const ranges = fs.readFileSync('scripts/subset_fonts.py', 'utf8').match(/UNICODES = "([^"]+)"/)[1].split(',')
-  .map((r) => r.slice(2).split('-').map((h) => parseInt(h, 16))).map(([a, b = a]) => [a, b]);
-const shown = ['dist/index.html', 'dist/404.html', 'dist/404.css', 'dist/script.js', 'dist/styles.css']
-  .map((f) => fs.readFileSync(f, 'utf8').replace(/<script[\s\S]*?<\/script>|<[^>]+>|\s/g, ' ')).join('');
-for (const ch of new Set(shown)) {
-  const code = ch.codePointAt(0);
-  assert(ranges.some(([a, b]) => code >= a && code <= b), `U+${code.toString(16)} (${ch}) is not in the font subset; add it in scripts/subset_fonts.py`);
-}
-assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
-assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
-// The pages keep to what their Content-Security-Policy allows, so the policy
-// never has to loosen: same-origin scripts only, no inline code or styles.
-const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'`;
-for (const page of ['dist/index.html', 'dist/404.html']) {
-  const text = fs.readFileSync(page, 'utf8');
-  assert(text.includes(`<meta http-equiv="Content-Security-Policy" content="${csp}" />`), `${page}: Content-Security-Policy missing or changed`);
-  assert(!/http:\/\//.test(text), `${page}: http:// URL`);
-  for (const [tag] of text.matchAll(/<script\b[^>]*>/g)) assert(/\bsrc="(\.\/|\/)(?!\/)/.test(tag), `${page}: inline or external script ${tag}`);
-  assert(!/<style\b|\sstyle="|\son[a-z]+=/i.test(text), `${page}: inline style or event handler`);
-  for (const [tag] of text.matchAll(/<a\b[^>]*target="_blank"[^>]*>/g)) assert(/rel="[^"]*noopener/.test(tag), `${page}: target=_blank without rel=noopener`);
-}
-// Trusted Types would refuse these at runtime; fail here instead, where it is
-// a build error rather than a silently missing piece of the page.
-for (const file of ['dist/script.js', 'dist/hero.js', 'dist/404.js', 'dist/tech-marks.js', 'dist/vendor/three.hero.min.js']) {
-  assert(!/\.(innerHTML|outerHTML)\s*=|insertAdjacentHTML|document\.write|\beval\(|new Function\(/.test(fs.readFileSync(file, 'utf8')), `${file}: string-to-code or string-to-HTML call`);
-}
-// Shipped binaries carry no editor metadata: XMP packets and local paths
-// are where usernames and machine names leak from.
-for (const dir of ['dist', 'dist/images', 'dist/fonts']) for (const name of fs.readdirSync(dir).filter((f) => /\.(pdf|jpe?g|png|webp|woff2)$/.test(f))) {
-  const bytes = fs.readFileSync(`${dir}/${name}`).toString('latin1');
-  assert(!/<x:xmpmeta|[A-Za-z]:\\\\?Users\\|\/Users\/|\/home\//.test(bytes), `${dir}/${name} carries metadata or a local path; strip it`);
-}
-// The deploy job holds pages: write; a tag moved on an action would run with it.
-for (const workflow of fs.readdirSync('.github/workflows')) for (const [, ref] of fs.readFileSync(`.github/workflows/${workflow}`, 'utf8').matchAll(/uses: *(\S+)/g)) assert(/@[0-9a-f]{40}$/.test(ref), `${ref} must be pinned to a commit SHA`);
-console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');
+const { run } = require('./scripts/checks.cjs');
+const results = run(__dirname);
+for (const { name, error } of results) console.log(`${error ? 'FAIL' : 'ok  '} ${name}${error ? `: ${error.message}` : ''}`);
+const failed = results.filter((r) => r.error).length;
+if (failed) { console.error(`verify failed: ${failed} of ${results.length} check groups`); process.exit(1); }
+try {
+  execFileSync(process.execPath, ['--test', '--test-reporter=dot', ...fs.readdirSync('scripts').filter((f) => f.endsWith('.test.cjs')).map((f) => `scripts/${f}`)], { cwd: __dirname, stdio: 'inherit' });
+} catch { console.error('verify failed: tests'); process.exit(1); }
+console.log(`verify passed: ${results.length} check groups and tests`);
