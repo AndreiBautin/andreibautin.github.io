@@ -104,27 +104,34 @@ Drafted 2026-10-14 after round 1.
    1 s to 28 s: each of 15 planted-defect cases copies the repo and spawns
    one `node --check` per script. Check every file in one child process
    instead of one each, and copy only what each case touches.
+   **Done.** 3.6 s. Syntax is parsed in-process with `vm` (`scripts/parse.cjs`), clean parses and gzip sizes are memoised by content, and each case is a tree of hard links to one template copy.
 2. **Pin the Node version CI runs.** Tests rely on `fs.cpSync`, global
    `fetch` and `node:test` hooks; `ubuntu-latest` changes its default
    Node without notice. Declare `engines.node` and have `verify` fail on an
    older runtime with a clear message (no new action needed).
+   **Done.** `engines.node` `>=20`; `verify` exits with the minimum and the running version.
 3. **`smoke.cjs` reuses the policy from `checks.cjs`.** It re-extracts the
    CSP from `index.html` and hard-codes the referrer tag; export both from
    `checks.cjs` so the live check and the local check cannot disagree.
+   **Done.** `CSP_META` and `REFERRER_META` exported from `checks.cjs`; the local csp group now checks the referrer tag too. Smoke run against the live site: passed.
 4. **Every shipped extension has a MIME type in `serve.cjs`.** A new file
    type in `dist/` would be served locally as `application/octet-stream`
    (and refused by `nosniff`) while working on Pages. Add a check group and
    its planted defect.
+   **Done.** Group `mime types`; `TYPES` moved to `checks.cjs` and `serve.cjs` imports it.
 5. **`.gitattributes` covers the generated and checked files it misses.**
    `scripts/*.cjs`, `*.md` and workflows commit with CRLF warnings on
    Windows; the stamp only needs `dist/`, but mixed endings make diffs
    noisy. Decide per path and record why.
+   **Done.** `* text=auto eol=lf`, `*.bat eol=crlf` (cmd misreads LF batch files), binaries marked. Index was already LF; only working copies changed.
 6. **State the lint/format/typecheck decision.** The standard gate is
    typecheck + lint + format + test + build; this repo has zero
    dependencies and checks only syntax and whitespace. Either add
    `// @ts-check` with a pinned `tsc` run via `npx`, or record in
    `docs/TESTING.md` why the zero-dependency gate is the deliberate choice.
+   **Done.** Recorded in `docs/TESTING.md`: zero-dependency gate kept on purpose, and which groups stand in for lint and format.
 7. **`script.js` sections become named functions.** 289 lines of
    top-level wiring for ten features; one `init*` function per feature,
    called in order, makes the file scannable and lets one feature's
    failure (e.g. a missing element) be guarded without stopping the rest.
+   **Done.** Fifteen `init*` functions; each is run under try/`reportError`. Checked in the browser against the previous version: year, nav pill element, six spotlights, cursor ring, menu open/Escape all match, no errors besides a skipped view transition both versions show in a hidden pane. **Unchecked:** frame-driven behaviour (star field drawing, pill placement, the theme transition) — the pane stopped delivering animation frames to both versions, so those were compared by reading the moved code, not by running it. Browser testing also found `createServer` returned 403 for every path given an unresolved root; fixed and tested.

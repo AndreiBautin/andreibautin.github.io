@@ -21,6 +21,24 @@ idempotent and repairs a stale stamp, `build_marks` is deterministic, and
 `serve.cjs` returns the CSP header, the 404 page, 405 for writes and 403 for
 an encoded path out of `dist/`.
 
+## No linter, formatter or typechecker, on purpose
+
+The usual gate is typecheck + lint + format + test + build. This repository
+has no dependencies to install and no build, and keeps it that way: a
+pre-push hook and CI that need `npm install` or a network fetch of `tsc`
+or ESLint are slower and can fail for reasons that are not the change.
+What those tools would catch here is covered instead by `verify` groups
+that need nothing but Node:
+
+- **syntax**: every script parsed (`scripts/parse.cjs`).
+- **text formatting**: no trailing whitespace, control characters or
+  invalid Unicode; `.gitattributes` fixes line endings.
+- **content security policy**: the rules a linter would be configured
+  for here (no `innerHTML`, `eval`, inline handlers or styles).
+
+Revisit if the JavaScript grows real logic; a type error in event wiring
+shows on first click, which is the cost accepted.
+
 ## Deliberately not tested
 
 - **Browser rendering and layout.** No headless browser in the gate: it
