@@ -213,6 +213,29 @@ Needs you:
    a portfolio with nothing to click-jack; listed so it is a decision,
    not an oversight.
 
+## Round 4 results
+
+Items 1–3 done; push run and a manual weekly run for 2b6cee6 green on
+GitHub, Observatory B/75 from CI. Items 4–5 wait on you.
+
+## Round 5
+
+Drafted 2026-10-14. **No new code items.** After four rounds the site
+has a strict CSP with Trusted Types, gates in verify, pre-push, CI and a
+live post-deploy check, pinned and audited workflows, and weekly checks
+of links and grade. Further code changes would be churn. What remains:
+
+1. **GitHub settings (you):** branch protection on `main` requiring
+   verify and workflow-lint; Dependabot security updates; private
+   vulnerability reporting.
+2. **Grade A decision (you):** only a header-capable host or proxy.
+3. **Upkeep, as it arrives:** review Dependabot PRs the way round 4 item
+   1 did — read the changelog, check the SHA against the tag, watch the
+   deploy — and act on any red weekly run.
+
+Reopen this backlog when the site gains something with a real attack
+surface: a form, a third-party script, an embed, or a backend.
+
 ## Deliberately not in scope
 
 - HSTS / `X-Frame-Options`: not settable on Pages, and `frame-ancestors`
