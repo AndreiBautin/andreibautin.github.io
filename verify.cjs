@@ -27,6 +27,11 @@ for (const path of ['dist/index.html', 'dist/404.html', 'dist/styles.css', 'dist
   assert(!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text), `${path}: control character`);
   assert(!/[\t ]+$/m.test(text), 'Trailing whitespace');
 }
+// hero.js may only use THREE.* names the vendor subset exports.
+const { EXPORTS } = require('./scripts/build_three.cjs');
+const used = new Set([...fs.readFileSync('dist/hero.js', 'utf8').matchAll(/THREE.(w+)/g)].map((m) => m[1]));
+for (const name of used) assert(EXPORTS.includes(name), `THREE.${name} is not in scripts/build_three.cjs EXPORTS`);
+for (const name of EXPORTS) assert(new RegExp(` as ${name}[,}]`).test(fs.readFileSync('dist/vendor/three.hero.min.js', 'utf8')), `vendor subset lacks ${name}; run node scripts/build_three.cjs`);
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
 assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
 console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');

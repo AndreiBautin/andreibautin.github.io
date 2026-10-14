@@ -27,10 +27,17 @@ number is recorded here.
    `vendor/three.hero.min.js`. Expected: 676 KB → roughly 350–450 KB
    (the renderer and shader chunks are most of it), plus less parse time
    on phones.
+   **Done.** `vendor/three.hero.min.js`: 692 KB → 487 KB, gzip 174 →
+   123 KB. Less than hoped: WebGLRenderer pulls in every shader chunk via
+   ShaderLib, which is most of the library. `verify` now fails if hero.js
+   uses a THREE.* name the subset does not export.
 3. **Lighter material if it holds up.** `MeshStandardMaterial` pulls in
    the PBR shader chunks; a `MeshLambertMaterial`/`MeshPhongMaterial` with
    flat shading may look the same on dark faceted spheres and compile
    faster. Only if a side-by-side screenshot is indistinguishable.
+   **Dropped.** Item 2 showed ShaderLib ships every material's shaders
+   with the renderer, so this saves no bytes — only a one-time shader
+   compile that already happens at idle. Not worth a visual change.
 
 ## Smaller wins
 

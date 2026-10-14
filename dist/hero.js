@@ -8,7 +8,7 @@ if (document.readyState !== 'complete') await new Promise((resolve) => addEventL
 // Then wait for the main thread to go quiet, so parsing Three.js and
 // compiling shaders do not land on the page's first interactions.
 await new Promise((resolve) => (window.requestIdleCallback ? requestIdleCallback(resolve, { timeout: 1500 }) : setTimeout(resolve, 300)));
-const THREE = await import('./vendor/three.module.min.js');
+const THREE = await import('./vendor/three.hero.min.js');
 
 const canvas = document.querySelector('.hero-tech');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
