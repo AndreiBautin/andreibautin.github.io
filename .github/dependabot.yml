@@ -5,3 +5,7 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    # Wait a week before proposing a release, so a compromised one is
+    # usually caught and pulled before it reaches this workflow.
+    cooldown:
+      default-days: 7

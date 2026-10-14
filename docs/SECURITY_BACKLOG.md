@@ -78,8 +78,12 @@ Dependabot security updates are off; http:// redirects to https.
    **Done.** Enabled in this clone; README says how for a new one.
 2. **`persist-credentials: false`** on checkout. The job never pushes,
    so the token should not sit in `.git/config` for later steps.
+   **Done.**
 3. **Lint the workflow with zizmor** in CI (template injection,
    excessive permissions, cache poisoning). Pinned, read-only.
+   **Done.** `workflow-lint` job, zizmor 1.30.1 offline; deploy needs it.
+   Its one finding (no Dependabot cooldown) fixed with a 7-day cooldown.
+   Clean locally; not yet run on a GitHub runner (nothing pushed).
 4. **Post-deploy smoke check:** fetch the live page after deploy and
    assert the CSP meta and referrer meta are present and every asset
    returns 200 — proves the policy shipped, not just that it built.
