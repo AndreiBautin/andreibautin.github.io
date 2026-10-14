@@ -45,6 +45,8 @@ recorded here.
    `<script src>`, any inline `<script>`/`on*=` handler, and any
    `target="_blank"` without `rel="noopener"`. Turns this round into a
    gate rather than a snapshot.
+   **Done.** Also asserts the exact CSP string and no `<style>`/`style=`.
+   Each case checked by injecting it into 404.html: all six fail verify.
 8. **Guard `localStorage` in `script.js`.** Unguarded reads throw when
    storage is blocked and stop the rest of the script — not an exploit,
    but a hardening/robustness gap the 404 page already handles.

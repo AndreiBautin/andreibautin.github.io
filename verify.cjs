@@ -53,6 +53,17 @@ for (const ch of new Set(shown)) {
 }
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
 assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
+// The pages keep to what their Content-Security-Policy allows, so the policy
+// never has to loosen: same-origin scripts only, no inline code or styles.
+const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'`;
+for (const page of ['dist/index.html', 'dist/404.html']) {
+  const text = fs.readFileSync(page, 'utf8');
+  assert(text.includes(`<meta http-equiv="Content-Security-Policy" content="${csp}" />`), `${page}: Content-Security-Policy missing or changed`);
+  assert(!/http:\/\//.test(text), `${page}: http:// URL`);
+  for (const [tag] of text.matchAll(/<script\b[^>]*>/g)) assert(/\bsrc="(\.\/|\/)(?!\/)/.test(tag), `${page}: inline or external script ${tag}`);
+  assert(!/<style\b|\sstyle="|\son[a-z]+=/i.test(text), `${page}: inline style or event handler`);
+  for (const [tag] of text.matchAll(/<a\b[^>]*target="_blank"[^>]*>/g)) assert(/rel="[^"]*noopener/.test(tag), `${page}: target=_blank without rel=noopener`);
+}
 // Shipped binaries carry no editor metadata: XMP packets and local paths
 // are where usernames and machine names leak from.
 for (const dir of ['dist', 'dist/images', 'dist/fonts']) for (const name of fs.readdirSync(dir).filter((f) => /\.(pdf|jpe?g|png|webp|woff2)$/.test(f))) {
