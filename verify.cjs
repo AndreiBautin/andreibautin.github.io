@@ -7,6 +7,7 @@ execFileSync(process.execPath, ['--input-type=module', '--check'], { input: fs.r
 execFileSync(process.execPath, ['--check', 'serve.cjs']);
 execFileSync(process.execPath, ['--check', 'dist/404.js']);
 execFileSync(process.execPath, ['--check', 'scripts/smoke.cjs']);
+execFileSync(process.execPath, ['--check', 'scripts/links.cjs']);
 assert(!/hello@example|Electron|01\.4 TB|0\.98|evidence matching/.test(html));
 for (const text of ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University']) assert(html.includes(text), text);
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
@@ -72,5 +73,5 @@ for (const dir of ['dist', 'dist/images', 'dist/fonts']) for (const name of fs.r
   assert(!/<x:xmpmeta|[A-Za-z]:\\\\?Users\\|\/Users\/|\/home\//.test(bytes), `${dir}/${name} carries metadata or a local path; strip it`);
 }
 // The deploy job holds pages: write; a tag moved on an action would run with it.
-for (const [, ref] of fs.readFileSync('.github/workflows/pages.yml', 'utf8').matchAll(/uses: *(\S+)/g)) assert(/@[0-9a-f]{40}$/.test(ref), `${ref} must be pinned to a commit SHA`);
+for (const workflow of fs.readdirSync('.github/workflows')) for (const [, ref] of fs.readFileSync(`.github/workflows/${workflow}`, 'utf8').matchAll(/uses: *(\S+)/g)) assert(/@[0-9a-f]{40}$/.test(ref), `${ref} must be pinned to a commit SHA`);
 console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');

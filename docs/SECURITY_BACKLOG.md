@@ -99,6 +99,8 @@ Dependabot security updates are off; http:// redirects to https.
 6. **Outbound link ownership check:** `dj-visualizer.onrender.com` is a
    third-party subdomain; if that service is deleted the name can be
    claimed by someone else. A script that flags non-200 outbound links.
+   **Done.** `npm run links`, plus a weekly `links.yml` workflow. All 8
+   links 200 today. verify's SHA-pin check now covers every workflow.
 7. **`SECURITY.md`** with a contact for reports (GitHub private
    vulnerability reporting).
 8. **Dev server parity:** answer non-GET methods with 405 and serve

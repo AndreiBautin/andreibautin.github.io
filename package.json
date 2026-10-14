@@ -6,6 +6,7 @@
     "stamp": "node scripts/stamp.cjs",
     "verify": "node verify.cjs",
     "build": "node verify.cjs",
-    "lighthouse": "node scripts/lighthouse.cjs"
+    "lighthouse": "node scripts/lighthouse.cjs",
+    "links": "node scripts/links.cjs"
   }
 }
