@@ -123,6 +123,33 @@ Items 1–8 done, verify green. Not yet observed on GitHub: the
 `workflow-lint` job, the post-deploy smoke step and `links.yml` have run
 only locally, because nothing has been pushed. Items 9–10 wait on you.
 
+## Round 3
+
+Drafted 2026-10-13. Facts gathered: the résumé PDF's links are all
+https or mailto; zizmor's strictest persona finds only naming and
+comment nits; start-app.bat does not enable the pre-push hook.
+
+1. **Trusted Types.** Add `require-trusted-types-for 'script'` to the
+   CSP so the browser itself refuses any string-to-HTML sink. First
+   replace script.js's two `insertAdjacentHTML` calls (constant strings
+   today) with `createElement`, and check Three.js sets no such sink.
+2. **Enable the hook where people start the app.** `start-app.bat` sets
+   `core.hooksPath` if it is unset, so a fresh clone is gated without
+   reading the README.
+3. **Observe the round 2 CI on GitHub.** After you push: confirm
+   `workflow-lint`, the smoke step and a manual `links.yml` run are
+   green, and record it. Until then they are verified only locally.
+4. **External scan of the live site** (Mozilla Observatory / securityheaders)
+   after the push, recording the grade and anything header-only that a
+   static Pages site cannot fix, so it is a known limit rather than a
+   surprise.
+5. **`build_three.cjs` without `shell: true`.** Node 24 warns that the
+   shell concatenates arguments unescaped; they are constants today, but
+   the temp directory is also left behind when the integrity check throws.
+6. **Lock the CSP in the smoke check to the deployed commit** — smoke
+   compares against the local `dist/`; in CI that is the same commit, but
+   make it explicit by also checking the stamped asset hashes match.
+
 ## Deliberately not in scope
 
 - HSTS / `X-Frame-Options`: not settable on Pages, and `frame-ancestors`
