@@ -162,6 +162,9 @@ comment nits; start-app.bat does not enable the pre-push hook.
 5. **`build_three.cjs` without `shell: true`.** Node 24 warns that the
    shell concatenates arguments unescaped; they are constants today, but
    the temp directory is also left behind when the integrity check throws.
+   **Done.** npm runs as `npm-cli.js` through node (no shell), with
+   `--ignore-scripts`; the temp dir is removed in `finally` (checked by
+   forcing a mismatch). Rebuild still byte-identical.
 6. **Lock the CSP in the smoke check to the deployed commit** — smoke
    compares against the local `dist/`; in CI that is the same commit, but
    make it explicit by also checking the stamped asset hashes match.
