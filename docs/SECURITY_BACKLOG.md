@@ -29,7 +29,11 @@ recorded here.
 4. **Pin GitHub Actions to commit SHAs** in `pages.yml`. The deploy job
    holds `pages: write` and `id-token: write`; a moved tag on a
    third-party action would run with them.
+   **Done.** `verify` fails on any `uses:` not pinned to a 40-hex SHA.
+   Writing that check exposed that the Three.js subset check had never
+   matched anything (regex lost its backslashes); fixed separately.
 5. **Dependabot for `github-actions`** so pinned SHAs don't rot.
+   **Done.** Monthly, `.github/dependabot.yml`.
 6. **Strip metadata from shipped binaries.** Check the résumé PDF and
    images for author paths, usernames, GPS/EXIF; make `verify` fail if
    any reappears.
