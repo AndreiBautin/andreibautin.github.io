@@ -50,7 +50,8 @@ unchanged, not generated, so it cannot disagree with the one on LinkedIn.
 
 ## Gates
 
-`verify.cjs` runs the check groups in `scripts/checks.cjs`, then the tests
+`verify.cjs` runs the check groups in `scripts/checks/` (one file per area, run by
+`scripts/checks.cjs`), then the tests
 in `scripts/verify.test.cjs` and `scripts/tools.test.cjs`. It gates the pre-push hook (`.githooks/pre-push`),
 pull requests, and the deploy in `.github/workflows/pages.yml`, which then
 runs `scripts/smoke.cjs` against the live URL. `serve.cjs` serves `dist/`

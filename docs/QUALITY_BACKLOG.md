@@ -205,11 +205,20 @@ Drafted 2026-10-14 after round 4.
    Twice this session an editing layer turned `\b` into a raw backspace
    byte — once in `checks.cjs`, once in this file — and nothing failed,
    because the control-character check reads only shipped files.
+   **Done.** Every text file outside `.git`, `node_modules` and
+   `dist/vendor`. It found one: a deliberate replacement character quoted in
+   `docs/UI_BACKLOG.md`, reworded.
 2. **Flag single backslashes in `new RegExp` template literals.** In a
    template literal `\w` is `w` and `\b` is a backspace, so a regex built
    that way silently matches something else; that is how the `unused css`
    check ran weakened through round 3. A group that fails on
    `` new RegExp(`…\w…`) `` with an undoubled backslash in `scripts/`.
+   **Done.** Group `regex escapes`; the current code passes, and the
+   planted defect is the exact single-backslash form round 3 shipped.
 3. **Split `checks.cjs` by area.** At 18 groups and ~220 lines, the content,
    policy, asset and repository checks each want their own file, with the
    runner and shared lists in one place.
+   **Done.** `scripts/checks/{shared,repo,content,assets,policy}.cjs`;
+   `scripts/checks.cjs` is the runner and keeps its exports, so `serve.cjs`,
+   `smoke.cjs` and `stamp.cjs` are unchanged. Also added to `CLAUDE.md`:
+   write backslash-heavy code with an editor, not through shell layers.
