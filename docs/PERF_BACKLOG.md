@@ -157,7 +157,20 @@ environment or the network; there is little left in the code.
 
 1. **Field data, not lab data.** Check PageSpeed Insights / CrUX for real
    devices with GPUs. If field LCP and INP are green, stop here.
+   **Blocked.** The PSI API's anonymous daily quota was exhausted and the
+   web UI never finished. A personal site likely has too little traffic for
+   CrUX field data anyway. Retry pagespeed.web.dev by hand.
 2. **Subset Manrope to the glyphs used** (25 KB → likely ~12 KB): the hero
    text is the LCP element and waits on it.
+   **Done.** `scripts/subset_fonts.py` builds `dist/fonts` from the full
+   Latin files in `assets/fonts`: Manrope 24.8 → 14.2 KB, DM Mono 14.8 →
+   4.6 KB and 15.0 → 4.7 KB (31 KB saved). verify fails if a page shows a
+   character outside the subset.
 3. **Inline the above-the-fold CSS** if field LCP is not green: styles.css
    (12 KB gzipped) is the only render-blocking request.
+   **Not done.** Conditional on item 1, which could not be measured, and
+   inlining would stop index and 404 sharing a cached stylesheet. Revisit
+   only with field data showing LCP is a problem.
+
+No round 5: the remaining cost is the measurement environment and the
+network, not code. A further backlog would be invented work.

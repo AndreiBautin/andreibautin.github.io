@@ -40,6 +40,16 @@ for (const [name, files, limit] of [
   ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
   ['hero visual', ['hero.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
 ]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
+// The fonts are subset (scripts/subset_fonts.py): every character a page
+// can show must be in that list, or it renders in a fallback face.
+const ranges = fs.readFileSync('scripts/subset_fonts.py', 'utf8').match(/UNICODES = "([^"]+)"/)[1].split(',')
+  .map((r) => r.slice(2).split('-').map((h) => parseInt(h, 16))).map(([a, b = a]) => [a, b]);
+const shown = ['dist/index.html', 'dist/404.html', 'dist/script.js', 'dist/styles.css']
+  .map((f) => fs.readFileSync(f, 'utf8').replace(/<script[\s\S]*?<\/script>|<[^>]+>|\s/g, ' ')).join('');
+for (const ch of new Set(shown)) {
+  const code = ch.codePointAt(0);
+  assert(ranges.some(([a, b]) => code >= a && code <= b), `U+${code.toString(16)} (${ch}) is not in the font subset; add it in scripts/subset_fonts.py`);
+}
 assert(fs.readFileSync('dist/Andrei_Bautin_Resume.pdf').subarray(0, 5).equals(Buffer.from('%PDF-')));
 assert.equal(JSON.parse(fs.readFileSync('.openai/hosting.json')).static.directory, 'dist');
 console.log('verify passed: JavaScript syntax, content, local links, formatting, PDF, static build manifest. No TypeScript or compilation step in this static site.');
