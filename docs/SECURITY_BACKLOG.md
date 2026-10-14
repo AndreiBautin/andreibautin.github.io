@@ -15,10 +15,17 @@ recorded here.
    `default-src 'self'`, no `unsafe-inline` for scripts, `object-src
    'none'`, `base-uri 'self'`, `form-action 'none'`. Needs item 2 first.
    An XSS that ever slips in then cannot load or run foreign code.
+   **Done.** Also `style-src 'self'` with no inline styles: the four
+   `style="--a:…"` orbit angles became classes. `img-src` allows `data:`
+   for the logo sprites hero.js draws. Checked in the browser: no
+   violations, hero canvas renders, all assets 200.
 2. **Move the 404 page's inline theme script to a file** so the CSP can
    forbid inline script without a hash to keep in sync.
+   **Done.** Its `<style>` moved to `404.css` as well. Light theme still
+   applied before paint in the browser.
 3. **Referrer policy meta** (`strict-origin-when-cross-origin` or
    `no-referrer`) so outbound links to LinkedIn/Render don't carry paths.
+   **Done.** `strict-origin-when-cross-origin` on both pages.
 4. **Pin GitHub Actions to commit SHAs** in `pages.yml`. The deploy job
    holds `pages: write` and `id-token: write`; a moved tag on a
    third-party action would run with them.

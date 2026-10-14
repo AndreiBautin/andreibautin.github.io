@@ -5,6 +5,7 @@ const html = fs.readFileSync('dist/index.html', 'utf8');
 execFileSync(process.execPath, ['--check', 'dist/script.js']);
 execFileSync(process.execPath, ['--input-type=module', '--check'], { input: fs.readFileSync('dist/hero.js') });
 execFileSync(process.execPath, ['--check', 'serve.cjs']);
+execFileSync(process.execPath, ['--check', 'dist/404.js']);
 assert(!/hello@example|Electron|01\.4 TB|0\.98|evidence matching/.test(html));
 for (const text of ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University']) assert(html.includes(text), text);
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
@@ -20,7 +21,7 @@ for (const file of ['styles.css', 'script.js', 'hero.js']) {
   const hash = require('crypto').createHash('sha256').update(fs.readFileSync('dist/' + file)).digest('hex').slice(0, 10);
   assert(html.includes(`./${file}?v=${hash}`), `${file} link must be stamped ./${file}?v=${hash} (run node scripts/stamp.cjs)`);
 }
-for (const path of ['dist/index.html', 'dist/404.html', 'dist/styles.css', 'dist/script.js', 'dist/hero.js', 'dist/tech-marks.js']) {
+for (const path of ['dist/index.html', 'dist/404.html', 'dist/404.css', 'dist/404.js', 'dist/styles.css', 'dist/script.js', 'dist/hero.js', 'dist/tech-marks.js']) {
   const text = fs.readFileSync(path, 'utf8');
   assert(!text.includes('\ufffd'), 'Invalid Unicode');
   // A CSS escape like "\00a0" once landed as a raw NUL byte and drew "\ufffd0\u2192".
@@ -44,7 +45,7 @@ for (const [name, files, limit] of [
 // can show must be in that list, or it renders in a fallback face.
 const ranges = fs.readFileSync('scripts/subset_fonts.py', 'utf8').match(/UNICODES = "([^"]+)"/)[1].split(',')
   .map((r) => r.slice(2).split('-').map((h) => parseInt(h, 16))).map(([a, b = a]) => [a, b]);
-const shown = ['dist/index.html', 'dist/404.html', 'dist/script.js', 'dist/styles.css']
+const shown = ['dist/index.html', 'dist/404.html', 'dist/404.css', 'dist/script.js', 'dist/styles.css']
   .map((f) => fs.readFileSync(f, 'utf8').replace(/<script[\s\S]*?<\/script>|<[^>]+>|\s/g, ' ')).join('');
 for (const ch of new Set(shown)) {
   const code = ch.codePointAt(0);

@@ -1,0 +1,16 @@
+@font-face{font-family:"Manrope";src:url(/fonts/manrope-latin.woff2) format("woff2");font-weight:200 800;font-display:swap}
+@font-face{font-family:"DM Mono";src:url(/fonts/dm-mono-400-latin.woff2) format("woff2");font-weight:400;font-display:swap}
+:root{--bg:#080c11;--ink:#e9edf2;--muted:#989ea5;--acid:#4aeaff;--line:#2a3037}
+.light{--bg:#e7eaee;--ink:#0b0f14;--muted:#5d646b;--acid:#0e7c8c;--line:#c2c7cc}
+*{box-sizing:border-box}
+body{margin:0;min-height:100svh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 70% 30%,color-mix(in srgb,var(--acid) 10%,transparent),transparent 50%),var(--bg);color:var(--ink);font-family:"Manrope",sans-serif}
+main{max-width:640px}
+.code{font:400 .78rem "DM Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:12px}
+.code::before{content:"";width:28px;height:1px;background:var(--acid)}
+h1{font-size:clamp(3rem,11vw,6.5rem);line-height:.92;letter-spacing:-.065em;font-weight:600;margin:24px 0}
+h1 em{font-family:Georgia,serif;font-weight:400;color:var(--acid)}
+p{color:var(--muted);font-size:1.1rem;line-height:1.6;margin:0 0 36px}
+a{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:999px;background:var(--acid);color:#080c11;font:500 .78rem "DM Mono",monospace;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:transform .3s}
+.light a{color:#fff}
+a:hover{transform:translateY(-2px)}
+a:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
