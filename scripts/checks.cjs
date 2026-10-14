@@ -7,7 +7,7 @@ const path = require('node:path');
 const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
-const { execFileSync } = require('node:child_process');
+const { parseAll } = require('./parse.cjs');
 
 const PAGES = ['index.html', '404.html'];
 const STAMPED = ['styles.css', 'script.js', 'hero.js'];
@@ -18,6 +18,14 @@ const PORT = 4317;
 const CSP = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'`;
 const RESUME_FACTS = ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University'];
 
+// By content, so the verify tests do not recompress the unchanged 700 KB
+// vendor file once per planted defect.
+const gzipped = new Map();
+const gzipSize = (bytes) => {
+  const key = crypto.createHash('sha1').update(bytes).digest('hex');
+  if (!gzipped.has(key)) gzipped.set(key, zlib.gzipSync(bytes, { level: 9 }).length);
+  return gzipped.get(key);
+};
 const hashOf = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex').slice(0, 10);
 
 function context(root) {
@@ -44,11 +52,7 @@ function scripts(root) {
 
 const checks = [
   ['syntax', (c) => {
-    for (const rel of scripts(c.root)) {
-      // .js files under dist/ are browser modules or classic scripts; both parse as a module except top-level await, which only modules allow.
-      const args = rel.endsWith('.cjs') ? ['--check', path.join(c.root, rel)] : ['--input-type=module', '--check'];
-      try { execFileSync(process.execPath, args, { input: c.bytes(rel), stdio: ['pipe', 'ignore', 'pipe'] }); } catch (error) { assert.fail(`${rel}: ${String(error.stderr).trim().split('\n').pop()}`); }
-    }
+    try { parseAll(scripts(c.root).map((rel) => path.join(c.root, rel))); } catch (error) { assert.fail(error.message.replace(c.root + path.sep, '')); }
   }],
   ['resume facts', (c) => {
     const html = c.read('dist/index.html');
@@ -94,7 +98,7 @@ const checks = [
   // Gzipped as Pages serves them: a regression fails here rather than being
   // found in a Lighthouse run. Raise one only on purpose.
   ['byte budgets', (c) => {
-    const gz = (files) => files.reduce((sum, f) => sum + zlib.gzipSync(c.bytes('dist/' + f), { level: 9 }).length, 0);
+    const gz = (files) => files.reduce((sum, f) => sum + gzipSize(c.bytes('dist/' + f)), 0);
     for (const [name, files, limit] of [
       ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
       ['hero visual', ['hero.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],

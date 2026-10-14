@@ -13,13 +13,28 @@ const repo = path.resolve(__dirname, '..');
 const COPIED = ['dist', 'scripts', 'assets/tech', '.github', '.openai', 'README.md'];
 const copies = [];
 test.after(() => { for (const root of copies) fs.rmSync(root, { recursive: true, force: true }); });
+const fresh = () => { const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-')); copies.push(root); return root; };
+// One real copy, then each case is a tree of hard links to it: copying the
+// repository per case was most of verify's run time. Links share bytes, so
+// a defect is planted only through edit(), which replaces the link with a
+// new file and leaves the template untouched. It reads and writes latin1
+// so binary files survive a round trip byte for byte.
+let template;
+const link = (from, to) => {
+  if (fs.statSync(from).isDirectory()) { fs.mkdirSync(to); for (const name of fs.readdirSync(from)) link(path.join(from, name), path.join(to, name)); } else fs.linkSync(from, to);
+};
 const copy = () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-'));
-  copies.push(root);
-  for (const rel of COPIED) fs.cpSync(path.join(repo, rel), path.join(root, rel), { recursive: true });
+  if (!template) { template = fresh(); for (const rel of COPIED) fs.cpSync(path.join(repo, rel), path.join(template, rel), { recursive: true }); }
+  const root = fresh();
+  for (const name of fs.readdirSync(template)) link(path.join(template, name), path.join(root, name));
   return root;
 };
-const edit = (root, rel, change) => { const file = path.join(root, rel); fs.writeFileSync(file, change(fs.readFileSync(file, 'utf8'))); };
+const edit = (root, rel, change) => {
+  const file = path.join(root, rel);
+  const before = fs.readFileSync(file, 'latin1');
+  fs.unlinkSync(file);
+  fs.writeFileSync(file, change(before), 'latin1');
+};
 const failing = (root) => run(root).filter((r) => r.error).map((r) => r.name);
 
 const defects = {
@@ -30,10 +45,10 @@ const defects = {
   'text formatting': (root) => edit(root, 'dist/404.css', (s) => s.replace('}', '} ')),
   'generated files': (root) => edit(root, 'assets/tech/react.svg', (s) => s.replace('<svg', '<svg data-x="1"')),
   'byte budgets': (root) => edit(root, 'dist/vendor/three.hero.min.js', (s) => `${s}/*${crypto.randomBytes(200_000).toString('base64')}*/\n`),
-  'font subset': (root) => edit(root, 'dist/404.html', (s) => s.replace('</body>', 'Ж</body>')),
+  'font subset': (root) => edit(root, 'dist/404.html', (s) => s.replace('</body>', Buffer.from('Ж').toString('latin1') + '</body>')),
   'deploy manifest': (root) => edit(root, '.openai/hosting.json', (s) => s.replace('"dist"', '"public"')),
   'content security policy': (root) => edit(root, 'dist/404.html', (s) => s.replace('<body', '<body style="color:red"')),
-  'binary metadata': (root) => fs.appendFileSync(path.join(root, 'dist/images/apple-touch-icon.png'), '<x:xmpmeta>'),
+  'binary metadata': (root) => edit(root, 'dist/images/apple-touch-icon.png', (s) => s + '<x:xmpmeta>'),
   'pinned actions': (root) => edit(root, '.github/workflows/pages.yml', (s) => s.replace(/(actions\/checkout)@[0-9a-f]{40}/, '$1@v7')),
   'dev port': (root) => edit(root, 'README.md', (s) => s.replaceAll('127.0.0.1:4317', '127.0.0.1:8080')),
 };
