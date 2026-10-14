@@ -68,22 +68,32 @@ number is recorded here.
 
 # Round 2
 
-Drafted 2026-10-13 after round 1, from what round 1 turned up. Not started.
+Drafted 2026-10-13 after round 1, from what round 1 turned up.
 
 1. **Re-measure live.** Round 1 is committed but not pushed; deploy, re-run
    the same Lighthouse command, and record the delta against the baseline.
+   **Done.** Four runs after deploy: transfer 267 → 215 KiB; score
+   0.70–0.90, TBT 410–1,160 ms. TBT is bimodal run to run — it depends on
+   whether the hero's idle-time setup lands inside Lighthouse's window — so
+   the single-run baseline cannot show a TBT delta. Compare medians of 5.
 2. **Find script.js's 1.6 s.** The baseline's largest boot-up cost was
    not Three.js. Profile under 4x throttling and attribute it — likely
    suspects are below.
+   **Done.** The star field: 260 canvas arcs redrawn every frame, phones
+   included, for as long as the hero is on screen — which is all of a
+   Lighthouse run. Now redrawn at ~12 fps; the slow twinkle looks the same.
 3. **Scroll handler layout reads.** Every scroll event calls
    `getBoundingClientRect` on each section and reads `offsetWidth` for the
    nav pill. Coalesce to one rAF per frame, or drive `markCurrent` from an
    IntersectionObserver.
+   **Done.**
 4. **Cursor ring runs forever.** Its `requestAnimationFrame(follow)` loop
    never stops on desktop, even with the pointer still or the tab idle.
    Stop when it has caught up; restart on `pointermove`.
+   **Done.**
 5. **Spotlight reads layout per move.** `pointermove` on each project card
    calls `getBoundingClientRect`; cache the box on `pointerenter`.
+   **Done.**
 6. **Shader compile off the first frame.** Use `renderer.compileAsync`
    before the first render so the hero's first frame doesn't block —
    a likely part of the 450 ms TBT.

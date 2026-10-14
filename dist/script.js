@@ -117,7 +117,13 @@ const onScroll = () => {
   header.classList.toggle('is-scrolled', window.scrollY > 24);
   placePill();
 };
-window.addEventListener('scroll', onScroll, { passive: true });
+// Layout is read at most once a frame, however many scroll events arrive.
+let scrollQueued = false;
+window.addEventListener('scroll', () => {
+  if (scrollQueued) return;
+  scrollQueued = true;
+  requestAnimationFrame(() => { scrollQueued = false; onScroll(); });
+}, { passive: true });
 window.addEventListener('resize', placePill);
 document.fonts.ready.then(placePill);
 onScroll();
@@ -128,8 +134,10 @@ const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matc
 if (finePointer && !reduceMotion) {
   document.querySelectorAll('.project-visual').forEach((card) => {
     card.insertAdjacentHTML('beforeend', '<span class="spotlight" aria-hidden="true"></span>');
+    // The box is measured once per visit, not on every move.
+    let box = card.getBoundingClientRect();
+    card.addEventListener('pointerenter', () => { box = card.getBoundingClientRect(); });
     card.addEventListener('pointermove', (event) => {
-      const box = card.getBoundingClientRect();
       card.style.setProperty('--spot-x', `${event.clientX - box.left}px`);
       card.style.setProperty('--spot-y', `${event.clientY - box.top}px`);
     });
@@ -187,9 +195,10 @@ if (finePointer && !reduceMotion) {
   ring.className = 'cursor-ring';
   ring.setAttribute('aria-hidden', 'true');
   document.body.append(ring);
-  let x = -100, y = -100, rx = x, ry = y;
+  let x = -100, y = -100, rx = x, ry = y, following = false;
   addEventListener('pointermove', (event) => {
     x = event.clientX; y = event.clientY;
+    if (!following) { following = true; requestAnimationFrame(follow); }
     ring.classList.toggle('is-over', !!event.target.closest('a, button, .project-visual'));
     ring.classList.add('is-on');
   }, { passive: true });
@@ -197,9 +206,10 @@ if (finePointer && !reduceMotion) {
   const follow = () => {
     rx += (x - rx) * 0.2; ry += (y - ry) * 0.2;
     ring.style.transform = `translate(${rx}px, ${ry}px)`;
-    requestAnimationFrame(follow);
+    // Once it has caught up the loop stops; the next move restarts it.
+    if (Math.abs(x - rx) + Math.abs(y - ry) > 0.1) requestAnimationFrame(follow);
+    else following = false;
   };
-  requestAnimationFrame(follow);
 }
 
 // The Explore button leans toward the pointer and springs back.
@@ -224,7 +234,12 @@ if (stars) {
     const h = (n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
     return { x: h(1), y: h(2), r: 0.4 + h(3) * 1.1, a: 0.25 + h(4) * 0.6, p: h(5) * 6.283 };
   });
+  // The twinkle is a slow sine; 12 redraws a second look the same as 60
+  // and cost a fifth of the main thread.
+  let drawn = -Infinity;
   const draw = (t) => {
+    if (!reduceMotion && starsOnScreen && t - drawn < 80) { requestAnimationFrame(draw); return; }
+    drawn = t;
     const w = stars.clientWidth, h = stars.clientHeight;
     if (stars.width !== w * devicePixelRatio || stars.height !== h * devicePixelRatio) {
       stars.width = w * devicePixelRatio; stars.height = h * devicePixelRatio;
