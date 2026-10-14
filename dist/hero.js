@@ -206,6 +206,9 @@ const start = async () => {
     onScreen = entry.isIntersecting;
     if (resumed && !reduce) requestAnimationFrame(frame);
   }).observe(canvas);
+  // Shaders compile off the main thread where the driver allows it, so the
+  // first frame does not stall the page while they build.
+  await renderer.compileAsync(scene, camera);
   canvas.classList.add('is-live');
   requestAnimationFrame(frame);
   if (reduce) addEventListener('resize', () => requestAnimationFrame(frame));

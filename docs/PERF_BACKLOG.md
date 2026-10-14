@@ -97,6 +97,10 @@ Drafted 2026-10-13 after round 1, from what round 1 turned up.
 6. **Shader compile off the first frame.** Use `renderer.compileAsync`
    before the first render so the hero's first frame doesn't block —
    a likely part of the 450 ms TBT.
+   **Done.**
 7. **Font weight audit.** DM Mono 500 (15 KB) loads on the first view but
    isn't preloaded; either preload it or replace the few 500-weight uses
    with 400 and drop the file.
+   **Dropped.** Nothing above the fold uses the 500 weight (pill links,
+   principles, the copy button — all lower down), so not preloading it is
+   correct, and replacing it is a visual change, not a performance one.
