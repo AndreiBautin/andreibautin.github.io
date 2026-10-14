@@ -1,4 +1,4 @@
-name: Check outbound links
+name: Weekly live checks
 # Weekly, because a link only goes bad between pushes: a lapsed third-party
 # service is a name someone else can register.
 on:
@@ -16,3 +16,5 @@ jobs:
           persist-credentials: false
       - name: Check outbound links
         run: node scripts/links.cjs
+      - name: Check the live security grade has not dropped
+        run: node scripts/observatory.cjs

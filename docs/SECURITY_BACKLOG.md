@@ -188,12 +188,19 @@ or a hosting decision.
    their verify and workflow-lint checks are green, but deploy is skipped
    on PRs, so the deploy-pages and upload-artifact pair is only proven by
    a real deploy. Merge together, then watch the deploy.
+   **Done.** No breaking change for this workflow; PR SHAs matched the
+   upstream tags. Applied in one commit (also to links.yml); deploy run
+   for 2179304 green incl. live smoke. PRs closed as superseded.
 2. **Smoke-check the module graph too.** The live check covers files
    index.html links; `tech-marks.js` and the Three.js subset are imported
    by hero.js and are not checked. Include them.
+   **Done.** Read from hero.js's `import()` calls; removing tech-marks.js
+   locally fails the check, live passes.
 3. **Weekly Observatory regression check** in `links.yml`: fail if the
    live score drops below 75, so a lost CSP is caught even without a
    deploy.
+   **Done.** `scripts/observatory.cjs`, a step in the weekly workflow
+   (renamed "Weekly live checks"). Live today: B, 75.
 
 Needs you:
 

@@ -8,6 +8,7 @@ execFileSync(process.execPath, ['--check', 'serve.cjs']);
 execFileSync(process.execPath, ['--check', 'dist/404.js']);
 execFileSync(process.execPath, ['--check', 'scripts/smoke.cjs']);
 execFileSync(process.execPath, ['--check', 'scripts/links.cjs']);
+execFileSync(process.execPath, ['--check', 'scripts/observatory.cjs']);
 assert(!/hello@example|Electron|01\.4 TB|0\.98|evidence matching/.test(html));
 for (const text of ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University']) assert(html.includes(text), text);
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
