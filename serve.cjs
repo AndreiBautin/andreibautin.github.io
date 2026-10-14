@@ -3,8 +3,7 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { PORT } = require('./scripts/checks.cjs');
-const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.pdf': 'application/pdf', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
+const { PORT, TYPES } = require('./scripts/checks.cjs');
 function createServer(root = path.resolve(__dirname, 'dist')) {
   // The same policy the pages set in their meta tag, sent as a header so a
   // local run is held to it too.
@@ -13,7 +12,7 @@ function createServer(root = path.resolve(__dirname, 'dist')) {
   return http.createServer((req, res) => {
     // Pages answers only reads; anything else here would be a local-only path.
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }
-    const send = (status, file, data) => res.writeHead(status, { ...security, 'Content-Type': types[path.extname(file)] || 'application/octet-stream' }).end(req.method === 'HEAD' ? undefined : data);
+    const send = (status, file, data) => res.writeHead(status, { ...security, 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' }).end(req.method === 'HEAD' ? undefined : data);
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { res.writeHead(400).end(); return; }
     const target = path.resolve(root, '.' + pathname.replace(/\/$/, '/index.html'));

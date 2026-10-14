@@ -50,6 +50,8 @@ const defects = {
   'content security policy': (root) => edit(root, 'dist/404.html', (s) => s.replace('<body', '<body style="color:red"')),
   'binary metadata': (root) => edit(root, 'dist/images/apple-touch-icon.png', (s) => s + '<x:xmpmeta>'),
   'pinned actions': (root) => edit(root, '.github/workflows/pages.yml', (s) => s.replace(/(actions\/checkout)@[0-9a-f]{40}/, '$1@v7')),
+  // A new file, not an edit, so it cannot write through to the template.
+  'mime types': (root) => fs.writeFileSync(path.join(root, 'dist/images/new.avif'), ''),
   'dev port': (root) => edit(root, 'README.md', (s) => s.replaceAll('127.0.0.1:4317', '127.0.0.1:8080')),
 };
 

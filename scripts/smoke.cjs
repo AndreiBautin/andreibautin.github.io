@@ -4,7 +4,8 @@
 // Pages can serve the previous build for a short while, so it retries.
 const fs = require('node:fs');
 const base = new URL(process.argv[2] || 'https://andreibautin.github.io/');
-const expected = fs.readFileSync('dist/index.html', 'utf8').match(/<meta http-equiv="Content-Security-Policy"[^>]*>/)[0];
+// The same policy tags verify requires locally, so the two cannot disagree.
+const { CSP_META, REFERRER_META } = require('./checks.cjs');
 
 async function check() {
   const problems = [];
@@ -15,8 +16,8 @@ async function check() {
     // Byte-for-byte with this checkout: proves the commit being deployed is
     // what Pages serves, stamped asset hashes included, not a cached build.
     if (html !== fs.readFileSync(`dist/${page}`, 'utf8')) problems.push(`${page}: differs from this commit's dist/${page}`);
-    if (!html.includes(expected)) problems.push(`${page}: Content-Security-Policy missing or different`);
-    if (!html.includes('<meta name="referrer" content="strict-origin-when-cross-origin" />')) problems.push(`${page}: referrer policy missing`);
+    if (!html.includes(CSP_META)) problems.push(`${page}: Content-Security-Policy missing or different`);
+    if (!html.includes(REFERRER_META)) problems.push(`${page}: referrer policy missing`);
     if (page !== 'index.html') continue;
     // hero.js imports its modules at idle, so they are not linked from the
     // page; read the dynamic imports to check them too.

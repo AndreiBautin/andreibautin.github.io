@@ -16,6 +16,11 @@ const TEXT = ['index.html', '404.html', '404.css', '404.js', 'styles.css', 'scri
 const SHIPPED_JS = ['script.js', 'hero.js', '404.js', 'tech-marks.js', 'vendor/three.hero.min.js'];
 const PORT = 4317;
 const CSP = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'`;
+const CSP_META = `<meta http-equiv="Content-Security-Policy" content="${CSP}" />`;
+const REFERRER_META = '<meta name="referrer" content="strict-origin-when-cross-origin" />';
+// What serve.cjs sends for each extension; every file type in dist/ needs one,
+// or the local server sends octet-stream and nosniff refuses it while Pages works.
+const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.pdf': 'application/pdf', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
 const RESUME_FACTS = ['3Cloud', 'September 2024', 'June 2019', '11 hours', '5+ engineers', 'AZ-900', 'AI-900', 'Colorado State University'];
 
 // By content, so the verify tests do not recompress the unchanged 700 KB
@@ -125,7 +130,8 @@ const checks = [
   ['content security policy', (c) => {
     for (const page of PAGES) {
       const text = c.read('dist/' + page);
-      assert(text.includes(`<meta http-equiv="Content-Security-Policy" content="${CSP}" />`), `${page}: Content-Security-Policy missing or changed`);
+      assert(text.includes(CSP_META), `${page}: Content-Security-Policy missing or changed`);
+      assert(text.includes(REFERRER_META), `${page}: referrer policy missing or changed`);
       assert(!/http:\/\//.test(text), `${page}: http:// URL`);
       for (const [tag] of text.matchAll(/<script\b[^>]*>/g)) assert(/\bsrc="(\.\/|\/)(?!\/)/.test(tag), `${page}: inline or external script ${tag}`);
       assert(!/<style\b|\sstyle="|\son[a-z]+=/i.test(text), `${page}: inline style or event handler`);
@@ -145,6 +151,10 @@ const checks = [
   ['pinned actions', (c) => {
     for (const workflow of fs.readdirSync(path.join(c.root, '.github/workflows'))) for (const [, ref] of c.read(`.github/workflows/${workflow}`).matchAll(/uses: *(\S+)/g)) assert(/@[0-9a-f]{40}$/.test(ref), `${workflow}: ${ref} must be pinned to a commit SHA`);
   }],
+  ['mime types', (c) => {
+    const walk = (dir) => fs.readdirSync(path.join(c.root, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(`${dir}/${e.name}`) : [`${dir}/${e.name}`]));
+    for (const file of walk('dist')) assert(TYPES[path.extname(file)], `${file}: no content type for ${path.extname(file) || 'files without an extension'} in TYPES`);
+  }],
   ['dev port', (c) => {
     assert(c.read('README.md').includes(`http://127.0.0.1:${PORT}`), `README.md must name the dev server port ${PORT}`);
   }],
@@ -157,4 +167,4 @@ function run(root) {
   return checks.map(([name, check]) => { try { check(c); return { name }; } catch (error) { return { name, error }; } });
 }
 
-module.exports = { run, names: checks.map(([name]) => name), PORT, hashOf, STAMPED };
+module.exports = { run, names: checks.map(([name]) => name), PORT, TYPES, CSP_META, REFERRER_META, hashOf, STAMPED };

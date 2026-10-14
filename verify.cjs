@@ -5,6 +5,11 @@
 // compilation step in this static site.
 const fs = require('node:fs');
 const { execFileSync } = require('node:child_process');
+// CI uses whatever Node the runner image ships. The tests need node:test
+// hooks, global fetch and fs.cpSync; say so plainly rather than failing oddly.
+const major = Number(process.versions.node.split('.')[0]);
+const minimum = Number(require('./package.json').engines.node.replace('>=', ''));
+if (major < minimum) { console.error(`verify needs Node ${minimum} or newer; this is ${process.versions.node}`); process.exit(1); }
 const { run } = require('./scripts/checks.cjs');
 const results = run(__dirname);
 for (const { name, error } of results) console.log(`${error ? 'FAIL' : 'ok  '} ${name}${error ? `: ${error.message}` : ''}`);
