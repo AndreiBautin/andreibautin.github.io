@@ -225,8 +225,9 @@ swings 180 ms to 1.3 s, mostly the hero's WebGL setup, which headless
 Chrome renders in software. Left alone: cache lifetimes (GitHub Pages
 sets them) and "unused JavaScript" (Three.js, unbundled).
 
-Skipped: a 3Cloud logo and company line under Experience; no logo file
-to use, and the description of an employer is the owner's to write.
+Closed, not done: a 3Cloud logo and company line under Experience. There
+is no logo file to use, and the owner chose not to add an employer
+description.
 
 ## Round 8 (2026-10-13)
 

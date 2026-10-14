@@ -53,6 +53,9 @@ number is recorded here.
    vendor request, canvas removed, hero copy unchanged.
 6. **`content-visibility: auto`** on below-the-fold sections (with
    `contain-intrinsic-size`) so first render skips their layout/paint.
+   **Closed, not done.** Round 3 measured the page's own layout work at
+   ~25 ms; the cost is WebGL and network, so this would buy little and adds
+   a placeholder size to keep in sync with each section.
 7. **Dev server content types.** `serve.cjs` serves `.svg`, `.webp`,
    `.woff2` as `application/octet-stream`; local measurements then differ
    from Pages. Add the types so item 1's local numbers are honest.
@@ -157,9 +160,10 @@ environment or the network; there is little left in the code.
 
 1. **Field data, not lab data.** Check PageSpeed Insights / CrUX for real
    devices with GPUs. If field LCP and INP are green, stop here.
-   **Blocked.** The PSI API's anonymous daily quota was exhausted and the
-   web UI never finished. A personal site likely has too little traffic for
-   CrUX field data anyway. Retry pagespeed.web.dev by hand.
+   **Closed, not measured.** The PSI API's anonymous daily quota was
+   exhausted and the web UI never finished; a personal site likely has too
+   little traffic for CrUX field data anyway. Lab results (round 8 of the UI
+   backlog: score 79–88, LCP 1.6–2.2 s) stand as the record.
 2. **Subset Manrope to the glyphs used** (25 KB → likely ~12 KB): the hero
    text is the LCP element and waits on it.
    **Done.** `scripts/subset_fonts.py` builds `dist/fonts` from the full
@@ -168,9 +172,9 @@ environment or the network; there is little left in the code.
    character outside the subset.
 3. **Inline the above-the-fold CSS** if field LCP is not green: styles.css
    (12 KB gzipped) is the only render-blocking request.
-   **Not done.** Conditional on item 1, which could not be measured, and
-   inlining would stop index and 404 sharing a cached stylesheet. Revisit
-   only with field data showing LCP is a problem.
+   **Closed, not done.** It was conditional on field data showing LCP is a
+   problem, which item 1 did not provide, and inlining would stop index and
+   404 sharing a cached stylesheet.
 
 No round 5: the remaining cost is the measurement environment and the
 network, not code. A further backlog would be invented work.
