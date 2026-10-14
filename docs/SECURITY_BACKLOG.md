@@ -140,6 +140,8 @@ comment nits; start-app.bat does not enable the pre-push hook.
 2. **Enable the hook where people start the app.** `start-app.bat` sets
    `core.hooksPath` if it is unset, so a fresh clone is gated without
    reading the README.
+   **Done.** Tested in cmd: unset → set to `.githooks`; an existing
+   custom value is left alone.
 3. **Observe the round 2 CI on GitHub.** After you push: confirm
    `workflow-lint`, the smoke step and a manual `links.yml` run are
    green, and record it. Until then they are verified only locally.

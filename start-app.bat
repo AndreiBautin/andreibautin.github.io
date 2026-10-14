@@ -6,5 +6,8 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+rem Gate pushes on verify in this clone (see .githooks/pre-push); only when
+rem git is installed and the clone has not chosen its own hooks path.
+where git >nul 2>nul && (git config core.hooksPath >nul 2>nul || git config core.hooksPath .githooks)
 node serve.cjs
 pause
