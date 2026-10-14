@@ -59,3 +59,24 @@ test('dev server accepts an unresolved root', async (t) => {
   t.after(() => server.close());
   assert.equal((await fetch(`http://127.0.0.1:${server.address().port}/`)).status, 200);
 });
+
+// smoke.cjs is the only check of the live site; run it against a local copy
+// so its own logic is proven to pass on a faithful copy and fail on a bad one.
+test('smoke passes a faithful copy and names what a bad one lacks', async (t) => {
+  const { check } = require('./smoke.cjs');
+  const served = fs.mkdtempSync(path.join(os.tmpdir(), 'smoke-'));
+  t.after(() => fs.rmSync(served, { recursive: true, force: true }));
+  fs.cpSync(dist, served, { recursive: true });
+  const server = createServer(served).listen(0, '127.0.0.1');
+  await new Promise((resolve) => server.once('listening', resolve));
+  t.after(() => server.close());
+  const base = new URL(`http://127.0.0.1:${server.address().port}/`);
+
+  assert.deepEqual(await check(base, dist), []);
+  fs.rmSync(path.join(served, 'tech-marks.js'));
+  const page = path.join(served, '404.html');
+  fs.writeFileSync(page, fs.readFileSync(page, 'utf8').replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, ''));
+  const problems = await check(base, dist);
+  assert(problems.some((p) => p.startsWith('tech-marks.js: HTTP 404')), problems.join('; '));
+  assert(problems.some((p) => p.startsWith('404.html: Content-Security-Policy')), problems.join('; '));
+});
