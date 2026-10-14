@@ -103,6 +103,8 @@ Dependabot security updates are off; http:// redirects to https.
    links 200 today. verify's SHA-pin check now covers every workflow.
 7. **`SECURITY.md`** with a contact for reports (GitHub private
    vulnerability reporting).
+   **Done.** Points at private reporting, which needs item 10 turned on
+   to work.
 8. **Dev server parity:** answer non-GET methods with 405 and serve
    `404.html` for missing paths like Pages does, so the 404 page and its
    policy are exercised locally.
