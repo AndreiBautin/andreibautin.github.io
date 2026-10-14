@@ -143,6 +143,10 @@ comment nits; start-app.bat does not enable the pre-push hook.
 3. **Observe the round 2 CI on GitHub.** After you push: confirm
    `workflow-lint`, the smoke step and a manual `links.yml` run are
    green, and record it. Until then they are verified only locally.
+   **Done.** Push run 38503564803: verify, workflow-lint and deploy
+   (including the live smoke step) all green. Manual links.yml run
+   38503693939: green, 8/8 links 200. Dependabot opened PRs 1–3 for
+   major action bumps; left for review, not merged.
 4. **External scan of the live site** (Mozilla Observatory / securityheaders)
    after the push, recording the grade and anything header-only that a
    static Pages site cannot fix, so it is a known limit rather than a
