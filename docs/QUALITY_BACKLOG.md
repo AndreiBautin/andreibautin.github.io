@@ -102,10 +102,8 @@ Drafted 2026-10-14 after round 1.
 
 1. **Bring `verify` back under five seconds.** Round 1 took it from about
    1 s to 28 s: each of 15 planted-defect cases copies the repo and spawns
-   one `node --check` per script. Check syntax in-process
-   (`new vm.Script` / `vm.SourceTextModule`-free parse via
-   `node:module`'s `stripTypeScriptTypes`-less path, or one child that
-   checks every file), and copy only what each case touches.
+   one `node --check` per script. Check every file in one child process
+   instead of one each, and copy only what each case touches.
 2. **Pin the Node version CI runs.** Tests rely on `fs.cpSync`, global
    `fetch` and `node:test` hooks; `ubuntu-latest` changes its default
    Node without notice. Declare `engines.node` and have `verify` fail on an
