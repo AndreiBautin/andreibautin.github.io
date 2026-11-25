@@ -2,7 +2,7 @@
 const projects = [
   ['index', 'Software engineer', 'Andrei Bautin', '.NET, React, and Azure. Senior software engineer at 3Cloud.', './Andrei_Bautin_Resume.pdf', 'View resume'],
   ['terra', 'Procedural planet explorer', 'TERRA', 'Create a world from a seed. Fly from orbit down to its terrain.', 'https://andreibautin.github.io/planet-generator/', 'Open TERRA'],
-  ['construct', 'Liquid sculpture studio', 'CONSTRUCT', 'Pull, split, merge, and freeze liquid into sculptures.', 'https://liquid-sculpture-studio.andreibautin94.chatgpt.site/', 'Open CONSTRUCT'],
+  ['nacre', 'Liquid sculpture studio', 'NACRE', 'Pull, split, merge, and freeze liquid into sculptures.', 'https://liquid-sculpture-studio.andreibautin94.chatgpt.site/', 'Open NACRE'],
   ['pelagic', 'Interactive ocean life', 'PELAGIC', 'Meet a luminous jellyfish. Build an aquarium and watch its inhabitants respond.', 'https://pelagic.andreibautin94.chatgpt.site/', 'Open PELAGIC'],
 ];
 const themeButton = document.querySelector('.theme-toggle');
@@ -20,6 +20,7 @@ const buttons = [...document.querySelectorAll('[data-scene]')];
 function select(index, updateUrl = true) {
   if (!Number.isInteger(index) || !projects[index]) return;
   const [key, category, title, description, url, launch] = projects[index];
+  document.body.classList.toggle('project-view', index !== 0);
   buttons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.scene) === index)));
   document.getElementById('scene-category').textContent = category;
   document.getElementById('scene-title').textContent = title;
@@ -32,7 +33,7 @@ function select(index, updateUrl = true) {
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
 document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); });
-function fromHash() { select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false); }
+function fromHash() { if (location.hash === '#construct') { select(2, false); return; } select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false); }
 addEventListener('hashchange', fromHash); fromHash();
 document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => {
   const dialog = document.getElementById(button.dataset.open);

@@ -2,21 +2,14 @@
 const canvas = document.querySelector('.hero-tech'), status = document.getElementById('field-status');
 try {
   const [THREE, { createShapes, hash, interpolateInto }, { default: marks }] = await Promise.all([
-    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=06f4d43296'), import('./tech-marks.js?v=2d5d1716e2'),
+    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=6a3ee46d4b'), import('./tech-marks.js?v=2d5d1716e2'),
   ]);
   for (const name of ['csharp', 'dotnet', 'react', 'azure']) {
     const image = document.createElement('img'); image.alt = name === 'csharp' ? 'C#' : name === 'dotnet' ? '.NET' : name === 'react' ? 'React' : 'Azure'; image.width = image.height = 25;
     image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(marks[name].replace('<svg ', '<svg fill="#83b89a" ')); document.getElementById('stack-strip').append(image);
   }
-  await document.fonts.ready;
-  const source = document.createElement('canvas'); source.width = 1500; source.height = 600;
-  const ink = source.getContext('2d'); if (!ink) throw new Error('Canvas unavailable');
-  ink.fillStyle = '#fff'; ink.font = '700 260px Manrope, sans-serif'; ink.textAlign = 'center'; ink.textBaseline = 'middle'; ink.letterSpacing = '-12px';
-  ink.fillText('ANDREI', 750, 170); ink.fillText('BAUTIN', 750, 425);
-  const pixels = ink.getImageData(0, 0, 1500, 600).data, samples = [];
-  for (let y = 0; y < 600; y += 3) for (let x = 0; x < 1500; x += 3) if (pixels[(y * 1500 + x) * 4 + 3] > 128) samples.push((x - 750) / 80, (300 - y) / 80, 0);
   const count = innerWidth < 700 || navigator.connection?.saveData ? 18000 : 42000;
-  const shapes = createShapes(count, new Float32Array(samples));
+  const shapes = createShapes(count);
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.debug.onShaderError = () => { throw new Error('Particle shader unavailable'); };
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(42, 1, .1, 100), geometry = new THREE.BufferGeometry();
@@ -40,10 +33,11 @@ try {
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
+        p.y+=sin(p.x*.6+t*.15)*.15*uNameWeight*uMotion;p.z+=sin(p.x*.5+t*.2)*.2*uNameWeight*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
         float age=uTime-uWave.z;float ring=exp(-pow((length(p.xy-uWave.xy)-age*5.)*1.8,2.))*exp(-max(0.,age)*.8)*step(0.,age)*uMotion;p+=direction*ring*.8;
         vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*uRatio*16./max(5.,-view.z),1.,5.);
-        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
+        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed)*mix(1.,.18,uNameWeight);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
       }`,
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
   });

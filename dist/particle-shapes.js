@@ -1,4 +1,4 @@
-// Browser-free, deterministic geometry. Rasterized name samples are supplied by the renderer.
+// Browser-free, deterministic geometry for the veil and three project forms.
 export function hash(value, salt = 17) {
   const n = Math.sin(value * 127.1 + salt * 311.7) * 43758.5453;
   return n - Math.floor(n);
@@ -11,9 +11,9 @@ export function interpolateInto(from, to, progress) {
   for (let i = 0; i < from.length; i++) from[i] += (to[i] - from[i]) * t;
 }
 
-export function createShapes(count, samples, seed = 17) {
+export function createShapes(count, seed = 17) {
   if (!Number.isInteger(count) || count < 1 || count > 60000) throw new RangeError('Particle count outside bounds');
-  if (!(samples instanceof Float32Array) || !samples.length || samples.length % 3 || !samples.every(Number.isFinite)) throw new TypeError('Name samples must be finite xyz coordinates');
+  if (!Number.isFinite(seed)) throw new TypeError('Seed must be a finite number');
   const shapes = Array.from({ length: 4 }, () => ({ positions: new Float32Array(count * 4), colors: new Float32Array(count * 3) }));
   const tau = Math.PI * 2;
   const put = (scene, i, x, y, z, part, color) => {
@@ -26,8 +26,9 @@ export function createShapes(count, samples, seed = 17) {
       for (let scene = 0; scene < 4; scene++) put(scene, i, (a - .5) * 32, (b - .5) * 18, (c - .5) * 14, 3, [.04, .15, .1]);
       continue;
     }
-    const sample = Math.floor(a * samples.length / 3) * 3;
-    put(0, i, samples[sample], samples[sample + 1], (c - .5) * .35, 0, [.15 + d * .5, .55 + d * .4, .3 + d * .35]);
+    // A soft flowing veil frames the HTML name; no particles form its letters.
+    const flow = (a - .5) * Math.PI * 2, spread = (b - .5);
+    put(0, i, flow * 3, Math.sin(flow * .9) * 2.7 + Math.cos(flow * 1.9) * .7 + spread * .8, Math.cos(flow) * 1.8 + spread * .7, 0, [.24 + d * .18, .52 + d * .2, .5 + d * .22]);
 
     // Uniform sphere sampling, an atmosphere and inclined orbital traces.
     const phi = a * tau, latitude = Math.acos(2 * b - 1);
@@ -42,21 +43,11 @@ export function createShapes(count, samples, seed = 17) {
     const shade = .38 + Math.max(0, x * -.45 + y * .4 + z * .65) * .8;
     put(1, i, x * radius, y * radius, z * radius, 0, color.map(v => v * shade));
 
-    // Trefoil centerline with a circular tube in its local normal plane.
-    const t = a * tau, r = 2 + Math.cos(3 * t);
-    const center = [r * Math.cos(t), r * Math.sin(t), Math.sin(3 * t)];
-    let tx = -3 * Math.sin(3 * t) * Math.cos(t) - r * Math.sin(t);
-    let ty = -3 * Math.sin(3 * t) * Math.sin(t) + r * Math.cos(t);
-    let tz = 3 * Math.cos(3 * t);
-    const length = Math.hypot(tx, ty, tz); tx /= length; ty /= length; tz /= length;
-    const nl = Math.hypot(tz, tx), nx = -tz / nl, nz = tx / nl;
-    const bx = ty * nz, by = tz * nx - tx * nz, bz = -ty * nx;
-    const ring = b * tau, tube = .57 + .03 * Math.sin(t * 12);
-    const px = center[0] + tube * (nx * Math.cos(ring) + bx * Math.sin(ring));
-    const py = center[1] + tube * by * Math.sin(ring);
-    const pz = center[2] + tube * (nz * Math.cos(ring) + bz * Math.sin(ring));
-    const metallic = .45 + .55 * Math.pow(Math.abs(Math.cos(ring - .6)), 4);
-    put(2, i, px * 1.25, py * .93, pz * 1.25, 0, [metallic, metallic * .75, metallic * .32]);
+    // One broad ribbon with a half twist, in silver, ice blue and lilac.
+    const t = a * tau, across = (b - .5) * 2.4, radiusAt = 3 + across * Math.cos(t / 2);
+    const px = radiusAt * Math.cos(t), py = radiusAt * Math.sin(t) * .8, pz = across * Math.sin(t / 2);
+    const sheen = .52 + .4 * Math.pow(Math.abs(Math.sin(t + across)), 3);
+    put(2, i, px, py, pz, 0, [sheen * (.72 + .15 * d), sheen * (.73 + .15 * b), sheen]);
 
     // Bell, long filament chains and four internal radial structures.
     let jx, jy, jz, part;

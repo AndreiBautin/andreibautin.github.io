@@ -68,7 +68,7 @@ shows on first click, which is the cost accepted.
 ## Particle invariants
 
 `scripts/particles.test.cjs` exercises maximum-population finite coordinates,
-bounded colors/positions, deterministic identity, immutable raster input and
+bounded colors/positions, deterministic seeded identity and
 rejected allocation/input errors. The particle-boundary gate rejects browser
 globals, ambient randomness and imports in the geometry module; its planted
 defect proves the restriction actually fires. The shader uses analytic forces;

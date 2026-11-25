@@ -2,8 +2,8 @@
 
 Public portfolio: https://andreibautin.github.io/ — no login required.
 
-A full-screen GPU particle field forms my name, then transforms into a planet,
-sculpture knot, or jellyfish when a project is selected. Pointer movement
+A flowing GPU particle veil frames solid typography, then transforms into a
+planet, folded ribbon, or jellyfish when a project is selected. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 
@@ -26,7 +26,7 @@ More: [architecture](docs/ARCHITECTURE.md), [testing](docs/TESTING.md),
 
 ## Presentation
 
-One scene, four forms. TERRA | Procedural Planet Explorer; CONSTRUCT | Liquid
+One scene, four forms. TERRA | Procedural Planet Explorer; NACRE | Liquid
 Sculpture Studio; PELAGIC | Interactive Ocean Life. The particle forms are
 purpose-built previews, not embedded copies of the applications. Actual
 project captures and engineering details appear under How it works.
