@@ -7,6 +7,10 @@ is an actual render from the liquid sculpture studio; its live link opens the
 public WebGPU app. LiftOS is retired from this showcase, with its history
 preserved in Git.
 
+PELAGIC replaces the DJ Visualizer Generator in the featured showcase. The
+jellyfish thumbnail comes from a real canvas capture. The DJ application's
+repository and deployment are retained; this change retires its portfolio card.
+
 ## Run it
 
 Double-click `start-app.bat` (Node.js required), or `npm run dev`, then open
