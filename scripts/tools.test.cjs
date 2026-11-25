@@ -27,6 +27,17 @@ test('stamp is idempotent and repairs a stale stamp', (t) => {
 });
 
 test('build_marks renders the same module twice', () => assert.equal(render(), render()));
+test('changing an imported graphics module updates its URL and the outer hero URL together', (t) => {
+  const copy = fs.mkdtempSync(path.join(os.tmpdir(), 'imports-'));
+  t.after(() => fs.rmSync(copy, { recursive: true, force: true }));
+  fs.cpSync(dist, copy, { recursive: true });
+  const oldHero = fs.readFileSync(path.join(copy, 'hero.js'), 'utf8'), oldHtml = fs.readFileSync(path.join(copy, 'index.html'), 'utf8');
+  fs.appendFileSync(path.join(copy, 'particle-shapes.js'), '\n'); stamp(copy);
+  assert.notEqual(fs.readFileSync(path.join(copy, 'hero.js'), 'utf8'), oldHero);
+  assert.notEqual(fs.readFileSync(path.join(copy, 'index.html'), 'utf8'), oldHtml);
+  const stable = fs.readFileSync(path.join(copy, 'hero.js'), 'utf8'); stamp(copy);
+  assert.equal(fs.readFileSync(path.join(copy, 'hero.js'), 'utf8'), stable);
+});
 
 test('dev server holds to the Pages contract', async (t) => {
   const server = createServer(dist).listen(0, '127.0.0.1');
@@ -77,6 +88,6 @@ test('smoke passes a faithful copy and names what a bad one lacks', async (t) =>
   const page = path.join(served, '404.html');
   fs.writeFileSync(page, fs.readFileSync(page, 'utf8').replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, ''));
   const problems = await check(base, dist);
-  assert(problems.some((p) => p.startsWith('tech-marks.js: HTTP 404')), problems.join('; '));
+  assert(problems.some((p) => /^tech-marks\.js(?:\?[^ ]+)?: HTTP 404$/.test(p)), problems.join('; '));
   assert(problems.some((p) => p.startsWith('404.html: Content-Security-Policy')), problems.join('; '));
 });

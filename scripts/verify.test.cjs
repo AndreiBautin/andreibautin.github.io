@@ -39,7 +39,10 @@ const edit = (root, rel, change) => {
 const failing = (root) => run(root).filter((r) => r.error).map((r) => r.name);
 
 const defects = {
-  'particle boundary': (root) => edit(root, 'dist/particle-shapes.js', (s) => s + 'void document;\n'),
+  'particle boundary': (root) => {
+    edit(root, 'dist/particle-shapes.js', (s) => s + 'void document;\n');
+    edit(root, 'dist/index.html', (s) => s); stamp(path.join(root, 'dist'));
+  },
   'syntax': (root) => edit(root, 'dist/404.js', (s) => s + '}\n'),
   'resume facts': (root) => edit(root, 'dist/index.html', (s) => s.replaceAll('AZ-900', 'AZ-104')),
   'links': [
@@ -69,7 +72,10 @@ const defects = {
   ],
   'regex escapes': (root) => edit(root, 'scripts/checks/content.cjs', (s) => s.replace('`(^|[^\\\\w-])', '`(^|[^\\w-])')),
   'generated files': (root) => edit(root, 'assets/tech/react.svg', (s) => s.replace('<svg', '<svg data-x="1"')),
-  'byte budgets': (root) => edit(root, 'dist/vendor/three.hero.min.js', (s) => `${s}/*${crypto.randomBytes(200_000).toString('base64')}*/\n`),
+  'byte budgets': (root) => {
+    edit(root, 'dist/vendor/three.hero.min.js', (s) => `${s}/*${crypto.randomBytes(200_000).toString('base64')}*/\n`);
+    edit(root, 'dist/index.html', (s) => s); stamp(path.join(root, 'dist'));
+  },
   'font subset': (root) => edit(root, 'dist/404.html', (s) => s.replace('</body>', Buffer.from('Ж').toString('latin1') + '</body>')),
   'deploy manifest': (root) => edit(root, '.openai/hosting.json', (s) => s.replace('"dist"', '"public"')),
   'content security policy': (root) => edit(root, 'dist/404.html', (s) => s.replace('<body', '<body style="color:red"')),

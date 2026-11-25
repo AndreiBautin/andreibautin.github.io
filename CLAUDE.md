@@ -4,7 +4,7 @@ Static portfolio; `dist/` is the published source. See docs/ARCHITECTURE.md.
 
 ## What will bite
 
-- **Edited `styles.css`, `script.js` or `hero.js`? Run `npm run stamp`.**
+- **Edited `styles.css`, `script.js`, `hero.js`, a particle target or the vendor subset? Run `npm run stamp`.**
   verify refuses a stale `?v=` hash.
 - **No inline script, style, `style=""` or `on*=` handlers** in the pages,
   and no `innerHTML`/`insertAdjacentHTML`/`eval` in shipped JS. The CSP and

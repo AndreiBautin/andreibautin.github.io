@@ -6,6 +6,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { hashOf, STAMPED } = require('./checks.cjs');
 function stamp(dist) {
+  const heroPath = path.join(dist, 'hero.js');
+  const originalHero = fs.readFileSync(heroPath, 'utf8');
+  const hero = originalHero.replace(/import\('\.\/([^'?#]+)(?:\?[^']*)?'\)/g, (_, file) => `import('./${file}?v=${hashOf(fs.readFileSync(path.join(dist, file)))}')`);
+  if (hero !== originalHero) {
+    const temporary = heroPath + '.stamp-tmp';
+    fs.writeFileSync(temporary, hero); fs.renameSync(temporary, heroPath);
+  }
   let html = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const stamps = STAMPED.map((file) => `./${file}?v=${hashOf(fs.readFileSync(path.join(dist, file)))}`);
   STAMPED.forEach((file, i) => {

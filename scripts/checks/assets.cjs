@@ -13,6 +13,9 @@ module.exports = [
       const want = `./${file}?v=${hashOf(c.bytes('dist/' + file))}`;
       assert(html.includes(want), `${file} link must be stamped ${want} (run npm run stamp)`);
     }
+    for (const [, file, version] of c.read('dist/hero.js').matchAll(/import\('\.\/([^'?#]+)(?:\?v=([^']+))?'\)/g)) {
+      assert.equal(version, hashOf(c.bytes('dist/' + file)), `${file} import is stale (run npm run stamp)`);
+    }
   }],
   ['generated files', (c) => {
     // hero.js may only use THREE.* names the vendor subset exports.

@@ -15,7 +15,8 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
 2. **`styles.css?v=<hash>`** and **`script.js?v=<hash>`** load. The `?v=`
    is a content hash written by `scripts/stamp.cjs`: Pages caches for ten
    minutes, and a fresh page with a cached stylesheet once drew the hero as
-   a block image.
+   a block image. The stamp also versions hero.js imports before hashing the
+   hero itself, so a new GPU export or particle target cannot reuse an old URL.
 3. **`script.js`** owns theme, project selection, direct links, hash navigation,
    and native dialogs. A project button validates an index, updates the copy
    and launch link, then dispatches `portfolio:scene`. Experience and contact

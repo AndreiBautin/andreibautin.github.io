@@ -2,7 +2,7 @@
 const canvas = document.querySelector('.hero-tech'), status = document.getElementById('field-status');
 try {
   const [THREE, { createShapes, hash, interpolateInto }, { default: marks }] = await Promise.all([
-    import('./vendor/three.hero.min.js'), import('./particle-shapes.js'), import('./tech-marks.js'),
+    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=06f4d43296'), import('./tech-marks.js?v=2d5d1716e2'),
   ]);
   for (const name of ['csharp', 'dotnet', 'react', 'azure']) {
     const image = document.createElement('img'); image.alt = name === 'csharp' ? 'C#' : name === 'dotnet' ? '.NET' : name === 'react' ? 'React' : 'Azure'; image.width = image.height = 25;
