@@ -17,7 +17,12 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    minutes, and a fresh page with a cached stylesheet once drew the hero as
    a block image.
 3. **`script.js`** wires the theme toggle, copy-email button, and current
-   navigation section. Static content and project links work without it.
+   navigation section. It also overlays a decorative 2D canvas on the real
+   name heading: seeded character rain resolves into the name once, then a
+   brief highlight runs every twelve seconds while visible. The heading
+   remains accessible and readable without JavaScript or canvas. Reduced
+   motion disables the effect, and hidden/offscreen states cancel work.
+   Static content and project links work without it.
 4. **`hero.js`** imports the integrity-pinned Three.js subset and generated
    technology marks. A deterministic canvas texture draws a restrained green
    code wall on one flat mesh. It draws at about eleven frames per second,

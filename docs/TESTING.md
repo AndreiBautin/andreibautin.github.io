@@ -49,8 +49,11 @@ shows on first click, which is the cost accepted.
 - **The WebGL hero and animation feel.** Decoration; when it fails it fails
   to a static hero, and pixel tests of a seeded 3D scene cost more than the
   regressions they would catch.
-- **`script.js` behaviour.** Event wiring with no logic to get wrong
-  silently; a broken toggle is visible on first click.
+- **`script.js` browser behaviour.** Theme/copy controls and the decorative
+  name reveal are checked in native Chrome. Canvas appearance and animation
+  timing need visual review; a fake canvas test would not establish either.
+  The name stays ordinary HTML for no-JavaScript and canvas-unavailable
+  fallbacks. Reduced-motion emulation is checked separately from the reveal.
 - **External profile pages' content.** Not ours; `links` only checks they
   answer.
 - **`build_three.cjs` and `subset_fonts.py` themselves.** They need the
