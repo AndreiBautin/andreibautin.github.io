@@ -4,7 +4,7 @@ function setTheme(light) {
   document.body.classList.toggle('light', light);
   themeButton.setAttribute('aria-pressed', String(light));
   themeButton.setAttribute('aria-label', light ? 'Use dark theme' : 'Use light theme');
-  document.querySelector('link[rel="icon"]').href = light ? './images/favicon-light.svg' : './images/favicon.svg';
+  document.querySelector('link[rel="icon"]').href = light ? './images/favicon-light.svg?v=outline-1' : './images/favicon.svg?v=outline-1';
   try { localStorage.setItem('portfolio-theme', light ? 'light' : 'dark'); } catch { /* Private mode can refuse persistence. */ }
 }
 try { setTheme(localStorage.getItem('portfolio-theme') === 'light'); } catch { setTheme(false); }
