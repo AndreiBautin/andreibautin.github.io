@@ -2,6 +2,11 @@
 
 Public portfolio: https://andreibautin.github.io/ — no login required.
 
+CONSTRUCT replaces LiftOS in the featured independent projects. Its thumbnail
+is an actual render from the liquid sculpture studio; its live link opens the
+public WebGPU app. LiftOS is retired from this showcase, with its history
+preserved in Git.
+
 ## Run it
 
 Double-click `start-app.bat` (Node.js required), or `npm run dev`, then open
