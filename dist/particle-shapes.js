@@ -48,7 +48,7 @@ export function createNameShape(mask, width, height, count, seed = 17) {
     const depth = side ? (hash(i, seed + 64) - .5) * 1.1 : (back ? -.55 : .55) * Math.min(1, .7 + distance[pixel] * .06);
     positions.set([((pixel % width) / width - .5) * 16, (.5 - Math.floor(pixel / width) / height) * 8, depth, 0], i * 4);
     const light = side ? .54 + hash(i, seed + 65) * .28 : back ? .28 : .7 + hash(i, seed + 66) * .3;
-    colors.set([light * .48, light * .88, light], i * 3);
+    colors.set([light * .16, light, light * .32], i * 3);
   }
   return { positions, colors };
 }

@@ -26,8 +26,9 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    `createShapes`, then uploads four deterministic targets: atmosphere, planet, folded
    ribbon and jellyfish. The loaded name font is rasterized once and supplied to
    `createNameShape`, which samples front, back and side surfaces with beveled
-   depth. The same points and shader render every form; the name gently turns
-   to show its thickness. The HTML name remains an accessible fallback. One Points
+   depth. The same points and shader render every form; the Matrix-green name
+   rocks and floats continuously to show its thickness. Reduced motion keeps
+   it still. The HTML name remains an accessible fallback. One Points
    draw call morphs source/target attributes in a vertex shader. Selecting a
    new target captures the interpolated attributes before transitioning again.
    Shape motion, pointer swirl and click waves are analytic shader functions,

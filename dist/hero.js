@@ -2,7 +2,7 @@
 const canvas = document.querySelector('.hero-tech'), status = document.getElementById('field-status');
 try {
   const [THREE, { createShapes, createNameShape, hash, interpolateInto }, { default: marks }] = await Promise.all([
-    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=a0b84060a5'), import('./tech-marks.js?v=2d5d1716e2'),
+    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=554ab605f8'), import('./tech-marks.js?v=2d5d1716e2'),
   ]);
   for (const name of ['csharp', 'dotnet', 'react', 'azure']) {
     const image = document.createElement('img'); image.alt = name === 'csharp' ? 'C#' : name === 'dotnet' ? '.NET' : name === 'react' ? 'React' : 'Azure'; image.width = image.height = 25;
@@ -37,8 +37,10 @@ try {
       void main(){
         float m=uMorph;vec3 p=mix(aFrom.xyz,aTo.xyz,m);vec3 direction=normalize(vec3(sin(aSeed*125.),cos(aSeed*73.),sin(aSeed*53.)));
         float nt=uTime*uMotion;
-        p.yz=turn((.10+sin(nt*.23)*.035)*uNameWeight)*p.yz;
-        p.xz=turn(uSpin+(-.24+sin(nt*.19)*.09)*uNameWeight)*p.xz;
+        p.yz=turn((.08+sin(nt*.48)*.12)*uNameWeight)*p.yz;
+        p.xz=turn(uSpin+(-.12+sin(nt*.65)*.38)*uNameWeight)*p.xz;
+        p.xy=turn(sin(nt*.38)*.025*uNameWeight)*p.xy;
+        p.y+=sin(nt*.8)*.18*uNameWeight;
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
