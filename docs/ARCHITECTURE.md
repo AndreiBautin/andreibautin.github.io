@@ -18,8 +18,9 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    a block image.
 3. **`script.js`** wires the theme toggle, copy-email button, and current
    navigation section. It also overlays a decorative 2D canvas on the real
-   name heading: seeded character rain resolves into the name once, then a
-   brief highlight runs every twelve seconds while visible. The heading
+   full-screen name heading: deterministic character streams fall continuously
+   through a cached text mask at at most 25 frames per second. The name never
+   scrambles or resolves to a different treatment. The heading
    remains accessible and readable without JavaScript or canvas. Reduced
    motion disables the effect, and hidden/offscreen states cancel work.
    Static content and project links work without it.
