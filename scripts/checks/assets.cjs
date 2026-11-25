@@ -32,7 +32,7 @@ module.exports = [
     const gz = (files) => files.reduce((sum, f) => sum + gzipSize(c.bytes('dist/' + f)), 0);
     for (const [name, files, limit] of [
       ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
-      ['hero visual', ['hero.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
+      ['hero visual', ['hero.js', 'particle-shapes.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
     ]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
   }],
   // The fonts are subset (scripts/subset_fonts.py): every character a page

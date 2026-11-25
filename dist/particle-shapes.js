@@ -4,6 +4,55 @@ export function hash(value, salt = 17) {
   return n - Math.floor(n);
 }
 
+// Signed chamfer distance in pixels, positive inside ink. Two bounded passes
+// keep font processing linear in raster size, including enclosed letter holes.
+export function createNameField(mask, width, height) {
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 3 || height < 3 || width * height > 1200000) throw new RangeError('Name raster outside bounds');
+  if (!(mask instanceof Uint8Array) || mask.length !== width * height) throw new TypeError('Matching alpha raster required');
+  const inside = new Float32Array(mask.length), outside = new Float32Array(mask.length);
+  let ink = 0;
+  for (let i = 0; i < mask.length; i++) { const solid = mask[i] >= 128; ink += Number(solid); inside[i] = solid ? 1e6 : 0; outside[i] = solid ? 0 : 1e6; }
+  if (!ink || ink === mask.length) throw new TypeError('Name raster requires ink and background');
+  const diagonal = Math.SQRT2;
+  for (const field of [inside, outside]) {
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      if (x) field[i] = Math.min(field[i], field[i - 1] + 1);
+      if (y) field[i] = Math.min(field[i], field[i - width] + 1);
+      if (x && y) field[i] = Math.min(field[i], field[i - width - 1] + diagonal);
+      if (x + 1 < width && y) field[i] = Math.min(field[i], field[i - width + 1] + diagonal);
+    }
+    for (let y = height - 1; y >= 0; y--) for (let x = width - 1; x >= 0; x--) {
+      const i = y * width + x;
+      if (x + 1 < width) field[i] = Math.min(field[i], field[i + 1] + 1);
+      if (y + 1 < height) field[i] = Math.min(field[i], field[i + width] + 1);
+      if (x + 1 < width && y + 1 < height) field[i] = Math.min(field[i], field[i + width + 1] + diagonal);
+      if (x && y + 1 < height) field[i] = Math.min(field[i], field[i + width - 1] + diagonal);
+    }
+  }
+  for (let i = 0; i < inside.length; i++) inside[i] -= outside[i];
+  return inside;
+}
+
+// Front, back and side surfaces of an extruded glyph, all sampled as points.
+export function createNameShape(mask, width, height, count, seed = 17) {
+  if (!Number.isInteger(count) || count < 1 || count > 60000) throw new RangeError('Particle count outside bounds');
+  if (!Number.isFinite(seed)) throw new TypeError('Seed must be finite');
+  const distance = createNameField(mask, width, height), face = [], edge = [];
+  for (let i = 0; i < distance.length; i++) if (distance[i] > 0) { face.push(i); if (distance[i] < 1.5) edge.push(i); }
+  if (!edge.length) throw new TypeError('Name raster requires a boundary');
+  const positions = new Float32Array(count * 4), colors = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const side = hash(i, seed + 61) > .68, back = hash(i, seed + 62) > .72;
+    const candidates = side ? edge : face, pixel = candidates[Math.floor(hash(i, seed + 63) * candidates.length)];
+    const depth = side ? (hash(i, seed + 64) - .5) * 1.1 : (back ? -.55 : .55) * Math.min(1, .7 + distance[pixel] * .06);
+    positions.set([((pixel % width) / width - .5) * 16, (.5 - Math.floor(pixel / width) / height) * 8, depth, 0], i * 4);
+    const light = side ? .54 + hash(i, seed + 65) * .28 : back ? .28 : .7 + hash(i, seed + 66) * .3;
+    colors.set([light * .48, light * .88, light], i * 3);
+  }
+  return { positions, colors };
+}
+
 // Retarget from the current interpolated state, rather than the last destination.
 export function interpolateInto(from, to, progress) {
   if (!(from instanceof Float32Array) || !(to instanceof Float32Array) || from.length !== to.length) throw new TypeError('Matching float attributes required');

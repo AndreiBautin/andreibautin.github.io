@@ -23,8 +23,11 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    retain the resume facts in accessible HTML; no renderer owns their state.
 4. **`hero.js`** imports the integrity-pinned Three.js subset, technology marks,
    and browser-free **`particle-shapes.js`**. It passes a population and seed to
-   `createShapes`, then uploads four deterministic targets: veil, planet, folded
-   ribbon and jellyfish. The name remains solid HTML typography. One Points
+   `createShapes`, then uploads four deterministic targets: atmosphere, planet, folded
+   ribbon and jellyfish. The loaded name font is rasterized once and supplied to
+   `createNameShape`, which samples front, back and side surfaces with beveled
+   depth. The same points and shader render every form; the name gently turns
+   to show its thickness. The HTML name remains an accessible fallback. One Points
    draw call morphs source/target attributes in a vertex shader. Selecting a
    new target captures the interpolated attributes before transitioning again.
    Shape motion, pointer swirl and click waves are analytic shader functions,

@@ -33,3 +33,35 @@ test('retargeting preserves current positions and colors instead of jumping to t
   shapes.interpolateInto(current, target, NaN); assert.deepEqual(current, next);
   assert.throws(() => shapes.interpolateInto(current, new Float32Array(2), .5), TypeError);
 });
+
+test('name distance retains holes and boundaries without mutating the supplied alpha mask', () => {
+  const mask = new Uint8Array(81);
+  for (let y = 1; y < 8; y++) for (let x = 1; x < 8; x++) mask[y * 9 + x] = 255;
+  mask[4 * 9 + 4] = 0;
+  const before = mask.slice(), field = shapes.createNameField(mask, 9, 9);
+  assert.deepEqual(mask, before);
+  assert.equal(field[4 * 9 + 4], -1); assert(Math.abs(field[0] + Math.SQRT2) < 1e-6);
+  assert.equal(field[1 * 9 + 4], 1); assert.equal(field[2 * 9 + 4], 2);
+  assert(field.every(Number.isFinite));
+});
+
+test('name raster validation bounds memory and rejects missing glyphs', () => {
+  for (const [width, height] of [[0, 9], [3.5, 9], [2000, 2000], [NaN, 9]]) assert.throws(() => shapes.createNameField(new Uint8Array(9), width, height), RangeError);
+  for (const mask of [null, [], new Uint8Array(8), new Uint8Array(9), new Uint8Array(9).fill(255)]) assert.throws(() => shapes.createNameField(mask, 3, 3), TypeError);
+});
+
+test('extruded name keeps glyph holes empty and samples front, back and side depth', () => {
+  const mask = new Uint8Array(81);
+  for (let y = 1; y < 8; y++) for (let x = 1; x < 8; x++) mask[y * 9 + x] = 255;
+  mask[40] = 0;
+  const before = mask.slice(), result = shapes.createNameShape(mask, 9, 9, 2000);
+  assert.deepEqual(mask, before); assert.deepEqual(result, shapes.createNameShape(mask, 9, 9, 2000));
+  let front = 0, back = 0, side = 0;
+  for (let i = 0; i < 2000; i++) {
+    const x = Math.round((result.positions[i * 4] / 16 + .5) * 9), y = Math.round((.5 - result.positions[i * 4 + 1] / 8) * 9), z = result.positions[i * 4 + 2];
+    assert.equal(mask[y * 9 + x], 255);
+    if (z > .4) front++; else if (z < -.4) back++; else side++;
+  }
+  assert(front > 400 && back > 100 && side > 100);
+  assert(result.positions.every(Number.isFinite)); assert(result.colors.every(v => v >= 0 && v <= 1));
+});

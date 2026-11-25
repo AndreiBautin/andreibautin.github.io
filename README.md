@@ -2,8 +2,8 @@
 
 Public portfolio: https://andreibautin.github.io/ — no login required.
 
-A flowing GPU particle veil frames solid typography, then transforms into a
-planet, folded ribbon, or jellyfish when a project is selected. Pointer movement
+An extruded particle name shares a scene with a planet, folded ribbon, and
+jellyfish. The same dots transform between all four forms. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 

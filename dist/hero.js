@@ -1,8 +1,8 @@
 // GPU point field: deterministic target shapes and interruptible transitions.
 const canvas = document.querySelector('.hero-tech'), status = document.getElementById('field-status');
 try {
-  const [THREE, { createShapes, hash, interpolateInto }, { default: marks }] = await Promise.all([
-    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=6a3ee46d4b'), import('./tech-marks.js?v=2d5d1716e2'),
+  const [THREE, { createShapes, createNameShape, hash, interpolateInto }, { default: marks }] = await Promise.all([
+    import('./vendor/three.hero.min.js?v=a8b1155d25'), import('./particle-shapes.js?v=a0b84060a5'), import('./tech-marks.js?v=2d5d1716e2'),
   ]);
   for (const name of ['csharp', 'dotnet', 'react', 'azure']) {
     const image = document.createElement('img'); image.alt = name === 'csharp' ? 'C#' : name === 'dotnet' ? '.NET' : name === 'react' ? 'React' : 'Azure'; image.width = image.height = 25;
@@ -10,6 +10,14 @@ try {
   }
   const count = innerWidth < 700 || navigator.connection?.saveData ? 18000 : 42000;
   const shapes = createShapes(count);
+  await document.fonts.load('700 240px Manrope');
+  const raster = document.createElement('canvas'); raster.width = 1536; raster.height = 768;
+  const ink = raster.getContext('2d', { willReadFrequently: true }); if (!ink) throw new Error('Name raster unavailable');
+  ink.font = '700 240px Manrope'; ink.textAlign = 'center'; ink.textBaseline = 'middle'; ink.letterSpacing = '4px'; ink.fillStyle = '#fff';
+  ink.fillText('ANDREI', 768, 260); ink.fillText('BAUTIN', 768, 500);
+  const pixels = ink.getImageData(0, 0, 1536, 768).data, mask = new Uint8Array(1536 * 768);
+  for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
+  shapes[0] = createNameShape(mask, 1536, 768, count);
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.debug.onShaderError = () => { throw new Error('Particle shader unavailable'); };
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(42, 1, .1, 100), geometry = new THREE.BufferGeometry();
@@ -28,16 +36,17 @@ try {
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
       void main(){
         float m=uMorph;vec3 p=mix(aFrom.xyz,aTo.xyz,m);vec3 direction=normalize(vec3(sin(aSeed*125.),cos(aSeed*73.),sin(aSeed*53.)));
-        p.xz=turn(uSpin)*p.xz;
+        float nt=uTime*uMotion;
+        p.yz=turn((.10+sin(nt*.23)*.035)*uNameWeight)*p.yz;
+        p.xz=turn(uSpin+(-.24+sin(nt*.19)*.09)*uNameWeight)*p.xz;
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
-        p.y+=sin(p.x*.6+t*.15)*.15*uNameWeight*uMotion;p.z+=sin(p.x*.5+t*.2)*.2*uNameWeight*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
         float age=uTime-uWave.z;float ring=exp(-pow((length(p.xy-uWave.xy)-age*5.)*1.8,2.))*exp(-max(0.,age)*.8)*step(0.,age)*uMotion;p+=direction*ring*.8;
         vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*uRatio*16./max(5.,-view.z),1.,5.);
-        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed)*mix(1.,.18,uNameWeight);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
+        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
       }`,
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
   });
@@ -49,7 +58,7 @@ try {
     const width = canvas.clientWidth, height = canvas.clientHeight; camera.aspect = width / Math.max(1, height); camera.position.set(0, 0, camera.aspect < 1 ? 18 : 15); camera.updateProjectionMatrix();
     renderer.setSize(width, height, false); uniforms.uRatio.value = renderer.getPixelRatio(); uniforms.uMobile.value = width < 900 ? 1 : 0;
     const worldWidth = 2 * camera.position.z * Math.tan(42 * Math.PI / 360) * camera.aspect;
-    uniforms.uNameScale.value = Math.min(.8, worldWidth / 14.5); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
+    uniforms.uNameScale.value = Math.min(.8, worldWidth / 17); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
   }
   function change(index) {
     if (!Number.isInteger(index) || !shapes[index] || index === active) return;

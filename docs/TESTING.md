@@ -73,3 +73,8 @@ rejected allocation/input errors. The particle-boundary gate rejects browser
 globals, ambient randomness and imports in the geometry module; its planted
 defect proves the restriction actually fires. The shader uses analytic forces;
 the tests do not claim scientific simulation accuracy.
+
+The name distance-field tests cover enclosed glyph holes, signed distances,
+immutable input and bounded allocation. Extruded-name tests cover front/back depth, side samples and enclosed holes.
+Native Chrome review checks readability, motion and transitions; unit tests
+do not judge the visual style.
