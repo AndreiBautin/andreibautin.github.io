@@ -7,7 +7,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const EXPORTS = ['CanvasTexture', 'CircleGeometry', 'DirectionalLight', 'Group', 'HemisphereLight',
+const EXPORTS = ['NormalBlending', 'AdditiveBlending', 'BufferGeometry', 'Float32BufferAttribute', 'Points', 'ShaderMaterial', 'CanvasTexture', 'CircleGeometry', 'DirectionalLight', 'Group', 'HemisphereLight',
   'IcosahedronGeometry', 'MathUtils', 'Mesh', 'MeshBasicMaterial', 'MeshStandardMaterial',
   'PerspectiveCamera', 'PointLight', 'Quaternion', 'Raycaster', 'SRGBColorSpace', 'Scene',
   'Vector2', 'Vector3', 'WebGLRenderer'];

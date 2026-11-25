@@ -38,3 +38,8 @@ Static portfolio; `dist/` is the published source. See docs/ARCHITECTURE.md.
   matches.
 - Keep the portfolio on port 4357. Port 4317 is Guide's local origin; its cached
   app can redirect the browser to guide.html even when the server has changed.
+
+- Particle targets belong in dist/particle-shapes.js. Keep it browser-free and
+  deterministic: the particle-boundary gate enforces that rule. The renderer
+  owns shader motion; script.js owns UI and direct links. Never require the
+  scene to load before a visitor can open a project, resume or contact link.

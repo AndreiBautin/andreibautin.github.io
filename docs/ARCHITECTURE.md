@@ -16,20 +16,23 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    is a content hash written by `scripts/stamp.cjs`: Pages caches for ten
    minutes, and a fresh page with a cached stylesheet once drew the hero as
    a block image.
-3. **`script.js`** wires the theme toggle, copy-email button, and current
-   navigation section. It also overlays a decorative 2D canvas on the real
-   full-screen name heading: deterministic character streams fall continuously
-   through a cached text mask at at most 25 frames per second. The name never
-   scrambles or resolves to a different treatment. The heading
-   remains accessible and readable without JavaScript or canvas. Reduced
-   motion disables the effect, and hidden/offscreen states cancel work.
-   Static content and project links work without it.
-4. **`hero.js`** imports the integrity-pinned Three.js subset and generated
-   technology marks. A deterministic canvas texture draws a restrained green
-   code wall on one flat mesh. It draws at about eleven frames per second,
-   stops offscreen or when the tab is hidden, and renders a still for reduced
-   motion. Data saver skips this decorative download. The project cards use
-   actual captures, with optional details for the technical explanation.
+3. **`script.js`** owns theme, project selection, direct links, hash navigation,
+   and native dialogs. A project button validates an index, updates the copy
+   and launch link, then dispatches `portfolio:scene`. Experience and contact
+   retain the resume facts in accessible HTML; no renderer owns their state.
+4. **`hero.js`** imports the integrity-pinned Three.js subset, technology marks,
+   and browser-free **`particle-shapes.js`**. It rasterizes the loaded name font
+   once, passes finite sampled coordinates to `createShapes`, then uploads four
+   deterministic targets: name, planet, trefoil knot and jellyfish. One Points
+   draw call morphs source/target attributes in a vertex shader. Selecting a
+   new target captures the interpolated attributes before transitioning again.
+   Shape motion, pointer swirl and click waves are analytic shader functions,
+   not a fluid solver or stateful particle physics simulation. Work uses frame
+   deltas with a catch-up cap. Hidden tabs stop; page-cache restoration resumes;
+   reduced motion uses a still and instant changes. Smaller/data-saving devices
+   start with 18,000 points; desktop starts at 42,000, with a bounded quality
+   reduction under sustained load. A rendering failure leaves the HTML name
+   and controls. No third-party project runs inside the scene.
 5. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 
@@ -50,7 +53,8 @@ unchanged, not generated, so it cannot disagree with the one on LinkedIn.
 
 `verify.cjs` runs the check groups in `scripts/checks/` (one file per area, run by
 `scripts/checks.cjs`), then the tests
-in `scripts/verify.test.cjs` and `scripts/tools.test.cjs`. It gates the pre-push hook (`.githooks/pre-push`),
+in `scripts/verify.test.cjs`, `scripts/tools.test.cjs`, and
+`scripts/particles.test.cjs`. It gates the pre-push hook (`.githooks/pre-push`),
 pull requests, and the deploy in `.github/workflows/pages.yml`, which then
 runs `scripts/smoke.cjs` against the live URL. `serve.cjs` serves `dist/`
 locally on port 4357 with the CSP sent as a real header. Port 4317 belongs to

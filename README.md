@@ -2,14 +2,10 @@
 
 Public portfolio: https://andreibautin.github.io/ — no login required.
 
-CONSTRUCT replaces LiftOS in the featured independent projects. Its thumbnail
-is an actual render from the liquid sculpture studio; its live link opens the
-public WebGPU app. LiftOS is retired from this showcase, with its history
-preserved in Git.
-
-PELAGIC replaces the DJ Visualizer Generator in the featured showcase. The
-jellyfish thumbnail comes from a real canvas capture. The DJ application's
-repository and deployment are retained; this change retires its portfolio card.
+A full-screen GPU particle field forms my name, then transforms into a planet,
+sculpture knot, or jellyfish when a project is selected. Pointer movement
+disturbs the field; clicking sends an expanding wave. Live demos, resume,
+experience and contact remain direct controls. No account or backend.
 
 ## Run it
 
@@ -30,7 +26,11 @@ More: [architecture](docs/ARCHITECTURE.md), [testing](docs/TESTING.md),
 
 ## Presentation
 
-The portfolio uses a restrained Matrix-inspired palette and code wall. The
-three names use one pattern: TERRA — Procedural planet explorer; CONSTRUCT —
-Liquid sculpture studio; PELAGIC — Interactive ocean life. Short descriptions
-lead, with implementation details under each card's How it works control.
+One scene, four forms. TERRA | Procedural Planet Explorer; CONSTRUCT | Liquid
+Sculpture Studio; PELAGIC | Interactive Ocean Life. The particle forms are
+purpose-built previews, not embedded copies of the applications. Actual
+project captures and engineering details appear under How it works.
+
+The scene uses shader animation and analytic pointer forces, not a physical
+fluid solver. Reduced motion keeps a still with instant scene changes. If
+WebGL is unavailable, the HTML identity and project controls remain usable.

@@ -2,7 +2,7 @@
 
 | Command | Runs | Covers |
 |---|---|---|
-| `npm run verify` | every push, PR, deploy | 19 check groups over the repo (`scripts/checks/`), then `scripts/*.test.cjs` |
+| `npm run verify` | every push, PR, deploy | 20 check groups over the repo (`scripts/checks/`), then `scripts/*.test.cjs` |
 | `scripts/smoke.cjs` | after each deploy | live pages equal this commit's `dist/`, carry the CSP and referrer policy, every linked asset and dynamic import loads |
 | `npm run links` | weekly | outbound links still answer (a lapsed service's subdomain can be claimed) |
 | `scripts/observatory.cjs` | weekly | live Mozilla Observatory grade has not dropped |
@@ -46,14 +46,13 @@ shows on first click, which is the cost accepted.
 - **Browser rendering and layout.** No headless browser in the gate: it
   would be the slowest and flakiest part of verify for a site whose layout
   changes rarely and is checked by eye at each change.
-- **The WebGL hero and animation feel.** Decoration; when it fails it fails
-  to a static hero, and pixel tests of a seeded 3D scene cost more than the
-  regressions they would catch.
-- **`script.js` browser behaviour.** Theme/copy controls and the decorative
-  continuous name rain are checked in native Chrome. Canvas appearance and animation
-  timing need visual review; a fake canvas test would not establish either.
-  The name stays ordinary HTML for no-JavaScript and canvas-unavailable
-  fallbacks. Reduced-motion emulation is checked separately from the animated treatment.
+- **Particle rendering and animation feel.** Native Chrome review checks all
+  four forms, transitions, pointer waves, themes and dialog navigation. No
+  pixel-perfect GPU snapshots run in CI: cross-device appearance and physical
+  mobile performance remain separate checks.
+- **Browser event wiring.** Native dialog focus, keyboard project selection,
+  theme switching and direct links are checked in the browser. Geometry tests
+  do not pretend to establish these UI interactions.
 - **External profile pages' content.** Not ours; `links` only checks they
   answer.
 - **`build_three.cjs` and `subset_fonts.py` themselves.** They need the
@@ -65,3 +64,12 @@ shows on first click, which is the cost accepted.
 - **The backup site behind `.openai/hosting.json`.** Kept for the original
   hosting; verify checks only that it still points at `dist`, not that the
   backup is up.
+
+## Particle invariants
+
+`scripts/particles.test.cjs` exercises maximum-population finite coordinates,
+bounded colors/positions, deterministic identity, immutable raster input and
+rejected allocation/input errors. The particle-boundary gate rejects browser
+globals, ambient randomness and imports in the geometry module; its planted
+defect proves the restriction actually fires. The shader uses analytic forces;
+the tests do not claim scientific simulation accuracy.
