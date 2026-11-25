@@ -14,7 +14,7 @@ repository and deployment are retained; this change retires its portfolio card.
 ## Run it
 
 Double-click `start-app.bat` (Node.js required), or `npm run dev`, then open
-http://127.0.0.1:4317. `npm run verify` is the gate; after cloning, run
+http://127.0.0.1:4357. `npm run verify` is the gate; after cloning, run
 `git config core.hooksPath .githooks` so it also gates every push.
 
 ## The idea
@@ -27,3 +27,10 @@ rather than reaching the site.
 
 More: [architecture](docs/ARCHITECTURE.md), [testing](docs/TESTING.md),
 [security](SECURITY.md).
+
+## Presentation
+
+The portfolio uses a restrained Matrix-inspired palette and code wall. The
+three names use one pattern: TERRA — Procedural planet explorer; CONSTRUCT —
+Liquid sculpture studio; PELAGIC — Interactive ocean life. Short descriptions
+lead, with implementation details under each card's How it works control.

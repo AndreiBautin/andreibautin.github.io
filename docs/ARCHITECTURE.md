@@ -16,22 +16,14 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    is a content hash written by `scripts/stamp.cjs`: Pages caches for ten
    minutes, and a fresh page with a cached stylesheet once drew the hero as
    a block image.
-3. **`script.js`** (classic script) wires everything that is not the hero,
-   one `init*` function per feature — `initTheme`, `initReveals`,
-   `initCountUp`, `initTimeline`, `initNav` (current section and the
-   sliding pill), `initMenu`, `initCopyEmail`, `initStars`, `initTab` and the
-   pointer effects — started in order by the loop at the bottom. A feature
-   that throws is passed to `reportError` and the rest still start.
-4. **`hero.js`** (module) waits for `load` and then idle time, and — unless
-   data saver is on, memory is ≤ 2 GB or WebGL is missing — imports
-   **`vendor/three.hero.min.js`** (only the exports in
-   `scripts/build_three.cjs`) and **`tech-marks.js`** (the SVGs in
-   `assets/tech/`, bundled by `scripts/build_marks.cjs`). `start()` then
-   wires named steps: `createStage` (renderer, camera, lights),
-   `buildSpheres` (one per logo, each with its own wander constants),
-   `enableGrab` (drag to spin), `fitter` (layout for wide and phone views),
-   and runs the frame loop, which pauses while the hero is off screen. The
-   canvas fades in once shaders have compiled.
+3. **`script.js`** wires the theme toggle, copy-email button, and current
+   navigation section. Static content and project links work without it.
+4. **`hero.js`** imports the integrity-pinned Three.js subset and generated
+   technology marks. A deterministic canvas texture draws a restrained green
+   code wall on one flat mesh. It draws at about eleven frames per second,
+   stops offscreen or when the tab is hidden, and renders a still for reduced
+   motion. Data saver skips this decorative download. The project cards use
+   actual captures, with optional details for the technical explanation.
 5. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 
@@ -55,4 +47,6 @@ unchanged, not generated, so it cannot disagree with the one on LinkedIn.
 in `scripts/verify.test.cjs` and `scripts/tools.test.cjs`. It gates the pre-push hook (`.githooks/pre-push`),
 pull requests, and the deploy in `.github/workflows/pages.yml`, which then
 runs `scripts/smoke.cjs` against the live URL. `serve.cjs` serves `dist/`
-locally on port 4317 with the CSP sent as a real header.
+locally on port 4357 with the CSP sent as a real header. Port 4317 belongs to
+Guide on this desktop; sharing its origin can let Guide's cached navigation
+intercept the portfolio preview.

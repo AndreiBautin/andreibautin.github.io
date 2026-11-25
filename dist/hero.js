@@ -1,241 +1,55 @@
-// The hero's visual: a cluster of faceted spheres, each wearing the mark of
-// one technology, floating in the dark over the star field. Three.js from
-// ./vendor (logos from ./tech-marks.js), fetched only once the page has loaded: a static import started
-// its 690 KB download at once, competing with the fonts and images on a slow
-// connection. The canvas fades in when ready. Nothing random: every
-// sphere's place, drift and spin come from its index.
-if (document.readyState !== 'complete') await new Promise((resolve) => addEventListener('load', resolve, { once: true }));
-// Then wait for the main thread to go quiet, so parsing Three.js and
-// compiling shaders do not land on the page's first interactions.
-await new Promise((resolve) => (window.requestIdleCallback ? requestIdleCallback(resolve, { timeout: 1500 }) : setTimeout(resolve, 300)));
+// A low-contrast code wall. Uses the existing, integrity-pinned Three.js subset
+// and the generated technology marks; no additional runtime dependency.
 const canvas = document.querySelector('.hero-tech');
-// With data saver on, or on a device with 2 GB or less, the hero stays
-// static: the visual is decoration, and Three.js is most of the page's bytes.
-const lite = navigator.connection?.saveData || (navigator.deviceMemory ?? 8) <= 2;
-const wanted = Boolean(canvas && window.WebGLRenderingContext && !lite);
-const [THREE, { default: svgs }] = wanted
-  ? await Promise.all([import('./vendor/three.hero.min.js'), import('./tech-marks.js')])
-  : [null, { default: {} }];
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const marks = ['csharp', 'dotnet', 'typescript', 'react', 'azure', 'sqlserver', 'docker', 'nodedotjs',
-  'blazor', 'postgresql', 'vuedotjs', 'github'];
-// Also in script.js's star field, deliberately copied: see the note there.
-const hash = (k, n) => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
-
-// A logo as a texture: the SVG filled in the ink colour, drawn to a square
-// canvas with a margin, so a sphere's face is a round sticker with the mark
-// centred on it.
-const logoTexture = (name) => new Promise((resolve) => {
-  const img = new Image();
-  img.onload = () => {
-    const c = document.createElement('canvas');
-    c.width = c.height = 256;
-    const g = c.getContext('2d');
-    g.drawImage(img, 56, 56, 144, 144);
-    const t = new THREE.CanvasTexture(c);
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = 4;
-    resolve(t);
-  };
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgs[name].replace('<svg ', '<svg fill="#e9edf2" '));
-});
-
-// Laid out on a loose ring with a middle, each at its own depth: the
-// nearer ones larger, so the cluster has a front and a back.
-const layout = [[0, 0.1, 1.5], [2.6, 1.6, 0.4], [-2.5, 1.9, -0.2], [2.9, -1.7, 0.8], [-2.8, -1.5, 0.2],
-  [0.2, 3.1, -1.4], [0.1, -3.0, -0.8], [4.8, 0.2, -1.6], [-4.7, 0.3, -1.4], [3.9, 3.4, -2.6], [-4.0, -3.2, -2.4], [4.3, -3.6, -2.2]];
-// A phone's portrait band is too narrow for that spread: it keeps the
-// first seven marks, C# in the middle and six round it, close enough to
-// fit the band under the copy whole.
-const PHONE_MARKS = 7;
-const ring = (k) => [Math.cos(Math.PI / 2 - k * Math.PI / 3) * 2.05, Math.sin(Math.PI / 2 - k * Math.PI / 3) * 2.05, [0.5, -0.2, 0.6, 0.1, -0.3, 0.4][k]];
-const phoneLayout = [[0, 0, 1.2], ...[0, 1, 2, 3, 4, 5].map(ring)];
-const scaleAt = (z, i) => 0.72 + z * 0.09 + (i === 0 ? 0.22 : 0);
-
-// spinBy(g, dx, dy) adds to a sphere's own spin a turn about the screen's
-// axes for a drag of dx, dy pixels; the frame loop calls it too, to keep a
-// let-go sphere turning. Made once Three.js has loaded.
-function makeSpinner() {
-  const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
-  const turn = new THREE.Quaternion();
-  return (g, dx, dy) => {
-    const u = g.userData;
-    turn.setFromAxisAngle(axisY, dx * 0.012); u.spin.premultiply(turn);
-    turn.setFromAxisAngle(axisX, dy * 0.012); u.spin.premultiply(turn);
-  };
-}
-
-// Renderer, camera and lights.
-function createStage() {
-  // On dense phone screens antialiasing is invisible and costly, and 1.5x
-  // is indistinguishable from 3x on soft dark spheres: about a quarter of
-  // the pixels to shade.
-  const dense = devicePixelRatio >= 2;
-  const phone = matchMedia('(max-width: 760px)').matches;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !dense, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, phone ? 1.5 : 2));
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 0, 14);
-  scene.add(new THREE.HemisphereLight(0x9fd9ff, 0x0a1220, 1.2));
-  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(4, 6, 8); scene.add(key);
-  const rim = new THREE.PointLight(0x4aeaff, 40, 30); rim.position.set(-8, -3, 4); scene.add(rim);
-  return { renderer, scene, camera };
-}
-
-// One group per mark: a faceted ball with the logo on its face, and the
-// constants of its own wander.
-function buildSpheres(cluster, textures) {
-  const ball = new THREE.IcosahedronGeometry(1, 1);
-  const face = new THREE.CircleGeometry(0.78, 48);
-  return marks.map((_, i) => {
-    const g = new THREE.Group();
-    const [x, y, z] = layout[i];
-    g.position.set(x, y, z);
-    const scale = scaleAt(z, i);
-    g.scale.setScalar(scale);
-    const body = new THREE.Mesh(ball, new THREE.MeshStandardMaterial({ color: 0x101c2e, roughness: 0.42, metalness: 0.25, flatShading: true }));
-    g.add(body);
-    const sticker = new THREE.Mesh(face, new THREE.MeshBasicMaterial({ map: textures[i], transparent: true, depthWrite: false }));
-    sticker.position.z = 1.005;
-    g.add(sticker);
-    // Three slow sines of unrelated periods on each axis: a wander that
-    // never repeats, rather than a bounce on the spot.
-    g.userData = { x, y, z, scale, reach: 1, phase: hash(i, 2) * 6.283, tilt: hash(i, 3) * 6.283,
-      fx: 0.11 + hash(i, 4) * 0.09, fy: 0.08 + hash(i, 5) * 0.08, fz: 0.06 + hash(i, 6) * 0.06,
-      gx: 0.23 + hash(i, 7) * 0.1, gy: 0.19 + hash(i, 8) * 0.1,
-      spin: new THREE.Quaternion(), vx: 0, vy: 0 };
-    cluster.add(g);
-    return g;
-  });
-}
-
-// A press on a sphere grabs it: dragging spins it about the screen's
-// axes, and letting go leaves it turning, slowing on its own. Returns the
-// sphere held now, which the frame loop leaves to the pointer.
-function enableGrab(camera, spheres, spinBy) {
-  const ray = new THREE.Raycaster();
-  const ndc = new THREE.Vector2();
-  let held = null, lastX = 0, lastY = 0, lastT = 0;
-  const under = (e) => {
-    const r = canvas.getBoundingClientRect();
-    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(ndc, camera);
-    const hit = ray.intersectObjects(spheres.filter((g) => g.visible).map((g) => g.children[0]), false)[0];
-    return hit ? hit.object.parent : null;
-  };
-  canvas.addEventListener('pointerdown', (e) => {
-    const g = under(e);
-    if (!g) return;
-    held = g; held.userData.vx = held.userData.vy = 0;
-    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
-    canvas.setPointerCapture(e.pointerId);
-    canvas.classList.add('is-holding');
-    e.preventDefault();
-  });
-  canvas.addEventListener('pointermove', (e) => {
-    if (!held) { canvas.classList.toggle('is-over', !!under(e)); return; }
-    const dx = e.clientX - lastX, dy = e.clientY - lastY, dt = Math.max(8, performance.now() - lastT);
-    spinBy(held, dx, dy);
-    held.userData.vx = dx / dt * 16; held.userData.vy = dy / dt * 16;
-    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
-  });
-  const letGo = () => { held = null; canvas.classList.remove('is-holding'); };
-  canvas.addEventListener('pointerup', letGo);
-  canvas.addEventListener('pointercancel', letGo);
-  return () => held;
-}
-
-// Sizes the renderer to the canvas and places the cluster: on the right of
-// a wide view, in the band under the Explore button on a phone.
-function fitter(renderer, camera, cluster, spheres) {
-  return () => {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (!w || !h) return;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    // The cluster stands on the right of a wide view. On a phone it takes
-    // the band between the Explore button and the foot of the hero, sized
-    // so its widest wander stays on the screen.
-    const narrow = w < 760;
-    spheres.forEach((g, i) => {
-      const u = g.userData;
-      const [x, y, z] = narrow ? (phoneLayout[i] || layout[i]) : layout[i];
-      u.x = x; u.y = y; u.z = z; u.scale = scaleAt(z, i); u.reach = narrow ? 0.45 : 1;
-      g.scale.setScalar(u.scale);
-      g.visible = !narrow || i < PHONE_MARKS;
-    });
-    camera.position.z = 14;
-    if (!narrow) {
-      cluster.position.set(4.3, 0, 0);
-      cluster.scale.setScalar(Math.min(0.92, w / 1600));
-      return;
-    }
-    const halfH = camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const halfW = halfH * camera.aspect;
-    const button = document.querySelector('.round-link');
-    const top = button ? button.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top - 72 : h * 0.6;
-    const band = Math.max(160, h - top);
-    const middle = top + band / 2;
-    // The ring's centres sit 2.05 out, a sphere's radius is under 0.9 and
-    // a phone's wander under 0.35: 3.3 either way covers all of it.
-    const extent = 3.3;
-    const fitW = (halfW * 0.98) / extent;
-    const fitH = ((band / h) * halfH * 0.98) / extent;
-    cluster.scale.setScalar(Math.min(fitW, fitH));
-    cluster.position.set(0, (1 - (2 * middle) / h) * halfH, 0);
-  };
-}
-
-const start = async () => {
-  const { renderer, scene, camera } = createStage();
-  const cluster = new THREE.Group();
-  scene.add(cluster);
-  const spheres = buildSpheres(cluster, await Promise.all(marks.map(logoTexture)));
-  const pointer = { x: 0, y: 0 };
-  addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
-  const spinBy = makeSpinner();
-  const heldNow = enableGrab(camera, spheres, spinBy);
-  const fit = fitter(renderer, camera, cluster, spheres);
-  new ResizeObserver(fit).observe(canvas);
-  fit();
-
-  const frame = (t) => {
-    const s = t / 1000;
-    for (const g of spheres) {
-      const u = g.userData;
-      g.position.x = u.x + (Math.sin(s * u.fx + u.phase) * 0.55 + Math.sin(s * u.gx + u.tilt) * 0.2) * u.reach;
-      g.position.y = u.y + (Math.cos(s * u.fy + u.tilt) * 0.5 + Math.sin(s * u.gy + u.phase) * 0.18) * u.reach;
-      g.position.z = u.z + Math.sin(s * u.fz + u.phase * 0.5) * 0.5 * u.reach;
-      if (g !== heldNow() && (u.vx || u.vy)) {
-        spinBy(g, u.vx, u.vy);
-        u.vx *= 0.975; u.vy *= 0.975;
-        if (Math.abs(u.vx) + Math.abs(u.vy) < 0.02) u.vx = u.vy = 0;
+if (canvas && !navigator.connection?.saveData) {
+  const [THREE, { default: marks }] = await Promise.all([import('./vendor/three.hero.min.js'), import('./tech-marks.js')]);
+  const hash = (i, salt) => { const n = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453; return n - Math.floor(n); };
+  const image = document.createElement('canvas'); image.width = image.height = 1024;
+  const context = image.getContext('2d');
+  const symbols = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/{}[]';
+  const logos = await Promise.all(['csharp', 'dotnet', 'react', 'azure'].map(name => new Promise(resolve => {
+    const logo = new Image(); logo.onload = () => resolve(logo); logo.onerror = () => resolve(null);
+    logo.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(marks[name].replace('<svg ', '<svg fill="#70c986" '));
+  })));
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'low-power' }); } catch { renderer = null; }
+  if (renderer && context) {
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(35, 1, .1, 60);
+    camera.position.set(0, 0, 12);
+    const texture = new THREE.CanvasTexture(image); texture.colorSpace = THREE.SRGBColorSpace;
+    const geometry = new THREE.CircleGeometry(14, 4);
+    const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: .85, depthWrite: false });
+    const wall = new THREE.Mesh(geometry, material); wall.rotation.y = -.18; scene.add(wall);
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let visible = true, previous = -Infinity, handle = 0;
+    function resize() { const box = canvas.getBoundingClientRect(); renderer.setSize(box.width, box.height, false); camera.aspect = box.width / Math.max(1, box.height); camera.updateProjectionMatrix(); }
+    function draw(now) {
+      if (!visible || document.hidden) return;
+      if (now - previous < 90 && !reduced) { handle = requestAnimationFrame(draw); return; }
+      previous = now;
+      context.clearRect(0, 0, 1024, 1024); context.font = '17px Consolas, monospace';
+      const time = reduced ? 0 : now / 1000;
+      for (let column = 0; column < 43; column++) {
+        const speed = 13 + hash(column, 1) * 17;
+        const head = (time * speed + hash(column, 2) * 1100) % 1300;
+        for (let row = 0; row < 18; row++) {
+          const y = head - row * 25, x = column * 25;
+          if (y < 0 || y > 1040) continue;
+          context.fillStyle = row === 0 ? '#a9edbb' : '#348d50';
+          context.globalAlpha = (1 - row / 18) * .7;
+          context.fillText(symbols[Math.floor(hash(column * 19 + row, Math.floor(time * 2)) * symbols.length)], x, y);
+        }
       }
-      g.rotation.set(Math.sin(s * 0.17 + u.tilt) * 0.3, Math.sin(s * 0.13 + u.phase) * 0.35, Math.sin(s * 0.09 + u.tilt) * 0.12);
-      g.quaternion.premultiply(u.spin);
+      context.globalAlpha = .24;
+      logos.forEach((logo, i) => { if (logo) context.drawImage(logo, 180 + i * 170, 400 + Math.sin(time * .2 + i) * 60, 35, 35); });
+      context.globalAlpha = 1; texture.needsUpdate = true; renderer.render(scene, camera);
+      if (!reduced) handle = requestAnimationFrame(draw);
     }
-    cluster.rotation.y += ((pointer.x * 0.14) - cluster.rotation.y) * 0.04;
-    cluster.rotation.x += ((pointer.y * 0.1) - cluster.rotation.x) * 0.04;
-    renderer.render(scene, camera);
-    if (!reduce && onScreen) requestAnimationFrame(frame);
-  };
-  // Rendering stops while the hero is scrolled out of view, and resumes
-  // when it returns: a WebGL frame every 16 ms nobody sees costs battery.
-  let onScreen = true;
-  new IntersectionObserver(([entry]) => {
-    const resumed = entry.isIntersecting && !onScreen;
-    onScreen = entry.isIntersecting;
-    if (resumed && !reduce) requestAnimationFrame(frame);
-  }).observe(canvas);
-  // Shaders compile off the main thread where the driver allows it, so the
-  // first frame does not stall the page while they build.
-  await renderer.compileAsync(scene, camera);
-  canvas.classList.add('is-live');
-  requestAnimationFrame(frame);
-  if (reduce) addEventListener('resize', () => requestAnimationFrame(frame));
-};
-
-if (wanted) start().catch((e) => { console.warn('hero visual skipped', e); canvas.remove(); });
-else canvas?.remove();
+    new IntersectionObserver(([entry]) => { const resume = entry.isIntersecting && !visible; visible = entry.isIntersecting; if (resume) handle = requestAnimationFrame(draw); }).observe(canvas);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && visible) handle = requestAnimationFrame(draw); });
+    addEventListener('resize', () => { resize(); if (reduced) handle = requestAnimationFrame(draw); });
+    addEventListener('pagehide', event => { if (event.persisted) return; cancelAnimationFrame(handle); renderer.dispose(); geometry.dispose(); material.dispose(); texture.dispose(); });
+    resize(); handle = requestAnimationFrame(draw);
+  }
+}

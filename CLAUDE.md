@@ -36,3 +36,5 @@ Static portfolio; `dist/` is the published source. See docs/ARCHITECTURE.md.
   `scripts/` and a workflow.
 - The dev port is `PORT` in `scripts/checks/shared.cjs`; verify checks the README
   matches.
+- Keep the portfolio on port 4357. Port 4317 is Guide's local origin; its cached
+  app can redirect the browser to guide.html even when the server has changed.

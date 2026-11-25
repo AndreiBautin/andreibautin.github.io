@@ -80,7 +80,7 @@ const defects = {
     fs.writeFileSync(path.join(root, 'dist/images/new.avif'), '');
     edit(root, 'dist/404.html', (s) => s.replace('</body>', '<img src="/images/new.avif" alt=""></body>'));
   },
-  'dev port': (root) => edit(root, 'README.md', (s) => s.replaceAll('127.0.0.1:4317', '127.0.0.1:8080')),
+  'dev port': (root) => edit(root, 'README.md', (s) => s.replaceAll('127.0.0.1:4357', '127.0.0.1:8080')),
 };
 
 test('every check group has a planted defect', () => assert.deepEqual(Object.keys(defects).sort(), [...names].sort()));
