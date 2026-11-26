@@ -52,7 +52,11 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    It independently mounts **`work-ui.js`** inside the stage's hidden work panel.
    Header navigation has its original dialog/PDF fallback until that mount
    succeeds. **`script.js`** maps validated professional modes to the five
-   **`work-shapes.js`** targets in the same renderer. Back/Escape restores the
+   **`work-shapes.js`** targets in the same renderer. Startup tolerates having no
+   selected project button, because a work deep link clears that selection.
+   The renderer starts with target zero, then announces graphics readiness;
+   `script.js` resends the active work target after that announcement.
+   Back/Escape restores the
    previously selected project; a late enhancement cannot reset a running intro.
    The HUD's panel selectors are scoped below its container so the body state
    class cannot acquire a panel's layout. Only panel details scroll when needed;

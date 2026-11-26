@@ -166,5 +166,5 @@ try {
   canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); cancelAnimationFrame(frame); document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); status.textContent = 'Graphics paused. Project links remain available.'; });
   canvas.addEventListener('webglcontextrestored', () => location.reload());
   addEventListener('pagehide', event => { cancelAnimationFrame(frame); if (!event.persisted) { geometry.dispose(); material.dispose(); renderer.dispose(); } }); addEventListener('pageshow', resume);
-  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]').dataset.scene)); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
+  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene ?? 0)); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
 } catch { document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); document.querySelector('.interaction-hint').textContent = 'Choose a project below'; status.textContent = 'Explore a project below.'; }

@@ -13,6 +13,17 @@ the shipped frame function against injected rendering seams: flow waits for the
 morph, changes identity only while faded, leaves the original scenes and stops
 while hidden. A planted descending range proves the GLSL constant-range check
 detects undefined smoothstep usage. This is not shader compilation or visual QA.
+The real renderer startup sequence is also exercised with no selected project:
+an experience deep link must still start the frame loop and announce readiness
+so `script.js` can restore its professional scene.
+
+Native Chrome acceptance on November 26: refreshed the existing local
+`#work-knowledge` tab through Computer Use after restarting the stopped preview
+server. The first check exposed the missing selected-project startup bug; after
+the correction, the screenshot showed the retrieval scene with no plain-name
+overlay, and the live status reported 42000 points at approximately 60 fps.
+The left display remained fullscreen. This establishes that desktop path only;
+mobile, reduced-motion and every other scene still need their own native checks.
 
 The `single-screen viewport` group rejects a fixed minimum height on the particle
 stage. Its regression plants a 700px rule and restamps the assets, so only the

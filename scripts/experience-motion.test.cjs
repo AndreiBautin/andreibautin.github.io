@@ -68,3 +68,26 @@ test('hidden frames do not advance flow time or identity', () => {
   assert.equal(state.uniforms.uFlow.value, 0);
   assert.equal(state.uniforms.uFlowWork.value, 0);
 });
+
+test('renderer startup announces readiness when a work deep link leaves no project selected', () => {
+  const begin = source.lastIndexOf('  resize(); change(');
+  const end = source.indexOf('\n} catch', begin);
+  assert(begin > 0 && end > begin);
+  for (const selected of [null, { dataset: { scene: '2' } }]) {
+    const calls = [];
+    const context = vm.createContext({
+      document: {
+        querySelector() { return selected; },
+        body: { classList: { add(name) { calls.push(name); } } },
+      },
+      resize() { calls.push('resize'); },
+      change(index) { calls.push(index); },
+      render() { calls.push('render'); },
+      resume() { calls.push('resume'); },
+      CustomEvent: class { constructor(type) { this.type = type; } },
+      dispatchEvent(event) { calls.push(event.type); },
+    });
+    vm.runInContext(source.slice(begin, end), context);
+    assert.deepEqual(calls, ['resize', selected ? 2 : 0, 'render', 'field-ready', 'resume', 'portfolio:graphics-ready']);
+  }
+});
