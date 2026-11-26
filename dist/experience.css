@@ -1,1 +1,22 @@
-.experience-visual canvas{display:block;width:100%;height:100%}
+/* Presentation for the experience canvases. Layout stays in story.css.
+   Colors follow the page tokens so light and dark stay in the same family. */
+
+.experience-chapter .experience-visual {
+  background:
+    radial-gradient(90% 70% at 70% 80%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--ink) 4%, transparent), transparent 28%),
+    var(--panel);
+}
+
+.experience-visual canvas[data-experience-canvas] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-visual canvas[data-experience-canvas] {
+    cursor: default;
+  }
+}

@@ -14,7 +14,7 @@ comments retain the three coupled files until real entry-point references exist.
 Main owns markup and module version stamping; this worker changes neither.
 
 Inside `.particle-stage`, provide `section#portfolio-intro[hidden]`, `.intro-copy`
-containing `p#intro-message`, `figure.intro-preview` containing three images with
+containing `#intro-message`, `figure.intro-preview` containing three images with
 `data-intro-image="terra"`, `"nacre"`, `"pelagic"`, then `p#intro-caption` and
 `button#skip-intro`. Use the existing local captures respectively:
 `images/planet-wide.webp`, `images/nacre-ribbon.webp`, `images/pelagic-thumb.webp`.

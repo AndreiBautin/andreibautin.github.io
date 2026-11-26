@@ -17,6 +17,6 @@ import('./intro.js?v=acc7487778').then(module => mount(module.mountIntro, () => 
   adapters.push({ dispose() { motion.removeEventListener('change', availability); navigator.connection?.removeEventListener('change', availability); } });
   availability();
 })).catch(() => {});
-import('./experience-effects.js?v=085436df6f').then(module => mount(module.mountExperienceEffects, () => document.querySelectorAll('[data-experience-replay]').forEach(button => { button.hidden = false; }))).catch(() => {});
+import('./experience-effects.js?v=07e6be1ae0').then(module => mount(module.mountExperienceEffects, () => document.querySelectorAll('[data-experience-replay]').forEach(button => { button.hidden = false; }))).catch(() => {});
 import('./career.js?v=f0125bc81b').then(module => mount(module.mountCareer, () => { document.getElementById('copy-email').hidden = false; })).catch(() => {});
 addEventListener('pagehide', event => { if (event.persisted) return; disposed = true; for (const adapter of adapters) adapter?.dispose(); });

@@ -92,11 +92,10 @@ come from the markup, never from career.js.
 
 ## Integration notes for Codex
 
-- `dist/script.js` still binds its own `#copy-email` click handler (lines
-  55-60). With both, two writes race and the old handler announces "Email copied"
-  without the selection fallback. Remove that handler when wiring career.js.
-- The contract test in `scripts/career.test.cjs` is skipped until
-  `dist/index.html` carries `section#career`; then it checks every key has a
+- Integration removed the old `dist/script.js` copy handler; career.js is now
+  the only owner of clipboard feedback, avoiding competing asynchronous writes.
+- The contract test in `scripts/career.test.cjs` now runs against the integrated
+  `dist/index.html` career/contact sections. It checks every key has a
   button with `aria-expanded`/`aria-controls`, a matching panel, the three
   contact nodes, the mailto address and the copy elements.
 - Path progress (`data-career-index`) is drawn for four steps in a four-column
@@ -109,5 +108,5 @@ come from the markup, never from career.js.
 
 - Tested against a fake DOM fixture, not a browser; native browser QA,
   focus rings, theme contrast and layout at real widths remain for integration.
-- The real page markup is not final, so selectors were checked only against
-  the fixture.
+- The integrated HTML contract passes; native rendering, focus and contrast
+  remain pending until the local preview can be inspected in Chrome.

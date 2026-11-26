@@ -98,3 +98,9 @@ These tests do not establish physical-device smoothness, image decoding quality,
 screen-reader interaction quality or native clipboard permission behavior. Native
 browser review records those checks separately; no fabricated client UI or
 throughput benchmark is used for an experience illustration.
+
+`scripts/experience-effects.test.cjs` verifies seeded identity, stable resolved
+anchors, node/edge/mote budgets, bounded sample coordinates, pointer recovery,
+reduced-motion state and rejection of malformed parameters. It does not pretend
+to exercise a native Canvas2D driver or prove animation feel. Integration status
+and the pending native review are in `docs/STORY-VERIFICATION.md`.

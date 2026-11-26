@@ -50,6 +50,10 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    startup cannot leave the wrong particle form. Career/contact uses CSS lines
    and one-shot pulses, semantic disclosure buttons and direct links. Clipboard
    success is announced only after resolution; denial keeps the address usable.
+   Experience chapters render seeded, bounded Canvas2D nodes and packet routes
+   for knowledge retrieval, asynchronous replication and payment automation.
+   They redraw only while visible, with reduced-motion resolved stills and
+   explicit replay. They illustrate the work rather than running client systems.
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 
