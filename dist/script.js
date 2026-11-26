@@ -89,3 +89,31 @@ document.getElementById('copy-email').addEventListener('click', async () => {
   catch { status.textContent = 'Select the email address to copy it.'; }
   setTimeout(() => { status.textContent = ''; }, 3000);
 });
+// Local preview only (docs/LOCAL-PREVIEW.md): on http://127.0.0.1:4357 or
+// http://localhost:4357, reload once when `npm run verify` publishes a new
+// verified-bundle token. Every other origin, the published site included,
+// returns here before any timer, listener or request exists.
+(() => {
+  if (location.protocol !== 'http:' || location.port !== '4357' || !['127.0.0.1', 'localhost'].includes(location.hostname) || typeof fetch !== 'function') return;
+  const quiet = 2000, slowest = 30000;
+  let baseline, timer = 0, busy = false, delay = quiet, reloading = false;
+  const schedule = () => { if (!reloading && !timer && !busy && document.visibilityState !== 'hidden') timer = setTimeout(poll, delay); };
+  async function poll() {
+    timer = 0;
+    if (reloading || busy || document.visibilityState === 'hidden') return;
+    busy = true;
+    try {
+      const response = await fetch('/__preview/token', { cache: 'no-store', credentials: 'omit', redirect: 'error' });
+      const token = response.status === 200 ? await response.text() : response.status === 204 ? '' : null;
+      if (token === null || (token && !/^[0-9a-f]{16}$/.test(token))) throw new Error('unavailable');
+      delay = quiet;
+      // The first answer is the baseline; only a later, different verified token reloads.
+      if (baseline === undefined) baseline = token;
+      else if (token && token !== baseline) { reloading = true; location.reload(); }
+    } catch { delay = Math.min(delay * 2, slowest); }
+    busy = false;
+    schedule();
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(timer); timer = 0; } else if (!timer && !busy) poll(); });
+  poll();
+})();
