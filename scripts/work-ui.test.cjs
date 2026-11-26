@@ -409,6 +409,7 @@ test('module and stylesheet keep to the policy and scope', () => {
   const preludes = [...rules.matchAll(/(?:^|[{};])([^{};@]+)\{/g)].map((m) => m[1].trim()).filter((p) => !/^(from|to|\d+%)$/.test(p));
   for (const prelude of preludes) for (const selector of prelude.split(',')) {
     const s = selector.trim();
+    assert(s !== '.work-view' && !s.startsWith('.work-view['), 'panel layout must not match the body work-view state class');
     assert(/^\.work-/.test(s) || /^body\.work-view \.scene-(copy|picker)$/.test(s), `selector outside the .work-* scope: ${s}`);
   }
   assert(!/(^|[^-\w])(html|body|main)\s*\{/.test(rules), 'no page-level overrides');

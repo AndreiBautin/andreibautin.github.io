@@ -10,6 +10,16 @@
 
 ## What the tests are for
 
+`scripts/navigation.test.cjs` executes the actual shipped UI script against a
+small event/DOM fixture: late readiness cannot replace a scene, explicit work
+destinations survive delayed mounting, malformed modes do nothing, Back/Escape
+restores the last project, and unavailable enhancements keep dialog/PDF access.
+`scripts/work-ui.test.cjs` covers panel visibility, roving focus, career details,
+clipboard and disposal. Its CSS check rejects a panel selector that could style
+the body's work-view state. `scripts/work-shapes.test.cjs` covers finite bounded
+geometry, seeded identity, low counts and distinct targets. These tests establish
+state/geometry behavior, not the live WebGL appearance or mobile layout.
+
 `scripts/intro.test.cjs` checks exact timing, interruption, hidden-tab time,
 session/deep-link/motion/data policy, stale readiness and listener disposal. The
 intro is an optional stage enhancement; no test treats it as a real loading

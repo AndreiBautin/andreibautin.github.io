@@ -39,10 +39,10 @@ const edit = (root, rel, change) => {
 const failing = (root) => run(root).filter((r) => r.error).map((r) => r.name);
 
 const defects = {
-  'particle boundary': (root) => {
-    edit(root, 'dist/particle-shapes.js', (s) => s + 'void document;\n');
+  'particle boundary': ['particle-shapes.js', 'work-shapes.js'].map(file => (root) => {
+    edit(root, 'dist/' + file, (s) => s + 'void document;\n');
     edit(root, 'dist/index.html', (s) => s); stamp(path.join(root, 'dist'));
-  },
+  }),
   'syntax': (root) => edit(root, 'dist/404.js', (s) => s + '}\n'),
   'resume facts': (root) => edit(root, 'dist/index.html', (s) => s.replaceAll('AZ-900', 'AZ-104')),
   'links': [

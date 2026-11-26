@@ -1,6 +1,11 @@
 // Optional stage enhancements. The single-screen application works without them.
-let intro = null, disposed = false;
-import('./intro.js?v=854ce347c4').then(module => {
+let intro = null, workUI = null, disposed = false;
+import('./work-ui.js?v=394b87910f').then(module => {
+  if (disposed) return;
+  workUI = module.mountWorkUI(document);
+  dispatchEvent(new CustomEvent('portfolio:work-ready'));
+}).catch(() => {});
+import('./intro.js?v=c9a90e5d46').then(module => {
   if (disposed) return;
   intro = module.mountIntro(document);
   const replay = document.getElementById('replay-intro');
@@ -16,4 +21,4 @@ import('./intro.js?v=854ce347c4').then(module => {
     navigator.connection?.removeEventListener('change', available);
   });
 }).catch(() => {});
-addEventListener('pagehide', event => { if (!event.persisted) { disposed = true; intro?.dispose(); } });
+addEventListener('pagehide', event => { if (!event.persisted) { disposed = true; intro?.dispose(); workUI?.dispose(); } });

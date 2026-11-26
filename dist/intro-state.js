@@ -8,7 +8,7 @@ export const INTRO_BEATS = Object.freeze([
 ]);
 
 export function shouldStartIntro({ seen = false, reducedMotion = false, saveData = false, hash = '' } = {}) {
-  return !seen && !reducedMotion && !saveData && !/^#(?:terra|nacre|pelagic|construct|experience|career|contact)(?:$|[/?])/i.test(typeof hash === 'string' ? hash : '');
+  return !seen && !reducedMotion && !saveData && !/^#(?:terra|nacre|pelagic|construct|experience|career|contact|resume|work-(?:knowledge|replication|payments|career|contact))(?:$|[/?])/i.test(typeof hash === 'string' ? hash : '');
 }
 
 const validTime = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;

@@ -17,8 +17,13 @@ function setTheme(light) {
 try { setTheme(localStorage.getItem('portfolio-theme') === 'light'); } catch { setTheme(false); }
 themeButton.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
 const buttons = [...document.querySelectorAll('[data-scene]')];
+const workModes = ['knowledge', 'replication', 'payments', 'career', 'contact'];
+let currentProject = 0, workMode = null;
 function select(index, updateUrl = true) {
   if (!Number.isInteger(index) || !projects[index]) return;
+  currentProject = index; workMode = null;
+  document.body.classList.remove('work-view');
+  dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: null } }));
   const [key, category, title, description, url, launch] = projects[index];
   document.body.classList.toggle('project-view', index !== 0);
   buttons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.scene) === index)));
@@ -33,9 +38,33 @@ function select(index, updateUrl = true) {
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
 document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); });
-function fromHash() { if (location.hash === '#construct') { select(2, false); return; } select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false); }
+function fromHash() {
+  const key = location.hash.slice(1).replace(/^work-/, '');
+  const mode = key === 'experience' ? 'knowledge' : key === 'resume' ? 'career' : key;
+  if (workModes.includes(mode) && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode, updateUrl: false } })); return; }
+  if (location.hash === '#construct') { select(2, false); return; }
+  select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false);
+}
 addEventListener('hashchange', fromHash); fromHash();
+addEventListener('portfolio:work-ready', () => {
+  if (/^#(?:work-(?:knowledge|replication|payments|career|contact)|experience|career|resume|contact)$/.test(location.hash)) fromHash();
+});
+addEventListener('portfolio:mode', event => {
+  const mode = event.detail?.mode;
+  if (mode === null) { if (workMode !== null) select(currentProject); return; }
+  if (!workModes.includes(mode)) return;
+  workMode = mode; document.body.classList.add('work-view');
+  buttons.forEach(button => button.setAttribute('aria-pressed', 'false'));
+  if (event.detail?.updateUrl !== false) history.replaceState(null, '', `#work-${mode}`);
+  dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode) } }));
+});
+addEventListener('portfolio:graphics-ready', () => { if (workMode !== null) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(workMode) } })); });
+document.querySelector('[data-resume]').addEventListener('click', event => {
+  if (!document.body.classList.contains('work-ui-ready')) return;
+  event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));
+});
 document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => {
+  if (button.dataset.open === 'about' && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: button.hasAttribute('data-contact') ? 'contact' : 'knowledge' } })); return; }
   const dialog = document.getElementById(button.dataset.open);
   if (!(dialog instanceof HTMLDialogElement)) return;
   dialog.showModal(); dispatchEvent(new CustomEvent('portfolio:overlay', { detail: { open: true } }));
@@ -49,6 +78,7 @@ document.querySelectorAll('dialog').forEach(dialog => {
 });
 addEventListener('keydown', event => {
   if (document.querySelector('dialog[open]') || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (workMode !== null && event.key === 'Escape') { select(currentProject); return; }
   const index = ['1', '2', '3', '4'].indexOf(event.key);
   if (index >= 0) { select(index); buttons[index].focus(); }
 });

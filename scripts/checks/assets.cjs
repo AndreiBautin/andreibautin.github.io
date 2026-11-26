@@ -30,8 +30,8 @@ module.exports = [
     const gz = (files) => files.reduce((sum, f) => sum + gzipSize(c.bytes('dist/' + f)), 0);
     for (const [name, files, limit] of [
       ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
-      ['hero visual', ['hero.js', 'particle-shapes.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
-      ['immersive extensions', ['story.js', 'intro.js', 'intro-state.js', 'intro.css'], 30_000],
+      ['hero visual', ['hero.js', 'particle-shapes.js', 'work-shapes.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
+      ['immersive extensions', ['story.js', 'intro.js', 'intro-state.js', 'intro.css', 'work-ui.js', 'work-ui.css'], 30_000],
     ]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
   }],
   // The fonts are subset (scripts/subset_fonts.py): every character a page
@@ -39,7 +39,7 @@ module.exports = [
   ['font subset', (c) => {
     const ranges = c.read('scripts/subset_fonts.py').match(/UNICODES = "([^"]+)"/)[1].split(',')
       .map((r) => r.slice(2).split('-').map((h) => parseInt(h, 16))).map(([a, b = a]) => [a, b]);
-    const shown = ['index.html', '404.html', '404.css', 'script.js', 'styles.css']
+    const shown = ['index.html', '404.html', '404.css', 'script.js', 'styles.css', 'work-ui.js']
       .map((f) => c.read('dist/' + f).replace(/<script[\s\S]*?<\/script>|<[^>]+>|\s/g, ' ')).join('');
     for (const ch of new Set(shown)) {
       const code = ch.codePointAt(0);

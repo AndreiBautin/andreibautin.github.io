@@ -3,8 +3,9 @@
 `dist/work-shapes.js` exports `createWorkShapes(count, seed = 69)`. It returns five
 particle targets, in order: knowledge, replication, payments, career, contact.
 Each target is `{ positions: Float32Array(count * 4), colors: Float32Array(count * 3) }`.
-The module is browser-free and deterministic. `hero.js` does not import it yet, so the
-file names itself to satisfy the orphan scan until that integration lands.
+The module is browser-free and deterministic. `hero.js` imports it and appends
+the targets after the original four project forms. The particle-boundary check
+and planted defects protect both geometry modules from browser dependencies.
 
 Coordinates match the current stage: centered near the origin, with visible limits
 x ±5, y ±3.2, z ±2.2. Desktop translation and mobile scale stay in the renderer.

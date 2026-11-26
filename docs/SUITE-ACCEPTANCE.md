@@ -15,7 +15,7 @@ marketing, experience or career chapters are added. An interruptible optional
 It skips reduced motion, data saving and explicit destinations. Replay is an
 explicit control, not a blocking loader. Navigation cancels it synchronously.
 
-Professional work will use five additional particle targets in the same scene:
+Professional work uses five additional particle targets in the same scene:
 knowledge retrieval, asynchronous replication, payment automation, career, and
 contact. A compact HUD supplies facts and controls while leaving most of the
 scene visible. Each has a distinct composition; the approved PDF and contact
@@ -25,9 +25,9 @@ destinations remain directly available. Existing project forms remain intact.
 
 | App | Required acceptance | Known state at intake |
 | --- | --- | --- |
-| Portfolio | First-session intro; three distinct professional scenes; career/resume and contact in the existing fullscreen interaction model; keyboard/mobile/reduced-motion fallback | Original presentation restored and verified; intro reintegration and scene workers underway |
+| Portfolio | First-session intro; three distinct professional scenes; career/resume and contact in the existing fullscreen interaction model; keyboard/mobile/reduced-motion fallback | Intro, five targets and compact mode controls integrated; source/state tests green; native visual acceptance blocked by browser URL confidence check |
 | TERRA | Preserve seeded planet generation, flight/drop, surface/water/weather, tuning and existing saved/shareable state; validate current workflows before changes | Existing source clean; current full gate and native acceptance pending |
-| NACRE | Preserve editable sculpture/archive; finish ten distinct functional material scenes with real simulation, pause/reset and bounded input; verify actual GPU output | Eight material scenes documented; sand/ice incomplete; existing uncommitted documentation preserved |
+| NACRE | Preserve editable sculpture/archive; finish ten distinct functional material scenes with real simulation, pause/reset and bounded input; verify actual GPU output | Ten engines registered and actual GPU previews rendered; 140-test gate green; providers refining sand composition and ice rendering; pre-existing documentation preserved |
 | PELAGIC | Preserve immediate jellyfish and optional living aquarium; validate feeding, schooling, obstacles, capture and visible controls | Current source clean; full gate and native acceptance pending |
 | THAUMARA | Minimal readable entry, real planet/flight presentation and versioned source adapters, persistent building/matter/spells/loadouts/counterable encounter; no duplicate resources or reset worlds | Sandbox loop has prior tests; source snapshots are not completed engine ports; capability gaps remain in its SOURCE-INTEGRATION.md |
 

@@ -14,8 +14,10 @@ const scripts = (root) => walk(root, '', SKIP).filter((f) => /\.c?js$/.test(f));
 
 module.exports = [
   ['particle boundary', (c) => {
-    const source = c.read('dist/particle-shapes.js');
-    assert(!/\b(window|document|navigator|THREE|Date)\b|Math\.random|\bimport\b/.test(source), 'particle-shapes.js must remain deterministic and browser-free');
+    for (const file of ['particle-shapes.js', 'work-shapes.js']) {
+      const source = c.read('dist/' + file);
+      assert(!/\b(window|document|navigator|THREE|Date)\b|Math\.random|\bimport\b/.test(source), `${file} must remain deterministic and browser-free`);
+    }
   }],
   ['syntax', (c) => {
     try { parseAll(scripts(c.root).map((rel) => path.join(c.root, rel))); } catch (error) { assert.fail(error.message.replace(c.root + path.sep, '')); }

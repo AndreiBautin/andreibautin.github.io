@@ -1,5 +1,5 @@
 // File pair: intro.js, intro-state.js and intro.css are coupled adapters.
-import { shouldStartIntro, createIntroState, advanceIntro, pauseIntro, interruptIntro, introBeat } from './intro-state.js?v=e8c5c2deef';
+import { shouldStartIntro, createIntroState, advanceIntro, pauseIntro, interruptIntro, introBeat } from './intro-state.js?v=0bf7f7b499';
 
 export function mountIntro(root = document) {
   const doc = root.ownerDocument ?? root;

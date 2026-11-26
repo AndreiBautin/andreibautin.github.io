@@ -1,4 +1,4 @@
-// work-shapes.js is a temporary published orphan until hero.js imports it.
+// work-shapes.js supplies the five professional targets to hero.js.
 // Browser-free deterministic targets for five full-stage professional scenes.
 // positions.w is a motif tag: 0 body/anchor, 1 moving packet, 2 connection.
 

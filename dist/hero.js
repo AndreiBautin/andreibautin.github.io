@@ -18,6 +18,10 @@ try {
   const pixels = ink.getImageData(0, 0, 1536, 768).data, mask = new Uint8Array(1536 * 768);
   for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
   shapes[0] = createNameShape(mask, 1536, 768, count);
+  try {
+    const { createWorkShapes } = await import('./work-shapes.js?v=9a5eb889eb');
+    shapes.push(...createWorkShapes(count));
+  } catch { /* Factual controls and the original four forms remain available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.debug.onShaderError = () => { throw new Error('Particle shader unavailable'); };
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(42, 1, .1, 100), geometry = new THREE.BufferGeometry();
@@ -26,12 +30,12 @@ try {
   geometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(Float32Array.from({ length: count }, (_, i) => hash(i, 33)), 1));
   const uniforms = {
     uTime: { value: 0 }, uMorph: { value: 1 }, uPointer: { value: new THREE.Vector2(100, 100) }, uForce: { value: 0 },
-    uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 },
+    uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uWork: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
       attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
-      uniform float uTime,uMorph,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight;uniform vec2 uPointer;uniform vec3 uWave;
+      uniform float uTime,uMorph,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork;uniform vec2 uPointer;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
       void main(){
@@ -42,13 +46,20 @@ try {
         p.xy=turn(sin(nt*.38)*.025*uNameWeight)*p.xy;
         p.y+=sin(nt*.8)*.18*uNameWeight;
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
+        if(uWork>.5&&part>.5&&part<1.5){
+          float pulse=sin(jt*1.3+aSeed*18.)*uMotion;
+          if(uWork<1.5){p.xy+=normalize(p.xy+vec2(.001))*.14*pulse;}
+          else if(uWork<2.5){p.x+=pulse*.22;}
+          else if(uWork<3.5){p.xy=turn(pulse*.045)*p.xy;}
+          else{p.z+=pulse*.12;}
+        }
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
         float age=uTime-uWave.z;float ring=exp(-pow((length(p.xy-uWave.xy)-age*5.)*1.8,2.))*exp(-max(0.,age)*.8)*step(0.,age)*uMotion;p+=direction*ring*.8;
         vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*uRatio*16./max(5.,-view.z),1.,5.);
-        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
+        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;if(uWork>.5&&part>1.5)vAlpha*=.65+.2*sin(jt*.8+aSeed*12.)*uMotion;
       }`,
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
   });
@@ -70,7 +81,7 @@ try {
       interpolateInto(from.array, to.array, m);
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
-    active = index; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
+    active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
     if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; render(); }
   }
   function draw(now) {

@@ -44,6 +44,14 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    stage; navigation cancels it before taking effect. The renderer announces late
    readiness so an active intro can resend its current beat. Module URLs are
    versioned recursively, so a changed dependency invalidates the page URL.
+   It independently mounts **`work-ui.js`** inside the stage's hidden work panel.
+   Header navigation has its original dialog/PDF fallback until that mount
+   succeeds. **`script.js`** maps validated professional modes to the five
+   **`work-shapes.js`** targets in the same renderer. Back/Escape restores the
+   previously selected project; a late enhancement cannot reset a running intro.
+   The HUD's panel selectors are scoped below its container so the body state
+   class cannot acquire a panel's layout. Only panel details scroll when needed;
+   no professional section is appended to the page.
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 

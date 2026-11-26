@@ -25,13 +25,15 @@
   <link rel="apple-touch-icon" href="./images/apple-touch-icon.png" />
   <link rel="stylesheet" href="./styles.css?v=b716f67174" />
   <link rel="stylesheet" href="./intro.css?v=e1a4db024a" />
+  <link rel="stylesheet" href="./work-ui.css?v=4306c1c2db" />
 </head>
 <body>
   <a class="skip-link" href="#projects">Skip to projects</a>
-  <header class="nav-shell"><a class="mark" href="#top" data-home aria-label="Andrei Bautin home">AB<span>.</span></a><nav aria-label="Main navigation"><button data-open="about">Experience</button><a href="./Andrei_Bautin_Resume.pdf">Resume</a><button data-open="about" data-contact>Contact</button><button class="theme-toggle" aria-label="Use light theme" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button></nav></header>
+  <header class="nav-shell"><a class="mark" href="#top" data-home aria-label="Andrei Bautin home">AB<span>.</span></a><nav aria-label="Main navigation"><button data-open="about">Experience</button><a data-resume href="./Andrei_Bautin_Resume.pdf">Resume</a><button data-open="about" data-contact>Contact</button><button class="theme-toggle" aria-label="Use light theme" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button></nav></header>
   <main id="top">
     <section class="particle-stage" aria-label="Interactive portfolio">
       <canvas class="hero-tech" aria-hidden="true"></canvas>
+      <div id="work-panel" hidden></div>
       <aside id="portfolio-intro" role="region" aria-label="Portfolio introduction" hidden><div class="intro-copy"><p id="intro-message"></p></div><figure class="intro-preview"><img data-intro-image="terra" src="./images/planet-wide.webp" alt="TERRA terrain and clouds" width="1760" height="608" hidden><img data-intro-image="nacre" src="./images/nacre-ribbon.webp" alt="NACRE liquid ribbon" width="1024" height="1024" hidden><img data-intro-image="pelagic" src="./images/pelagic-thumb.webp" alt="PELAGIC jellyfish" width="1024" height="1024" hidden></figure><p id="intro-caption"></p><button id="skip-intro" type="button">Skip intro</button></aside>
       <h1 class="fallback-name">ANDREI<br>BAUTIN<span>.</span></h1>
       <div class="stage-top"><p>Software engineer<span>Denver, Colorado</span></p><p class="interaction-hint">Move to disturb<br>Click to send a wave</p></div>
@@ -50,8 +52,8 @@
     <dialog id="project-info" aria-labelledby="project-info-title"><div class="dialog-top"><h2 id="project-info-title">How it works</h2><button data-close aria-label="Close project details">Close</button></div><div class="project-notes"><article data-project-note="1"><img src="./images/planet-wide.webp" alt="Terrain and clouds generated in TERRA" width="1760" height="608"><h3>TERRA</h3><p>Procedural planet explorer</p><p>Terrain streams through Web Workers as a quadtree of patches. Rivers, towns, weather, and seasons come from deterministic generation. Custom shaders handle clouds, oceans, ice, and lava.</p><a href="https://andreibautin.github.io/planet-generator/">Open TERRA</a><a href="https://github.com/AndreiBautin/planet-generator">Source</a></article><article data-project-note="2" hidden><img src="./images/nacre-ribbon.webp" alt="A silver-lilac ribbon made in NACRE" width="1024" height="1024"><h3>NACRE</h3><p>Liquid sculpture studio</p><p>WebGPU compute simulates particles. A density field turns them into a continuous surface. Frozen regions keep exact anchors while the rest of the liquid moves.</p><a href="https://liquid-sculpture-studio.andreibautin94.chatgpt.site/">Open NACRE</a></article><article data-project-note="3" hidden><img src="./images/pelagic-thumb.webp" alt="A translucent jellyfish in PELAGIC" width="1024" height="1024"><h3>PELAGIC</h3><p>Interactive ocean life</p><p>Fixed-step simulations drive tentacles, schooling, feeding, and obstacle avoidance. Instanced fish, procedural anatomy, and translucent shaders run in WebGL with adaptive resolution.</p><a href="https://pelagic.andreibautin94.chatgpt.site/">Open PELAGIC</a></article></div></dialog>
     <noscript><section class="static-projects"><h2>Projects</h2><p><a href="https://andreibautin.github.io/planet-generator/">TERRA | Procedural Planet Explorer</a></p><p><a href="https://liquid-sculpture-studio.andreibautin94.chatgpt.site/">NACRE | Liquid Sculpture Studio</a></p><p><a href="https://pelagic.andreibautin94.chatgpt.site/">PELAGIC | Interactive Ocean Life</a></p><a href="./Andrei_Bautin_Resume.pdf">Resume and experience</a></section></noscript>
   </main>
-  <script src="./script.js?v=116e4442c8" defer></script>
-  <script type="module" src="./hero.js?v=53c013dfae"></script>
-  <script type="module" src="./story.js?v=3d8cf31bd4"></script>
+  <script src="./script.js?v=bdc99a517c" defer></script>
+  <script type="module" src="./hero.js?v=5a5ae612d3"></script>
+  <script type="module" src="./story.js?v=ce2238de05"></script>
 </body>
 </html>
