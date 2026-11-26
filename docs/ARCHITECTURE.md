@@ -36,15 +36,13 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    deltas with a catch-up cap. Hidden tabs stop; page-cache restoration resumes;
    reduced motion uses a still and instant changes. Smaller/data-saving devices
    start with 18,000 points; desktop starts at 42,000, with a bounded quality
-   reduction under sustained load. A rendering failure leaves the HTML name
+   reduction under sustained load. A rendering failure leaves the status message
    and controls. No third-party project runs inside the scene.
-   The HTML name starts visually transparent, without an opacity transition,
-   so it cannot flash before the first particle frame. It stays available to
-   assistive technology. A caught startup failure or context loss reveals it
-   immediately through `field-unavailable`; CSS also reveals it after eight
-   seconds if the module never loads. Successful `field-ready` cancels that
-   fallback timer. Browsers supporting `scripting:none` show it immediately
-   when JavaScript is disabled. Project and resume links never wait for graphics.
+   The HTML name is a permanently visually clipped heading for assistive
+   technology. It never becomes a large plain-text overlay, including during
+   startup, missing modules, no-script use or context loss. There is no reveal
+   timer or readiness-dependent styling for that heading. Graphics errors use
+   the existing status message; project and resume links never wait for graphics.
 5. **`story.js`** optionally mounts **`intro.js`**, whose pure **`intro-state.js`**
    timeline advances through actual captures and scene events without selecting a
    project or changing its URL. The compact overlay lives inside the particle

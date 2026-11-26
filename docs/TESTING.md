@@ -1,10 +1,10 @@
 # Testing
 
-The name fallback starts transparent and has no fade-out over the particle
-name. Startup errors and context loss reveal it immediately; a CSS-only
-eight-second deadline also covers a missing module. Native refresh/slow-network
-first-paint review remains necessary; the automated gate does not establish
-frame-by-frame appearance. The heading remains in the accessibility tree.
+The HTML name is permanently visually clipped, including during startup and
+graphics failure. Its previous timed reveal is removed; readiness classes cannot
+bring back a large plain-text overlay. The heading remains in the accessibility
+tree, while errors use the existing status and working links. Native refresh
+review remains necessary; the automated gate does not establish appearance.
 
 Experience regressions execute real target generation at 42000 points and the
 18000/24000 draw-range prefixes, checking every document quadrant, replication
