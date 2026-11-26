@@ -52,6 +52,13 @@ function allocate(count, weights) {
   return counts;
 }
 
+function spatialStride(count) {
+  const gcd = (a, b) => { while (b) [a, b] = [b, a % b]; return a; };
+  let step = Math.max(1, Math.floor(count * 0.61803398875));
+  while (gcd(step, count) > 1) step--;
+  return step;
+}
+
 function tone(base, vary) {
   const scale = 0.82 + vary * 0.18;
   return [base[0] * scale, base[1] * scale, base[2] * scale];
@@ -348,8 +355,11 @@ export function createWorkShapes(count, seed = 69) {
     let cursor = 0;
     for (let band = 0; band < counts.length; band++) {
       const n = counts[band];
+      const stride = spatialStride(n);
       for (let k = 0; k < n; k++) {
-        const sample = scene(band, k, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
+        // A coprime traversal visits every sample exactly once while spreading
+        // each prefix around the whole object, not just its first quadrant.
+        const sample = scene(band, k * stride % n, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
         paint(shape, order[band][k], sample.at, TAG[band], sample.color);
         cursor++;
       }

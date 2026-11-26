@@ -19,7 +19,7 @@ try {
   for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
   shapes[0] = createNameShape(mask, 1536, 768, count);
   try {
-    const { createWorkShapes } = await import('./work-shapes.js?v=e206359802');
+    const { createWorkShapes } = await import('./work-shapes.js?v=0d1d98440e');
     shapes.push(...createWorkShapes(count));
   } catch { /* Factual controls and the original four forms remain available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
