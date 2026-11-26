@@ -7,8 +7,8 @@ const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 
 const PAGES = ['index.html', '404.html'];
-const STAMPED = ['styles.css', 'script.js', 'hero.js'];
-const SHIPPED_JS = ['script.js', 'hero.js', 'particle-shapes.js', '404.js', 'tech-marks.js', 'vendor/three.hero.min.js'];
+const STAMPED = ['styles.css', 'script.js', 'hero.js', 'story.css', 'experience.css', 'career.css', 'story.js'];
+const SHIPPED_JS = ['script.js', 'hero.js', 'story.js', 'experience-effects.js', 'career.js', 'particle-shapes.js', '404.js', 'tech-marks.js', 'vendor/three.hero.min.js'];
 const PORT = 4357;
 const CSP = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'`;
 const CSP_META = `<meta http-equiv="Content-Security-Policy" content="${CSP}" />`;
@@ -43,4 +43,11 @@ const walk = (root, dir, skip = []) => fs.readdirSync(path.join(root, dir), { wi
     return e.isDirectory() ? walk(root, rel, skip) : [rel];
   });
 
-module.exports = { PAGES, STAMPED, SHIPPED_JS, PORT, CSP_META, REFERRER_META, TYPES, hashOf, gzipSize, context, walk };
+function moduleLinks(source) {
+  const links = [];
+  for (const pattern of [/\bimport\((['"])\.\/([^'"?#]+)(?:\?v=([^'"]+))?\1\)/g, /\bfrom (['"])\.\/([^'"?#]+)(?:\?v=([^'"]+))?\1/g]) {
+    for (const match of source.matchAll(pattern)) links.push({ file: match[2], version: match[3] });
+  }
+  return links;
+}
+module.exports = { PAGES, STAMPED, SHIPPED_JS, PORT, CSP_META, REFERRER_META, TYPES, hashOf, gzipSize, context, walk, moduleLinks };

@@ -39,6 +39,23 @@ test('changing an imported graphics module updates its URL and the outer hero UR
   assert.equal(fs.readFileSync(path.join(copy, 'hero.js'), 'utf8'), stable);
 });
 
+test('changed story adapters invalidate their import and page URL without breaking module syntax', (t) => {
+  const copy = fs.mkdtempSync(path.join(os.tmpdir(), 'story-imports-'));
+  t.after(() => fs.rmSync(copy, { recursive: true, force: true }));
+  fs.cpSync(dist, copy, { recursive: true });
+  const before = fs.readFileSync(path.join(copy, 'story.js'), 'utf8');
+  const page = fs.readFileSync(path.join(copy, 'index.html'), 'utf8');
+  fs.appendFileSync(path.join(copy, 'career.js'), '\n');
+  stamp(copy);
+  const changed = fs.readFileSync(path.join(copy, 'story.js'), 'utf8');
+  assert.notEqual(changed, before);
+  assert.notEqual(fs.readFileSync(path.join(copy, 'index.html'), 'utf8'), page);
+  const vm = require('node:vm');
+  new vm.SourceTextModule(changed);
+  stamp(copy);
+  assert.equal(fs.readFileSync(path.join(copy, 'story.js'), 'utf8'), changed);
+});
+
 test('dev server holds to the Pages contract', async (t) => {
   const server = createServer(dist).listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
