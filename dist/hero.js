@@ -54,7 +54,7 @@ try {
   });
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
-  let active = 0, transitionStart = null, transitionDuration = 1.45, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count, visible = true;
+  let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
   function render() { renderer.render(scene, camera); }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight; camera.aspect = width / Math.max(1, height); camera.position.set(0, 0, camera.aspect < 1 ? 18 : 15); camera.updateProjectionMatrix();
@@ -70,18 +70,18 @@ try {
       interpolateInto(from.array, to.array, m);
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
-    active = index; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time; transitionDuration = document.getElementById('portfolio-intro')?.hidden === false ? .65 : 1.45;
+    active = index; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
     if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; render(); }
   }
   function draw(now) {
-    if (document.hidden || !visible) { frame = 0; last = null; return; }
+    if (document.hidden) { frame = 0; last = null; return; }
     const elapsed = last === null ? 0 : (now - last) / 1000, dt = Math.min(elapsed, .05); last = now; time += dt; uniforms.uTime.value = time;
     const follow = 1 - Math.exp(-dt * 4);
     uniforms.uNameWeight.value += ((active === 0 ? 1 : 0) - uniforms.uNameWeight.value) * follow;
     uniforms.uJelly.value += ((active === 3 ? 1 : 0) - uniforms.uJelly.value) * follow;
     if (active === 1 || active === 2) uniforms.uSpin.value += dt * .08;
     else uniforms.uSpin.value += (Math.round(uniforms.uSpin.value / (Math.PI * 2)) * Math.PI * 2 - uniforms.uSpin.value) * follow;
-    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / transitionDuration); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
+    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / 1.45); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
     uniforms.uPointer.value.lerp(pointer, Math.min(1, dt * 9)); uniforms.uForce.value += ((overlay ? 0 : 1) - uniforms.uForce.value) * Math.min(1, dt * 7);
     render(); if (elapsed > 0) fpsFrames++; fpsTime += elapsed; if (elapsed > .028) lowFrames++; else lowFrames = Math.max(0, lowFrames - 1);
     if (lowFrames > 90 && effectiveCount > 18000) { effectiveCount = effectiveCount > 24000 ? 24000 : 18000; geometry.setDrawRange(0, effectiveCount); renderer.setPixelRatio(1); resize(); lowFrames = 0; }
@@ -92,7 +92,7 @@ try {
     cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1;
     document.querySelector('.interaction-hint').textContent = motion.matches ? 'Choose a project below' : 'Move to disturb\nClick to send a wave';
     if (motion.matches) { uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
-    else if (!document.hidden && visible) frame = requestAnimationFrame(draw);
+    else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
   addEventListener('portfolio:scene', event => change(event.detail?.index));
   addEventListener('portfolio:theme', event => { uniforms.uLight.value = event.detail?.light ? 1 : 0; material.blending = uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending; render(); });
@@ -101,9 +101,8 @@ try {
   canvas.addEventListener('pointermove', projectPointer); canvas.addEventListener('pointerleave', () => pointer.set(100, 100));
   canvas.addEventListener('pointerdown', event => { if (motion.matches) return; projectPointer(event); uniforms.uWave.value.set(pointer.x, pointer.y, time); });
   addEventListener('resize', resize); motion.addEventListener('change', resume); document.addEventListener('visibilitychange', resume);
-  const visibility = new IntersectionObserver(entries => { visible = entries.some(entry => entry.isIntersecting); resume(); }, { threshold: 0.01 }); visibility.observe(canvas);
   canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); cancelAnimationFrame(frame); document.body.classList.remove('field-ready'); status.textContent = 'Graphics paused. Project links remain available.'; });
   canvas.addEventListener('webglcontextrestored', () => location.reload());
-  addEventListener('pagehide', event => { cancelAnimationFrame(frame); if (!event.persisted) { visibility.disconnect(); geometry.dispose(); material.dispose(); renderer.dispose(); } }); addEventListener('pageshow', resume);
-  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]').dataset.scene)); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
+  addEventListener('pagehide', event => { cancelAnimationFrame(frame); if (!event.persisted) { geometry.dispose(); material.dispose(); renderer.dispose(); } }); addEventListener('pageshow', resume);
+  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]').dataset.scene)); render(); document.body.classList.add('field-ready'); resume();
 } catch { document.body.classList.remove('field-ready'); document.querySelector('.interaction-hint').textContent = 'Choose a project below'; status.textContent = 'Explore a project below.'; }

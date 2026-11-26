@@ -26,18 +26,18 @@ function select(index, updateUrl = true) {
   document.getElementById('scene-title').textContent = title;
   document.getElementById('scene-description').textContent = description;
   const link = document.getElementById('scene-launch'); link.href = url; link.textContent = launch;
-  const details = document.getElementById('scene-details'); details.dataset.open = index === 0 ? 'experience' : 'project-info'; details.textContent = index === 0 ? 'Experience' : 'How it works';
+  const details = document.getElementById('scene-details'); details.dataset.open = index === 0 ? 'about' : 'project-info'; details.textContent = index === 0 ? 'Experience' : 'How it works';
   document.querySelectorAll('[data-project-note]').forEach(note => { note.hidden = Number(note.dataset.projectNote) !== index; });
   if (updateUrl) history.replaceState(null, '', index === 0 ? location.pathname : `#${key}`);
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index } }));
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
-document.querySelectorAll('[data-home]').forEach(link => link.addEventListener('click', event => { event.preventDefault(); select(0); document.getElementById('top').scrollIntoView(); }));
+document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); });
 function fromHash() { if (location.hash === '#construct') { select(2, false); return; } select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false); }
 addEventListener('hashchange', fromHash); fromHash();
 document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => {
   const dialog = document.getElementById(button.dataset.open);
-  if (!(dialog instanceof HTMLDialogElement)) { dialog?.scrollIntoView({ block: 'start' }); dialog?.focus({ preventScroll: true }); return; }
+  if (!(dialog instanceof HTMLDialogElement)) return;
   dialog.showModal(); dispatchEvent(new CustomEvent('portfolio:overlay', { detail: { open: true } }));
   if (button.hasAttribute('data-contact')) document.getElementById('contact').scrollIntoView({ block: 'center' });
   else dialog.scrollTop = 0;
@@ -52,8 +52,9 @@ addEventListener('keydown', event => {
   const index = ['1', '2', '3', '4'].indexOf(event.key);
   if (index >= 0) { select(index); buttons[index].focus(); }
 });
-// Career enhancement owns the optional copy button; mail and profile links
-// remain ordinary links when scripts or clipboard access are unavailable.
-const header = document.querySelector('.nav-shell');
-const updateHeader = () => header.classList.toggle('scrolled', scrollY > 40);
-addEventListener('scroll', updateHeader, { passive: true }); updateHeader();
+document.getElementById('copy-email').addEventListener('click', async () => {
+  const status = document.getElementById('copy-status');
+  try { await navigator.clipboard.writeText('andreibautin94@gmail.com'); status.textContent = 'Email copied'; }
+  catch { status.textContent = 'Select the email address to copy it.'; }
+  setTimeout(() => { status.textContent = ''; }, 3000);
+});

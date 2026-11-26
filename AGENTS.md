@@ -1,28 +1,16 @@
-# Portfolio integration decisions
+# Portfolio decisions
 
-- Read CLAUDE.md and docs/ARCHITECTURE.md. This is an existing static site;
-  dist/ is published source, with no application build or domain layer.
-- User approved an interruptible first-session image/particle introduction,
-  three scrolling professional experience effects, career timeline and contact
-  presentation. Preserve real project links and the approved resume PDF bytes.
-- Facts come from the approved PDF/existing factual content. No invented client
-  names, before/after timings, throughput metrics or testimonials. Effects are
-  illustrative diagrams, not live client systems or benchmarks.
-- Codex owns integration/main, dist/index.html, styles.css, script.js, hero.js,
-  story.js, story.css, intro.js, intro-state.js, shared checks/config and docs.
-- Grok owns dist/experience-effects.js, dist/experience.css,
-  scripts/experience-effects.test.cjs and docs/EXPERIENCE-EFFECTS.md only.
-- Claude owns dist/career.js, dist/career.css, scripts/career.test.cjs and
-  docs/CAREER.md only. Shared markup contracts: docs/STORY-CONTRACT.md.
-- Workers use isolated branches, inspect status first, never merge/push or edit
-  another worktree. No subagents, paid API calls, GUI driving or credential edits.
-  Stop on real quota/auth errors and preserve partial work.
-- No inline scripts/styles/handlers, innerHTML or eval. Use textContent/classes.
-  Respect reduced motion, data saving and hidden/offscreen suspension. Do not
-  hide useful HTML until a renderer or animation finishes.
-- Run npm run stamp and npm run verify before a handoff/commit. Workers must not
-  edit shared stamp files; their owned modules are versioned during integration.
-- New scroll visuals must not leave the hero's animation running offscreen.
-  Contact and resume links remain direct, keyboard accessible and selectable.
-- Do not publish/push during the design implementation run. Prepare and verify
-  a local reviewable result; publication is a separate final action.
+- Read CLAUDE.md and docs/ARCHITECTURE.md before editing.
+- Preserve the immersive single-screen particle application. Extend its scene,
+  navigation and click-open panels; do not append a scrolling marketing or resume
+  homepage. The user explicitly rejected that composition on November 25, 2026.
+- The restored presentation is commit 60bd42e. Rejected story work is preserved
+  on preserve/scroll-story-20261125; do not reintroduce its layout by assumption.
+- Intro, professional work, resume and contact enhancements must fit the existing
+  interaction model. Review their composition before implementing a replacement.
+- Keep direct project/contact links, keyboard access, reduced motion, renderer
+  fallback and the approved resume PDF bytes. Facts must come from the resume.
+- dist/ is source; no application build or domain layer. No dependencies,
+  inline script/style, innerHTML or eval. Port 4357 is pinned.
+- Run npm run stamp and npm run verify before committing. Do not push or publish
+  during a local design correction; publication requires its own authorization.

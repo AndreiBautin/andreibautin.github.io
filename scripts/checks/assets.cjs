@@ -2,7 +2,7 @@
 // sizes, glyphs and types stay within what the site depends on.
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { STAMPED, SHIPPED_JS, TYPES, hashOf, gzipSize, walk, moduleLinks } = require('./shared.cjs');
+const { STAMPED, TYPES, hashOf, gzipSize, walk } = require('./shared.cjs');
 
 module.exports = [
   // A page served fresh with a stylesheet from a browser's cache drew the
@@ -13,7 +13,9 @@ module.exports = [
       const want = `./${file}?v=${hashOf(c.bytes('dist/' + file))}`;
       assert(html.includes(want), `${file} link must be stamped ${want} (run npm run stamp)`);
     }
-    for (const module of SHIPPED_JS) for (const {file, version} of moduleLinks(c.read('dist/' + module))) assert.equal(version, hashOf(c.bytes('dist/' + file)), `${file} import is stale (run npm run stamp)`);
+    for (const [, file, version] of c.read('dist/hero.js').matchAll(/import\('\.\/([^'?#]+)(?:\?v=([^']+))?'\)/g)) {
+      assert.equal(version, hashOf(c.bytes('dist/' + file)), `${file} import is stale (run npm run stamp)`);
+    }
   }],
   ['generated files', (c) => {
     // hero.js may only use THREE.* names the vendor subset exports.
@@ -31,7 +33,6 @@ module.exports = [
     for (const [name, files, limit] of [
       ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
       ['hero visual', ['hero.js', 'particle-shapes.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
-      ['career story', ['story.js', 'story.css', 'intro.js', 'intro-state.js', 'intro.css', 'experience-effects.js', 'experience.css', 'career.js', 'career.css'], 45_000],
     ]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
   }],
   // The fonts are subset (scripts/subset_fonts.py): every character a page

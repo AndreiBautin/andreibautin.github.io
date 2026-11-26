@@ -6,7 +6,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 // The same policy tags verify requires locally, so the two cannot disagree.
 const { CSP_META, REFERRER_META } = require('./checks.cjs');
-const { SHIPPED_JS, moduleLinks } = require('./checks/shared.cjs');
 
 // Compares a served copy at base with the dist/ directory given; returns the
 // problems found, empty when the two agree.
@@ -24,7 +23,7 @@ async function check(base, dist = path.resolve(__dirname, '../dist')) {
     if (page !== 'index.html') continue;
     // hero.js imports its modules at idle, so they are not linked from the
     // page; read the dynamic imports to check them too.
-    const imports = SHIPPED_JS.flatMap(file => moduleLinks(fs.readFileSync(path.join(dist, file), 'utf8')).map(link => `${link.file}${link.version ? `?v=${link.version}` : ''}`));
+    const imports = [...fs.readFileSync(path.join(dist, 'hero.js'), 'utf8').matchAll(/import\('\.\/([^']+)'\)/g)].map((m) => m[1]);
     if (!imports.length) problems.push('hero.js: no dynamic imports found; the smoke check has lost track of them');
     for (const href of [...[...html.matchAll(/(?:href|src)="\.\/([^"#]+)"/g)].map((m) => m[1]), ...imports]) {
       const asset = await fetch(new URL(href, base), { method: 'HEAD', cache: 'no-store' });

@@ -10,6 +10,12 @@
 
 ## What the tests are for
 
+`scripts/presentation.test.cjs` protects the single-screen composition: the
+homepage contains one particle stage, with experience/contact behind explicit
+controls and a direct resume link. It prevents accidentally appending a scrolling
+resume homepage. Visual style and native dialog behavior still require browser
+review; this structural regression check does not establish their appearance.
+
 `scripts/verify.test.cjs` plants one defect per check group in a copy of the
 repository and expects exactly that group to fail. A check that cannot fail
 is worse than none — the Three.js subset check once passed for months
@@ -78,29 +84,3 @@ The name distance-field tests cover enclosed glyph holes, signed distances,
 immutable input and bounded allocation. Extruded-name tests cover front/back depth, side samples and enclosed holes.
 Native Chrome review checks readability, motion and transitions; unit tests
 do not judge the visual style.
-
-## Story and career boundaries
-
-`scripts/intro.test.cjs` exercises exact beat timing, skipped sessions and direct
-destinations, hostile clocks, hidden-tab time, cancellation, late graphics
-readiness, live preference changes and disposal. It checks that an intro cannot
-overwrite a visitor's new selection. `scripts/career.test.cjs` covers milestone
-state/keyboard behavior, reduced motion, contact states and asynchronous clipboard
-success, denial, stale completions and disposal. Its integrated markup contract
-is active once the real career section exists.
-
-Module cache tests change an inner story adapter and require both its import and
-the outer page URL to change, without breaking module syntax. Smoke checks cover
-all local module imports, including static intro-state imports, not only hero
-dependencies. Direct links and readable HTML never wait for a graphics module.
-
-These tests do not establish physical-device smoothness, image decoding quality,
-screen-reader interaction quality or native clipboard permission behavior. Native
-browser review records those checks separately; no fabricated client UI or
-throughput benchmark is used for an experience illustration.
-
-`scripts/experience-effects.test.cjs` verifies seeded identity, stable resolved
-anchors, node/edge/mote budgets, bounded sample coordinates, pointer recovery,
-reduced-motion state and rejection of malformed parameters. It does not pretend
-to exercise a native Canvas2D driver or prove animation feel. Integration status
-and the pending native review are in `docs/STORY-VERIFICATION.md`.
