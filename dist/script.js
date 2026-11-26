@@ -5,6 +5,18 @@ const projects = [
   ['nacre', 'Liquid sculpture studio', 'NACRE', 'Pull, split, merge, and freeze liquid into sculptures.', 'https://liquid-sculpture-studio.andreibautin94.chatgpt.site/', 'Open NACRE'],
   ['pelagic', 'Interactive ocean life', 'PELAGIC', 'Meet a luminous jellyfish. Build an aquarium and watch its inhabitants respond.', 'https://pelagic.andreibautin94.chatgpt.site/', 'Open PELAGIC'],
 ];
+// The exact local portfolio origin, http://127.0.0.1:4357 or http://localhost:4357.
+// Anything unreadable or any other origin, lookalikes included, is not local.
+const onLocalPortfolio = (() => {
+  try { return location.protocol === 'http:' && location.port === '4357' && ['127.0.0.1', 'localhost'].includes(location.hostname); } catch { return false; }
+})();
+// Local demos only (docs/LOCAL-DEMOS.md): there, the TERRA, NACRE and PELAGIC launch
+// and detail links open their pinned local servers. Elsewhere nothing is rewritten.
+if (onLocalPortfolio) {
+  const local = new Map([[projects[1][4], 'http://127.0.0.1:5185/'], [projects[2][4], 'http://127.0.0.1:4386/'], [projects[3][4], 'http://127.0.0.1:4392/']]);
+  projects.forEach(project => { project[4] = local.get(project[4]) ?? project[4]; });
+  document.querySelectorAll('[data-project-note] a[href]').forEach(link => { const href = local.get(link.getAttribute('href')); if (href) link.setAttribute('href', href); });
+}
 const themeButton = document.querySelector('.theme-toggle');
 function setTheme(light) {
   document.body.classList.toggle('light', light);
@@ -94,7 +106,7 @@ document.getElementById('copy-email').addEventListener('click', async () => {
 // verified-bundle token. Every other origin, the published site included,
 // returns here before any timer, listener or request exists.
 (() => {
-  if (location.protocol !== 'http:' || location.port !== '4357' || !['127.0.0.1', 'localhost'].includes(location.hostname) || typeof fetch !== 'function') return;
+  if (!onLocalPortfolio || typeof fetch !== 'function') return;
   const quiet = 2000, slowest = 30000;
   let baseline, timer = 0, busy = false, delay = quiet, reloading = false;
   const schedule = () => { if (!reloading && !timer && !busy && document.visibilityState !== 'hidden') timer = setTimeout(poll, delay); };
