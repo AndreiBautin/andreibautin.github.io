@@ -62,6 +62,17 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 
+## Experience geometry
+
+`dist/work-shapes.js` gives knowledge retrieval a layered spherical nucleus,
+orbital traces and tilted document stacks. Replication uses a capped source
+cylinder, four ribbed helical channels and receiving rings. Payments uses a
+double-depth annulus, discrete radial teeth, an inset ring and an output stream.
+These remain bounded deterministic particle targets, not live service diagrams.
+Weighted fair interleaving distributes structural bands through the buffers:
+adaptive draw-range reduction keeps every motif rather than dropping all packets
+and connections from the end of the buffer. Native visual review remains needed.
+
 ## Build-time generators and what pins them
 
 | Generator | Writes | `verify` group that fails if stale |

@@ -96,6 +96,22 @@ function sheet(frame, k, n) {
   return framePoint(frame, u, v);
 }
 
+// Page faces, stepped edges and inset text rows share the same tilted frame.
+// These are solid objects in depth rather than a flat scatter of points.
+function documentPoint(frame, k, n, h, g) {
+  const p = sheet(frame, k, n);
+  const layer = Math.floor(h * 5);
+  const edge = k % 5 === 0;
+  const u = edge ? (k % 2 ? -0.52 : 0.52) : (g - 0.5) * 0.84;
+  const v = edge ? (g - 0.5) : Math.round((h - 0.5) * 12) / 12;
+  const detail = framePoint(frame, u, v);
+  return [
+    (edge || k % 3 ? detail[0] : p[0]) + layer * 0.035,
+    (edge || k % 3 ? detail[1] : p[1]) - layer * 0.025,
+    (edge || k % 3 ? detail[2] : p[2]) + (layer - 2) * 0.09,
+  ];
+}
+
 function alongArc(origin, control, k, n, h, g) {
   const p = quad(origin, control, [0, 0, 0], (k + 0.5) / n);
   const side = (h - 0.5) * 0.1;
@@ -140,15 +156,22 @@ function tanglePoint(t, h) {
 }
 
 function knowledge(band, k, n, h, g) {
-  if (band === 0) return { at: fibonacci(k, n, 0.5, h), color: tone(GOLD, h) };
+  if (band === 0) {
+    const orbit = k % 4 === 0;
+    const a = TAU * (k + 0.5) / n * 7;
+    const core = fibonacci(k, n, 0.58 + Math.sin(g * TAU) * 0.035, 0.4);
+    const halo = [Math.cos(a) * 1.08, Math.sin(a) * 0.76, Math.sin(a) * 0.67];
+    return { at: orbit ? halo : core, color: tone(orbit ? CYAN : GOLD, h) };
+  }
   if (band === 1) {
     const [bin, u] = slot(k, n, 4);
     const localN = Math.max(1, Math.round(n / 4));
-    return { at: sheet(SHARDS[bin], Math.min(localN - 1, Math.floor(u * localN)), localN), color: tone(k % 2 ? SAGE : MATRIX, g) };
+    return { at: documentPoint(SHARDS[bin], Math.min(localN - 1, Math.floor(u * localN)), localN, h, g), color: tone(k % 5 ? SAGE : MATRIX, g) };
   }
   if (band === 2) {
     const [bin] = slot(k, n, 4);
-    return { at: alongArc(SHARDS[bin].at, ARC_CTRL[bin], k, n, h, g), color: tone(CYAN, h) };
+    const [, u] = slot(k, n, 4);
+    return { at: alongArc(SHARDS[bin].at, ARC_CTRL[bin], u * n, n, h, g), color: tone(CYAN, h) };
   }
   if (band === 3) {
     const [bin, u] = slot(k, n, 4);
@@ -158,22 +181,29 @@ function knowledge(band, k, n, h, g) {
     return { at: add(p, ball), color: tone(MATRIX, h) };
   }
   const [bin] = slot(k, n, 4);
-  const ghost = sheet(SHARDS[bin], k % Math.max(n, 1), Math.max(n, 1));
-  return { at: [ghost[0] * 1.08, ghost[1] * 1.05, ghost[2] * 0.4], color: tone(FAINT, h) };
+  const a = TAU * (k + 0.5) / n;
+  const tilt = bin * Math.PI / 4;
+  return { at: [Math.cos(a) * 1.34, Math.sin(a) * Math.cos(tilt) * 1.34, Math.sin(a) * Math.sin(tilt) * 1.34], color: tone(FAINT, h) };
 }
 
 function replication(band, k, n, h, g) {
   if (band === 0) {
     const s = (k + 0.5) / n;
-    return { at: [-4.55 + s * 3.15, (h - 0.5) * 0.22, (g - 0.5) * 0.16], color: tone(CYAN, h) };
+    const a = TAU * h;
+    const cap = k % 4 === 0;
+    const radius = cap ? Math.sqrt(g) * 0.66 : 0.66;
+    return { at: [-4.35 + (cap ? (k % 2 ? 1.8 : 0) : s * 1.8), Math.cos(a) * radius, Math.sin(a) * radius], color: tone(k % 7 ? CYAN : MATRIX, h) };
   }
   if (band === 1) {
     const [lane, u] = slot(k, n, 4);
-    return { at: lanePoint(lane, 0.08 + u * 0.84, h, g, 0.14), color: tone(lane % 2 ? SAGE : MATRIX, g) };
+    const rib = k % 4 === 0;
+    const phase = rib ? Math.round(u * 18) / 18 : u;
+    const point = lanePoint(lane, 0.08 + phase * 0.84, rib ? h : u * 9 + lane / 4, g, rib ? 0.23 : 0.12);
+    return { at: point, color: tone(rib ? SAGE : MATRIX, g) };
   }
   if (band === 2) {
     const [lane, u] = slot(k, n, 4);
-    const mouth = [-1.4, 0, 0];
+    const mouth = [-2.55, 0, 0];
     const head = lanePoint(lane, 0, 0.5, 0.5, 0);
     const bow = [(mouth[0] + head[0]) / 2, head[1] * 0.65, head[2]];
     return { at: quad(mouth, bow, head, u), color: tone(CYAN, 1 - h) };
@@ -182,30 +212,41 @@ function replication(band, k, n, h, g) {
     const [lane, u] = slot(k, n, 4);
     const cluster = Math.min(3, Math.floor(u * 4));
     const along = 0.16 + cluster * 0.22 + (h - 0.5) * 0.05;
-    return { at: lanePoint(lane, along, g, h, 0.16), color: tone(CYAN, h) };
+    return { at: lanePoint(lane, along, g, h, 0.12), color: tone(CYAN, h) };
   }
-  const s = (k + 0.5) / n;
-  return { at: [4.35 - s * 8.5, -2.45, (h - 0.5) * 0.12], color: tone(FAINT, g) };
+  const [lane, u] = slot(k, n, 4);
+  const a = TAU * h;
+  return { at: [4.25 + (g - 0.5) * 0.22, LANES[lane] + Math.cos(a) * 0.37, (lane - 1.5) * 0.38 + Math.sin(a) * 0.37], color: tone(CYAN, u) };
 }
 
 function payments(band, k, n, h, g) {
-  if (band === 0) return { at: ringPoint(TAU * (k + 0.5) / n, h, 2.05, 0.02), color: tone(MATRIX, h) };
+  if (band === 0) {
+    const a = TAU * (k + 0.5) / n;
+    const point = ringPoint(a, h, 2.05, 0.12);
+    point[2] += k % 2 ? 0.24 : -0.24;
+    return { at: point, color: tone(k % 6 ? MATRIX : CYAN, h) };
+  }
   if (band === 1) {
     const tick = k % 8 === 0;
     if (tick) {
-      const theta = TAU * (k + 0.5) / n;
+      const theta = TAU * Math.floor((k + 0.5) / n * 48) / 48;
       const inner = ringPoint(theta, 0, 2.05, 0);
       const outer = ringPoint(theta, 0, 2.42, 0);
-      return { at: quad(inner, inner, outer, g), color: tone(SAGE, h) };
+      const point = quad(inner, inner, outer, g);
+      point[2] += (h - 0.5) * 0.5;
+      return { at: point, color: tone(SAGE, h) };
     }
     return { at: ringPoint(TAU * (k + 0.5) / n, h, 2.05, 0.14), color: tone(SAGE, g) };
   }
   if (band === 2) return { at: tanglePoint(TAU * (k + 0.5) / n * 2, h), color: tone(CORAL, g * 0.35) };
   if (band === 3) {
     const s = (k + 0.5) / n;
-    return { at: [2.15 + s * 2.45, (h - 0.5) * 0.16, (g - 0.5) * 0.12], color: tone(GOLD, h) };
+    return { at: [2.15 + s * 2.45, (h - 0.5) * 0.25, (g - 0.5) * 0.22], color: tone(GOLD, h) };
   }
-  return { at: ringPoint(TAU * (k + 0.5) / n, h, 1.25, 0.03), color: tone(FAINT, g) };
+  const a = TAU * (k + 0.5) / n;
+  const point = ringPoint(a, h, 1.25, 0.055);
+  point[2] += 0.55;
+  return { at: point, color: tone(CYAN, g) };
 }
 
 function career(band, k, n, h, g) {
@@ -290,6 +331,18 @@ export function createWorkShapes(count, seed = 69) {
   if (!Number.isInteger(count) || count < 1 || count > 60000) throw new RangeError('Particle count outside bounds');
   if (!Number.isInteger(seed)) throw new TypeError('Seed must be a finite integer');
   const counts = allocate(count, BANDS);
+  // A quality drop draws a prefix of the buffers. Fairly interleave motifs so
+  // that every prefix keeps core, structure, connections and moving packets.
+  const order = counts.map(() => []), debt = counts.map(() => 0);
+  for (let i = 0; i < count; i++) {
+    let chosen = 0;
+    for (let band = 0; band < counts.length; band++) {
+      debt[band] += counts[band];
+      if (debt[band] > debt[chosen]) chosen = band;
+    }
+    debt[chosen] -= count;
+    order[chosen].push(i);
+  }
   return SCENES.map((scene, sceneIndex) => {
     const shape = { positions: new Float32Array(count * 4), colors: new Float32Array(count * 3) };
     let cursor = 0;
@@ -297,7 +350,7 @@ export function createWorkShapes(count, seed = 69) {
       const n = counts[band];
       for (let k = 0; k < n; k++) {
         const sample = scene(band, k, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
-        paint(shape, cursor, sample.at, TAG[band], sample.color);
+        paint(shape, order[band][k], sample.at, TAG[band], sample.color);
         cursor++;
       }
     }
