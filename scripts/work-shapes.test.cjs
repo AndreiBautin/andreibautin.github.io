@@ -108,3 +108,146 @@ test('each scene keeps a readable silhouette and a restrained accent', () => {
   assert(accents(career) > 80 && accents(career) < 400);
   assert.equal(accents(contact), 0);
 });
+
+// ---- Adaptive quality prefixes (hero.js draws setDrawRange(0, n) of the full buffer) ----
+// Population tiers come from the real renderer, so these tests follow it if it changes.
+const heroSource = fs.readFileSync(require('node:path').join(__dirname, '../dist/hero.js'), 'utf8');
+const DESKTOP = Number(heroSource.match(/\? 18000 : (\d+);/)[1]);
+const PREFIXES = [...new Set([...heroSource.matchAll(/effectiveCount = effectiveCount > (\d+) \? (\d+) : (\d+);/g)].flatMap((m) => [Number(m[2]), Number(m[3])]))].sort((a, b) => a - b);
+const TAG_SHARE = [0.6, 0.12, 0.28]; // bands [0.34, 0.26 | 0.12 | 0.2, 0.08] mapped through TAG
+const TAU = Math.PI * 2;
+const NODES = [[-3.1, -1.82, 0.32], [-1.05, -0.55, -0.8], [1.15, 0.72, 0.9], [3.15, 1.78, -0.22]];
+const DEST = [[-3.15, 1.2, 0.72], [3.25, 1.02, -0.58], [0.15, -2.05, 0.9]];
+let desktop;
+const full = () => desktop ??= shapes.createWorkShapes(DESKTOP, 69);
+
+function each(shape, limit, visit) {
+  const p = shape.positions;
+  for (let i = 0; i < limit; i++) visit(p[i * 4], p[i * 4 + 1], p[i * 4 + 2], p[i * 4 + 3]);
+}
+function tags(shape, limit) {
+  const out = [0, 0, 0];
+  each(shape, limit, (x, y, z, t) => out[t]++);
+  return out;
+}
+function zSpread(shape, limit) {
+  let sum = 0, sq = 0;
+  each(shape, limit, (x, y, z) => { sum += z; sq += z * z; });
+  return Math.sqrt(Math.max(0, sq / limit - (sum / limit) ** 2));
+}
+// Structural bins per scene: every bin must be populated for the motif to read.
+const STRUCTURE = {
+  'knowledge document quadrants': [0, 4, (x, y, z, t) => (t === 0 && Math.abs(x) > 2.2 ? (x < 0 ? 0 : 2) + (y > 0 ? 0 : 1) : -1)],
+  'knowledge core hemispheres': [0, 2, (x, y, z, t) => (t === 0 && Math.hypot(x, y, z) < 0.7 ? (y > 0 ? 0 : 1) : -1)],
+  'replication channels': [1, 4, (x, y, z, t) => (t === 0 && x > -2.3 && x < 3.9 ? Math.round((y + 1.62) / 1.08) : -1)],
+  'replication source cylinder thirds': [1, 3, (x, y, z, t) => (t === 0 && x < -2.5 && x > -4.4 ? Math.min(2, Math.floor((x + 4.35) / 0.6)) : -1)],
+  'payments annulus sectors': [2, 12, (x, y, z, t) => {
+    const r = Math.hypot(x, y / 0.86);
+    return t === 0 && r > 1.85 && r < 2.3 ? Math.min(11, Math.floor(((Math.atan2(y / 0.86, x) + Math.PI) / TAU) * 12)) : -1;
+  }],
+  'career milestone nodes': [3, 4, (x, y, z, t) => (t === 0 ? NODES.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 0.45) : -1)],
+  'contact destinations': [4, 3, (x, y, z, t) => (t === 0 ? DEST.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 0.45) : -1)],
+};
+function bins(shape, limit, size, classify) {
+  const out = new Array(size).fill(0);
+  each(shape, limit, (x, y, z, t) => { const b = classify(x, y, z, t); if (b >= 0) out[b]++; });
+  return out;
+}
+// Balanced: every structural bin is present and none is starved below half the fullest.
+function balanced(counts) {
+  return Math.min(...counts) > 0 && Math.min(...counts) >= Math.max(...counts) * 0.5;
+}
+
+test('renderer quality tiers are the populations these prefix tests exercise', () => {
+  assert.equal(DESKTOP, 42000);
+  assert.deepEqual(PREFIXES, [18000, 24000]);
+});
+
+test('every draw-range prefix of the desktop buffer keeps all three tags in their weighted share', () => {
+  for (const shape of full()) {
+    // Cumulative check over every prefix: the fair scheduler bounds the drift per tag.
+    const seen = [0, 0, 0];
+    let worst = 0;
+    each(shape, DESKTOP, (x, y, z, t) => {
+      seen[t]++;
+      const n = seen[0] + seen[1] + seen[2];
+      for (let tag = 0; tag < 3; tag++) worst = Math.max(worst, Math.abs(seen[tag] - n * TAG_SHARE[tag]));
+    });
+    assert(worst <= 2, `tag drift ${worst}`);
+    for (const limit of PREFIXES) {
+      const counts = tags(shape, limit);
+      assert(counts.every((c) => c > 0));
+      for (let tag = 0; tag < 3; tag++) assert(Math.abs(counts[tag] / limit - TAG_SHARE[tag]) < 0.002);
+    }
+  }
+});
+
+test('draw-range prefixes keep comparable depth in every scene', () => {
+  for (const shape of full()) {
+    const whole = zSpread(shape, DESKTOP);
+    assert(whole > 0.25, `full depth ${whole}`);
+    for (const limit of PREFIXES) assert(zSpread(shape, limit) >= whole * 0.6, `prefix ${limit} flattened`);
+  }
+});
+
+test('the full desktop buffer populates every structural bin of every scene', () => {
+  const scenes = full();
+  for (const [name, [scene, size, classify]] of Object.entries(STRUCTURE)) {
+    const counts = bins(scenes[scene], DESKTOP, size, classify);
+    assert(balanced(counts), `${name}: ${counts}`);
+  }
+});
+
+// These regressions failed before spatial traversal was separated from buffer
+// order and before each node received its own complete sphere sampling.
+for (const limit of PREFIXES) {
+  test(`prefix ${limit} of the desktop buffer keeps every lane, quadrant, node and sector`, () => {
+    const scenes = full();
+    const missing = [];
+    for (const [name, [scene, size, classify]] of Object.entries(STRUCTURE)) {
+      const counts = bins(scenes[scene], limit, size, classify);
+      if (!balanced(counts)) missing.push(`${name}: ${counts}`);
+    }
+    assert.deepEqual(missing, []);
+  });
+}
+
+test('milestone and destination orbs are whole spheres, not latitude belts', () => {
+  const scenes = full();
+  const belts = [];
+  const span = (shape, centre, radius) => {
+    let lo = Infinity, hi = -Infinity;
+    each(shape, DESKTOP, (x, y, z, t) => {
+      if (t || Math.abs(Math.hypot(x - centre[0], y - centre[1], z - centre[2]) - radius) > 0.003) return;
+      lo = Math.min(lo, (y - centre[1]) / radius);
+      hi = Math.max(hi, (y - centre[1]) / radius);
+    });
+    return [lo, hi];
+  };
+  NODES.slice(0, 3).forEach((n, i) => { const [lo, hi] = span(scenes[3], n, 0.34 + i * 0.035); if (lo > -0.8 || hi < 0.8) belts.push(`career ${i}`); });
+  DEST.forEach((n, i) => { const [lo, hi] = span(scenes[4], n, 0.4); if (lo > -0.8 || hi < 0.8) belts.push(`contact ${i}`); });
+  assert.deepEqual(belts, []);
+});
+
+test('low and extreme counts allocate deterministically and paint every particle', () => {
+  const expected = (count) => {
+    const w = [0.34, 0.26, 0.2, 0.12, 0.08];
+    const exact = w.map((v) => count * v);
+    const out = exact.map(Math.floor);
+    const left = count - out.reduce((s, v) => s + v, 0);
+    const rank = exact.map((v, i) => [v - out[i], i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+    for (let e = 0; e < left; e++) out[rank[e][1]]++;
+    return [out[0] + out[1], out[3], out[2] + out[4]];
+  };
+  for (const count of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 17, 25, 50, 99, 101, 997, 18000, 24000, 59999, 60000]) {
+    const scenes = shapes.createWorkShapes(count, 69);
+    assert.deepEqual(scenes, shapes.createWorkShapes(count, 69));
+    for (const shape of scenes) {
+      assert.deepEqual(tags(shape, count), expected(count), `count ${count}`);
+      // Every colour is a tone of a non-black base, so a near-zero sum means an unpainted slot.
+      for (let i = 0; i < count; i++) assert(shape.colors[i * 3] + shape.colors[i * 3 + 1] + shape.colors[i * 3 + 2] > 0.05, `count ${count} slot ${i}`);
+    }
+  }
+  assert.deepEqual(tags(shapes.createWorkShapes(1)[0], 1), [1, 0, 0]);
+  for (const seed of [-2147483648, -1, 0, 2147483647, Number.MAX_SAFE_INTEGER]) assert.doesNotThrow(() => shapes.createWorkShapes(64, seed));
+});

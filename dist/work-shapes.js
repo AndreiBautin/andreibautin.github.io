@@ -206,7 +206,7 @@ function replication(band, k, n, h, g) {
     const a = TAU * h;
     const cap = k % 4 === 0;
     const radius = cap ? Math.sqrt(g) * 0.66 : 0.66;
-    return { at: [-4.35 + (cap ? (k % 2 ? 1.8 : 0) : s * 1.8), Math.cos(a) * radius, Math.sin(a) * radius], color: tone(k % 7 ? CYAN : MATRIX, h) };
+    return { at: [-4.35 + (cap ? (Math.floor(k / 4) % 2 ? 1.8 : 0) : s * 1.8), Math.cos(a) * radius, Math.sin(a) * radius], color: tone(k % 7 ? CYAN : MATRIX, h) };
   }
   if (band === 1) {
     const [lane, u] = slot(k, n, 4);
