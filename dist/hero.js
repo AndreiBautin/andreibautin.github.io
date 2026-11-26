@@ -105,5 +105,5 @@ try {
   canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); cancelAnimationFrame(frame); document.body.classList.remove('field-ready'); status.textContent = 'Graphics paused. Project links remain available.'; });
   canvas.addEventListener('webglcontextrestored', () => location.reload());
   addEventListener('pagehide', event => { cancelAnimationFrame(frame); if (!event.persisted) { visibility.disconnect(); geometry.dispose(); material.dispose(); renderer.dispose(); } }); addEventListener('pageshow', resume);
-  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]').dataset.scene)); render(); document.body.classList.add('field-ready'); resume();
+  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]').dataset.scene)); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
 } catch { document.body.classList.remove('field-ready'); document.querySelector('.interaction-hint').textContent = 'Choose a project below'; status.textContent = 'Explore a project below.'; }

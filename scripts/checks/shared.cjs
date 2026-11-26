@@ -7,8 +7,8 @@ const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 
 const PAGES = ['index.html', '404.html'];
-const STAMPED = ['styles.css', 'script.js', 'hero.js', 'story.css', 'experience.css', 'career.css', 'story.js'];
-const SHIPPED_JS = ['script.js', 'hero.js', 'story.js', 'experience-effects.js', 'career.js', 'particle-shapes.js', '404.js', 'tech-marks.js', 'vendor/three.hero.min.js'];
+const STAMPED = ['styles.css', 'script.js', 'hero.js', 'story.css', 'experience.css', 'career.css', 'intro.css', 'story.js'];
+const SHIPPED_JS = ['script.js', 'hero.js', 'story.js', 'intro.js', 'intro-state.js', 'experience-effects.js', 'career.js', 'particle-shapes.js', '404.js', 'tech-marks.js', 'vendor/three.hero.min.js'];
 const PORT = 4357;
 const CSP = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'`;
 const CSP_META = `<meta http-equiv="Content-Security-Policy" content="${CSP}" />`;

@@ -31,7 +31,7 @@ module.exports = [
     for (const [name, files, limit] of [
       ['critical path', ['index.html', 'styles.css', 'script.js'], 30_000],
       ['hero visual', ['hero.js', 'particle-shapes.js', 'tech-marks.js', 'vendor/three.hero.min.js'], 150_000],
-      ['career story', ['story.js', 'story.css', 'experience-effects.js', 'experience.css', 'career.js', 'career.css'], 45_000],
+      ['career story', ['story.js', 'story.css', 'intro.js', 'intro-state.js', 'intro.css', 'experience-effects.js', 'experience.css', 'career.js', 'career.css'], 45_000],
     ]) { const size = gz(files); assert(size <= limit, `${name} is ${size} B gzipped, over its ${limit} B budget`); }
   }],
   // The fonts are subset (scripts/subset_fonts.py): every character a page
