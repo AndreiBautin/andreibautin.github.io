@@ -91,6 +91,13 @@ function fibonacci(k, n, radius, twist) {
   return [Math.cos(phi) * ring * radius, y * radius, Math.sin(phi) * ring * radius];
 }
 
+function localSphere(k, n, bins, radius, twist) {
+  const [bin] = slot(k, n, bins);
+  const start = Math.max(0, Math.ceil(bin * n / bins - 0.5));
+  const end = Math.min(n, Math.ceil((bin + 1) * n / bins - 0.5));
+  return fibonacci(k - start, Math.max(1, end - start), radius, twist);
+}
+
 function framePoint(frame, u, v) {
   return add(add(frame.at, frame.right, u), frame.up, v);
 }
@@ -184,7 +191,7 @@ function knowledge(band, k, n, h, g) {
     const [bin, u] = slot(k, n, 4);
     const stop = 0.32 + Math.floor(u * 3) / 3 * 0.48;
     const p = quad(SHARDS[bin].at, ARC_CTRL[bin], [0, 0, 0], stop);
-    const ball = fibonacci(k, Math.max(n, 1), 0.16, g);
+    const ball = localSphere(k, n, 12, 0.16, g);
     return { at: add(p, ball), color: tone(MATRIX, h) };
   }
   const [bin] = slot(k, n, 4);
@@ -259,7 +266,7 @@ function payments(band, k, n, h, g) {
 function career(band, k, n, h, g) {
   const [node, u] = slot(k, n, 4);
   if (band === 0) {
-    const ball = fibonacci(k, Math.max(8, n), 0.34 + node * 0.035, h);
+    const ball = localSphere(k, n, 4, 0.34 + node * 0.035, h);
     return { at: add(NODES[node], ball), color: tone(node === 3 ? GOLD : SAGE, g) };
   }
   if (band === 1) {
@@ -301,7 +308,7 @@ function contact(band, k, n, h, g) {
   }
   if (band === 1) {
     const [bin] = slot(k, n, 3);
-    return { at: add(DEST[bin], fibonacci(k, Math.max(n, 1), 0.4, g)), color: tone(bin === 1 ? CYAN : SAGE, h) };
+    return { at: add(DEST[bin], localSphere(k, n, 3, 0.4, g)), color: tone(bin === 1 ? CYAN : SAGE, h) };
   }
   if (band === 2) {
     const [bin, u] = slot(k, n, 3);
