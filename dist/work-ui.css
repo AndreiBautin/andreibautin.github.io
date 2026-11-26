@@ -1,0 +1,62 @@
+/* Professional work HUD, built by work-ui.js inside div#work-panel in the
+   particle stage. Copy sits in the left third; the tabs take the project
+   picker's slot. Nothing here changes page scrolling, the header or the scene.
+   Uses only the variables from styles.css and .work-* classes (plus hiding the
+   project copy and picker while body.work-view is set). */
+body.work-view .scene-copy,body.work-view .scene-picker{display:none}
+
+.work-hud{position:absolute;z-index:2;left:5vw;top:150px;bottom:150px;width:min(32vw,430px);min-width:300px;display:flex;flex-direction:column;justify-content:flex-end;gap:14px;pointer-events:none}
+.work-hud>*{pointer-events:auto}
+.work-head{display:flex}
+.work-back{font:11px var(--mono);letter-spacing:.06em;color:var(--muted);padding:6px 0}
+.work-back:hover{color:var(--accent)}
+.work-view{display:flex;flex-direction:column;flex:0 1 auto;min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;padding:18px 20px 16px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--panel) 72%,transparent);backdrop-filter:blur(10px)}
+.work-eyebrow{font:10px var(--mono);text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin:0 0 8px}
+.work-title{font-size:21px;font-weight:500;letter-spacing:-.03em;line-height:1.25;margin:0 0 8px}
+.work-title:focus{outline:none}
+.work-title:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.work-lede{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 12px}
+.work-art{display:block;width:100%;max-width:260px;height:auto;margin:0 0 12px;fill:none;stroke:var(--muted);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.work-art .work-art-accent{stroke:var(--accent)}
+.work-art circle.work-art-accent[r="3"]{fill:var(--accent)}
+
+.work-switch{display:flex;flex-direction:column;min-height:0}
+.work-steps{display:flex;flex-wrap:wrap;gap:4px 16px;border-bottom:1px solid var(--line)}
+.work-step{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 0 7px;margin-bottom:-1px;border-bottom:1px solid transparent;text-align:left}
+.work-step:hover{color:var(--ink)}
+.work-step[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.work-when{display:block}
+.work-what{display:block;margin-top:3px;font:11px var(--font);text-transform:none;letter-spacing:0;max-width:150px}
+.work-view[data-work-mode="career"] .work-steps{display:grid;grid-template-columns:repeat(2,1fr);gap:0 14px}
+.work-detail{font-size:13px;line-height:1.65;color:var(--ink);padding:10px 0 2px;min-height:64px;overflow:auto;overscroll-behavior:contain}
+.work-detail:focus{outline:none}
+.work-detail:focus-visible{outline:1px solid var(--line);outline-offset:2px}
+.work-detail p{margin:4px 0 0;color:var(--muted)}
+.work-detail-title{font-weight:500}
+
+.work-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-top:12px}
+.work-link{font-size:12px;color:var(--accent);padding:4px 0;border-bottom:1px solid var(--line)}
+.work-link:hover{border-bottom-color:var(--accent)}
+.work-primary{border-bottom-color:var(--accent)}
+.work-copy{padding:5px 10px;border:1px solid var(--line);border-radius:4px;font-size:11px}
+.work-copy[aria-busy="true"]{opacity:.6;cursor:progress}
+.work-email{font-size:18px;color:var(--ink);user-select:all;-webkit-user-select:all;overflow-wrap:anywhere}
+.work-email:hover{color:var(--accent)}
+.work-status{font-size:12px;line-height:1.5;color:var(--accent);min-height:18px;margin:10px 0 0}
+
+.work-tabs{position:absolute;z-index:2;left:5vw;right:5vw;bottom:64px;display:flex;gap:28px;border-top:1px solid var(--line)}
+.work-tab{font:500 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:14px 0 0;margin-top:-1px;border-top:1px solid transparent;white-space:nowrap;transition:color .25s,border-color .25s}
+.work-tab:hover{color:var(--ink)}
+.work-tab[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent)}
+
+@media(max-width:900px){.work-hud{width:min(44vw,400px)}.work-tabs{gap:20px}.work-tab{font-size:10px}}
+@media(max-width:600px){
+  .work-hud{left:25px;right:25px;width:auto;min-width:0;top:128px;bottom:118px;justify-content:flex-start}
+  .work-view{padding:14px 16px}
+  .work-title{font-size:18px}
+  .work-lede,.work-detail{font-size:12px}
+  .work-art{max-width:200px}
+  .work-tabs{left:25px;right:25px;bottom:62px;gap:18px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+  .work-tab{padding-top:11px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.work-tab{transition:none}}
