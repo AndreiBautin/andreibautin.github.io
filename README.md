@@ -7,6 +7,12 @@ jellyfish. The same dots transform between all four forms. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 
+On a first visit, a short skippable introduction cycles through actual project
+captures and particle forms. It respects reduced motion, data saving and direct
+links; Replay intro is optional. Scroll below the projects for professional work,
+then an illuminated career timeline and contact destinations. The approved PDF
+remains a direct download; no animated section is needed to reach it.
+
 ## Run it
 
 Double-click `start-app.bat` (Node.js required), or `npm run dev`, then open

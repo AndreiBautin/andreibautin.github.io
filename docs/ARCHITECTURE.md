@@ -18,9 +18,10 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    a block image. The stamp also versions hero.js imports before hashing the
    hero itself, so a new GPU export or particle target cannot reuse an old URL.
 3. **`script.js`** owns theme, project selection, direct links, hash navigation,
-   and native dialogs. A project button validates an index, updates the copy
-   and launch link, then dispatches `portfolio:scene`. Experience and contact
-   retain the resume facts in accessible HTML; no renderer owns their state.
+   and the project-details dialog. A project button validates an index, updates the copy
+   and launch link, then dispatches `portfolio:scene`. Header links scroll to
+   experience, career and contact in ordinary accessible HTML; no renderer owns
+   those facts or links. `story.js` mounts isolated optional enhancements.
 4. **`hero.js`** imports the integrity-pinned Three.js subset, technology marks,
    and browser-free **`particle-shapes.js`**. It passes a population and seed to
    `createShapes`, then uploads four deterministic targets: atmosphere, planet, folded
@@ -33,19 +34,30 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    new target captures the interpolated attributes before transitioning again.
    Shape motion, pointer swirl and click waves are analytic shader functions,
    not a fluid solver or stateful particle physics simulation. Work uses frame
-   deltas with a catch-up cap. Hidden tabs stop; page-cache restoration resumes;
+   deltas with a catch-up cap. Hidden tabs and an offscreen hero stop; page-cache restoration resumes;
    reduced motion uses a still and instant changes. Smaller/data-saving devices
    start with 18,000 points; desktop starts at 42,000, with a bounded quality
    reduction under sustained load. A rendering failure leaves the HTML name
    and controls. No third-party project runs inside the scene.
-5. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
+5. `story.js` loads **`intro.js`**, **`experience-effects.js`** and **`career.js`**
+   independently. A failed module leaves all factual HTML and direct links usable.
+   Only successfully mounted enhancements reveal their replay/copy controls.
+   `intro-state.js` supplies a pure 4800ms timeline; the adapter cycles existing
+   project captures and sends scene events without changing selected-project
+   copy or URL. Session, motion, data-saving and deep-link policies can skip it.
+   Hidden time is excluded; outside input cancels it before normal navigation.
+   A late `portfolio:graphics-ready` re-sends the current beat so slow font/GPU
+   startup cannot leave the wrong particle form. Career/contact uses CSS lines
+   and one-shot pulses, semantic disclosure buttons and direct links. Clipboard
+   success is announced only after resolution; denial keeps the address usable.
+6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 
 ## Build-time generators and what pins them
 
 | Generator | Writes | `verify` group that fails if stale |
 |---|---|---|
-| `scripts/stamp.cjs` | `?v=` in `index.html` | stamp |
+| `scripts/stamp.cjs` | `?v=` in `index.html` and local module imports, dependencies first | stamp |
 | `scripts/build_three.cjs` | `dist/vendor/three.hero.min.js` | generated files |
 | `scripts/build_marks.cjs` | `dist/tech-marks.js` | generated files |
 | `scripts/subset_fonts.py` | `dist/fonts/*.woff2` | font subset |
@@ -59,7 +71,7 @@ unchanged, not generated, so it cannot disagree with the one on LinkedIn.
 `verify.cjs` runs the check groups in `scripts/checks/` (one file per area, run by
 `scripts/checks.cjs`), then the tests
 in `scripts/verify.test.cjs`, `scripts/tools.test.cjs`, and
-`scripts/particles.test.cjs`. It gates the pre-push hook (`.githooks/pre-push`),
+`scripts/particles.test.cjs`, and the story-adapter tests. It gates the pre-push hook (`.githooks/pre-push`),
 pull requests, and the deploy in `.github/workflows/pages.yml`, which then
 runs `scripts/smoke.cjs` against the live URL. `serve.cjs` serves `dist/`
 locally on port 4357 with the CSP sent as a real header. Port 4317 belongs to
