@@ -54,7 +54,7 @@ try {
   });
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
-  let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count, visible = true;
+  let active = 0, transitionStart = null, transitionDuration = 1.45, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count, visible = true;
   function render() { renderer.render(scene, camera); }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight; camera.aspect = width / Math.max(1, height); camera.position.set(0, 0, camera.aspect < 1 ? 18 : 15); camera.updateProjectionMatrix();
@@ -70,7 +70,7 @@ try {
       interpolateInto(from.array, to.array, m);
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
-    active = index; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
+    active = index; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time; transitionDuration = document.getElementById('portfolio-intro')?.hidden === false ? .65 : 1.45;
     if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; render(); }
   }
   function draw(now) {
@@ -81,7 +81,7 @@ try {
     uniforms.uJelly.value += ((active === 3 ? 1 : 0) - uniforms.uJelly.value) * follow;
     if (active === 1 || active === 2) uniforms.uSpin.value += dt * .08;
     else uniforms.uSpin.value += (Math.round(uniforms.uSpin.value / (Math.PI * 2)) * Math.PI * 2 - uniforms.uSpin.value) * follow;
-    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / 1.45); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
+    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / transitionDuration); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
     uniforms.uPointer.value.lerp(pointer, Math.min(1, dt * 9)); uniforms.uForce.value += ((overlay ? 0 : 1) - uniforms.uForce.value) * Math.min(1, dt * 7);
     render(); if (elapsed > 0) fpsFrames++; fpsTime += elapsed; if (elapsed > .028) lowFrames++; else lowFrames = Math.max(0, lowFrames - 1);
     if (lowFrames > 90 && effectiveCount > 18000) { effectiveCount = effectiveCount > 24000 ? 24000 : 18000; geometry.setDrawRange(0, effectiveCount); renderer.setPixelRatio(1); resize(); lowFrames = 0; }

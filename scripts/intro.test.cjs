@@ -112,6 +112,15 @@ test('a late graphics renderer receives the current intro beat without interrupt
   assert.equal(f.scenes.at(-1), 2);
 });
 
+test('the integrated page supplies the optional intro contract and keeps replay outside it', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../dist/index.html'), 'utf8');
+  assert.match(html, /id="portfolio-intro"[^>]*hidden/);
+  for (const id of ['intro-message', 'intro-caption', 'skip-intro', 'replay-intro']) assert(html.includes(`id="${id}"`));
+  assert.deepEqual([...html.matchAll(/data-intro-image="([^"]+)"/g)].map(match => match[1]), ['terra', 'nacre', 'pelagic']);
+  const start = html.indexOf('id="portfolio-intro"');
+  assert(!html.slice(start, html.indexOf('</section>', start)).includes('id="replay-intro"'));
+});
+
 test('outside controls cancel before their handler; stale frames cannot override the choice', async () => {
   const { adapter } = await modules();
   for (const type of ['pointerdown', 'keydown', 'click', 'wheel']) {
