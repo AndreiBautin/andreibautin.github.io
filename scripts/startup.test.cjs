@@ -24,9 +24,13 @@ function freePort() {
   });
 }
 
+const onWindows = process.platform === 'win32';
+
 function runLauncher(args) {
   return new Promise((resolve) => {
-    const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', launcher, ...args], {
+    // A local script runs under the normal file policy. Do not pass
+    // -ExecutionPolicy Bypass; that would change how this process treats scripts.
+    const child = spawn('powershell.exe', ['-NoProfile', '-File', launcher, ...args], {
       cwd: root,
       windowsHide: true,
     });
@@ -83,12 +87,12 @@ function removeDir(dir) {
       return;
     } catch (error) {
       if (attempt === 7) throw error;
-      spawnSync('powershell.exe', ['-NoProfile', '-Command', 'Start-Sleep -Milliseconds 200'], { windowsHide: true });
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
     }
   }
 }
 
-describe('startup launcher', { concurrency: 1 }, () => {
+describe('startup launcher source', () => {
 test('batch launcher keeps CRLF and does not retarget git hooks', () => {
   const bat = fs.readFileSync(path.join(root, 'start-app.bat'));
   assert(bat.includes(Buffer.from('\r\n')), 'start-app.bat must use CRLF');
@@ -99,7 +103,15 @@ test('batch launcher keeps CRLF and does not retarget git hooks', () => {
   assert(!textBat.includes('core.hooksPath'));
   assert(!textBat.includes('npm install'));
 });
+});
 
+// Native cases start powershell.exe and taskkill.exe. On Linux they are
+// skipped, which is not a pass of the Windows scenario. The verify-windows
+// job runs this same file there.
+describe('startup launcher', {
+  concurrency: 1,
+  skip: onWindows ? false : 'native Windows launcher behavior runs only on Windows (verify-windows)',
+}, () => {
 test('refuses a foreign listener without stopping it', async () => {
   const port = await freePort();
   const server = await listen(port, (req, res) => {
@@ -271,6 +283,32 @@ test('a detached preview still answers after the launcher exits', async (t) => {
   t.after(() => { stopPid(pid); removeDir(dir); });
   assert.equal(result.code, 0, result.out);
   assert.match(result.out, /Browser not opened/);
+  const page = await text(port);
+  assert.equal(page.status, 200);
+  assert.equal(page.csp, csp);
+  assert.equal(page.body.includes(marker), true);
+});
+
+test('detached launch survives from a temporary root whose path contains spaces', async (t) => {
+  const port = await freePort();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio launch '));
+  assert.match(dir, / /, 'temporary root must contain a space so the quoted entry path is real');
+  const entry = path.join(dir, 'serve.cjs');
+  assert.match(entry, / /);
+  fs.writeFileSync(entry, `
+    const http = require('node:http');
+    http.createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Security-Policy': ${JSON.stringify(csp)} });
+      res.end('<title>${marker}</title>');
+    }).listen(${port}, '127.0.0.1');
+  `);
+  const result = await runLauncher([
+    '-Port', String(port), '-Root', dir, '-DetachedHidden', '-NoBrowser', '-ReadyTimeoutSec', '8',
+  ]);
+  const pid = launchedPid(result.out);
+  t.after(() => { stopPid(pid); removeDir(dir); });
+  assert.equal(result.code, 0, result.out);
+  assert.ok(pid > 0, result.out);
   const page = await text(port);
   assert.equal(page.status, 200);
   assert.equal(page.csp, csp);

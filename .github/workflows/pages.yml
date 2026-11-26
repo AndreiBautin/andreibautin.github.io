@@ -22,6 +22,16 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           path: dist
+  verify-windows:
+    # The launcher is a Windows application boundary. Run its native behavior
+    # tests on Windows rather than treating Linux source checks as proof.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify static site and native launcher
+        run: npm run verify
   workflow-lint:
     # Audits these workflows for injection, over-broad permissions and
     # unpinned actions; offline, so it needs no token.
@@ -34,7 +44,7 @@ jobs:
         run: pipx run zizmor==1.30.1 --offline .github/
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [verify, workflow-lint]
+    needs: [verify, verify-windows, workflow-lint]
     permissions:
       pages: write
       id-token: write

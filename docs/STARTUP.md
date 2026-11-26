@@ -63,4 +63,38 @@ launcher does not search the port for a pid to kill.
 `start-app.ps1` holds the same behavior for tests. Its extra switches
 (`-Port`, `-Root`, `-ServeEntry`, `-Attached`, `-BrowserSink`,
 `-ReadyTimeoutSec`, `-NodeExe`) are a seam for temporary servers. Normal use
-is `start-app.bat`.
+is `start-app.bat`. Tests invoke that script with `powershell.exe -NoProfile
+-File`. They do not pass `-ExecutionPolicy Bypass` and they do not change the
+machine or user execution policy.
+
+## Where launcher checks run
+
+`scripts/startup.test.cjs` splits the gate on purpose.
+
+The source checks read `start-app.bat` on every operating system. They require
+CRLF, the Node.js download link, `--no-browser`, and the absence of
+`core.hooksPath` and `npm install`. They do not start PowerShell. The existing
+`verify` job on `ubuntu-latest` (`.github/workflows/pages.yml`) runs
+`npm run verify` and therefore runs those checks. A Linux run must not call
+`powershell.exe`.
+
+Native behavior — foreign listeners, identity, reuse, missing Node, timeout,
+detach, and a temporary root whose path contains spaces — runs only when
+`process.platform` is `win32`. Anywhere else those cases are skipped and the
+report says they were skipped. A skip is not a result for the Windows
+scenario. The spaced-root case uses an ephemeral port and `-DetachedHidden`,
+so both the Node executable and server entry path are quoted for the detached
+command. The test waits for the launcher to exit, confirms HTTP readiness,
+then stops only the process id that launch printed and its children.
+
+Root owns a `verify-windows` job in that same workflow. It runs the same
+`npm run verify` on Windows. That job is what actually executes the native
+launcher cases. This file records the boundary. The workflow file itself is
+root-owned and is not edited with the startup tests.
+
+Local acceptance on November 26 replaced the known original preview with
+the hidden detached launcher. A subsequent tool call confirmed HTTP smoke
+and the verified-bundle token endpoint still passed after the launcher exited.
+A second launch reused the same server PID without opening a browser tab.
+Native Chrome retained its fullscreen particle scene. This does not prove
+survival across host shutdown or reboot: no service or scheduled task is installed.
