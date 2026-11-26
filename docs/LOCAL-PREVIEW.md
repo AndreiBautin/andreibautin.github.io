@@ -61,4 +61,7 @@ aid only: the published site is unchanged plain static hosting with no polling.
   server exposes a read-only scalar. It binds `127.0.0.1` on port 4357 as before.
 - `scripts/preview.test.cjs` covers the token, the failed-gate path, the real
   local endpoint and the shipped poll against injected fetch, timers and
-  visibility. Native browser behavior still needs its own acceptance.
+  visibility. Native Chrome acceptance on November 26 confirmed no reload for
+  an unverified edit, automatic reload after the passing gate, and automatic
+  reload after restoring the exact original bundle and passing the gate again.
+  No browser input was sent between those verification steps and observations.

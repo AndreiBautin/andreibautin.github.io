@@ -6,6 +6,14 @@ bring back a large plain-text overlay. The heading remains in the accessibility
 tree, while errors use the existing status and working links. Native refresh
 review remains necessary; the automated gate does not establish appearance.
 
+Native Chrome refresh acceptance on November 26 also exercised the shipped
+local polling protocol. With the page already open, an unverified temporary
+bundle edit suppressed the endpoint token (`204`) and did not reload the page.
+After stamping and the full passing gate, it reloaded automatically without
+browser input. Restoring the exact original bytes and passing the gate caused
+another automatic reload. The temporary edit was removed. This establishes
+desktop refresh behavior, not cross-device rendering quality.
+
 Experience regressions execute real target generation at 42000 points and the
 18000/24000 draw-range prefixes, checking every document quadrant, replication
 lane, annulus sector and complete local orb. `experience-motion.test.cjs` runs

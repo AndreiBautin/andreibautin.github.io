@@ -16,9 +16,12 @@ the HTTP smoke check; TERRA passes its full gate with 357 tests in 71 files.
 PELAGIC main `f4e34b9` passes its full gate with 69 tests in eight files. NACRE
 main `0caa597` passes its full gate with 157 tests in fifteen files, including
 native D3D12 GPU readback. These are integration commits, rather than worker-only
-results. Existing local Vite servers use these original app folders. Browser appearance,
-actual audio and downloaded-file acceptance remain outstanding for the parent
-operator. Preserve the source demos before resuming their game intake.
+results. Existing local Vite servers use these original app folders. Native
+Chrome review subsequently confirmed TERRA's rendered planet, NACRE's running
+WebGPU sculpture and PELAGIC's visible jellyfish, then restored the fullscreen
+portfolio. These are startup checks; full interaction, audio, touch and
+downloaded-file acceptance remain outstanding. Preserve the source demos
+before resuming their game intake.
 
 User direction, November 25: keep working across the portfolio, TERRA, NACRE,
 PELAGIC and THAUMARA with three real native provider CLIs, using existing account
@@ -54,7 +57,7 @@ destinations remain directly available. Existing project forms remain intact.
 
 | App | Required acceptance | Known state at intake |
 | --- | --- | --- |
-| Portfolio | First-session intro; three distinct professional scenes; career/resume and contact in the existing fullscreen interaction model; keyboard/mobile/reduced-motion fallback | Intro, five targets and compact mode controls integrated; source/state tests green; native visual acceptance blocked by browser URL confidence check |
+| Portfolio | First-session intro; three distinct professional scenes; career/resume and contact in the existing fullscreen interaction model; keyboard/mobile/reduced-motion fallback | Intro, five targets and compact mode controls integrated; native Chrome shows the fullscreen particle scene without the plain-name overlay; local verified-bundle automatic refresh observed; full scene/mobile acceptance remains |
 | TERRA | Preserve seeded planet generation, flight/drop, surface/water/weather, tuning and existing saved/shareable state; validate current workflows before changes | Original source unchanged; fresh full gate passed 357 tests in 71 files; native acceptance pending |
 | NACRE | Preserve editable sculpture/archive; finish ten distinct functional material scenes with real simulation, pause/reset and bounded input; verify actual GPU output | Original main includes float32 archive boundary, pointer ownership, single-shot shortcuts, live fullscreen state and disabled simulation controls after GPU failure; full gate passed 157 tests; native touch/visual/device-loss acceptance pending |
 | PELAGIC | Preserve immediate jellyfish and optional living aquarium; validate feeding, schooling, obstacles, capture and visible controls | Original main includes lifecycle-safe optional audio, pointer ownership, keyboard/panel focus and honest capture feedback; full gate passed 69 tests; native appearance, audio, touch and downloaded-file acceptance pending |
@@ -79,8 +82,9 @@ is inferred from a foundation, source snapshot or single visual.
   download request, because a browser cannot confirm a saved file.
 
 These URLs are local previews, not publication. HTTP checks establish served
-content only. No new native browser, speaker, touch or download acceptance is
-claimed by this milestone. The game stays deferred.
+content only. The later native startup and refresh checks above establish only
+those observed behaviors. Speaker, touch and download acceptance remains open.
+The game stays deferred.
 
 ## Ownership for the current portfolio milestone
 
