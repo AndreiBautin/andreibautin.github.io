@@ -19,7 +19,11 @@ body.light{color-scheme:light;--bg:#eaf0ec;--ink:#162a1d;--muted:#536c5c;--accen
 
 .interaction-hint{white-space:pre-line}
 
-.fallback-name{font-weight:500;letter-spacing:-.055em;text-shadow:0 2px 40px var(--bg)}
+.fallback-name{font-weight:500;letter-spacing:-.055em;text-shadow:0 2px 40px var(--bg);opacity:0;transition:none;animation:fallback-reveal 0s 8s forwards}
+@keyframes fallback-reveal{to{opacity:1}}
+.field-ready .fallback-name{animation:none;opacity:0}
+.field-unavailable .fallback-name{animation:none;opacity:1}
+@media(scripting:none){.fallback-name{animation:none;opacity:1}}
 .project-notes article[data-project-note="2"]>img{object-fit:contain;background:#a6adb4}
 /* Short viewports keep one stage; only the active copy can scroll. */
 @media(max-height:640px){.stage-top{display:none}.scene-copy{top:100px;bottom:140px;overflow:auto;overscroll-behavior:contain;pointer-events:auto}.scene-copy h2{font-size:24px;margin-bottom:8px}.scene-eyebrow{margin-bottom:8px}.scene-actions{margin-top:12px}.scene-picker{bottom:55px}.scene-picker button{padding-top:10px}.scene-picker small{display:none}}

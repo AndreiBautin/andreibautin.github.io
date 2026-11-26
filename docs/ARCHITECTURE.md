@@ -38,6 +38,13 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    start with 18,000 points; desktop starts at 42,000, with a bounded quality
    reduction under sustained load. A rendering failure leaves the HTML name
    and controls. No third-party project runs inside the scene.
+   The HTML name starts visually transparent, without an opacity transition,
+   so it cannot flash before the first particle frame. It stays available to
+   assistive technology. A caught startup failure or context loss reveals it
+   immediately through `field-unavailable`; CSS also reveals it after eight
+   seconds if the module never loads. Successful `field-ready` cancels that
+   fallback timer. Browsers supporting `scripting:none` show it immediately
+   when JavaScript is disabled. Project and resume links never wait for graphics.
 5. **`story.js`** optionally mounts **`intro.js`**, whose pure **`intro-state.js`**
    timeline advances through actual captures and scene events without selecting a
    project or changing its URL. The compact overlay lives inside the particle

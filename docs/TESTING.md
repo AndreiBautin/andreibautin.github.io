@@ -1,5 +1,11 @@
 # Testing
 
+The name fallback starts transparent and has no fade-out over the particle
+name. Startup errors and context loss reveal it immediately; a CSS-only
+eight-second deadline also covers a missing module. Native refresh/slow-network
+first-paint review remains necessary; the automated gate does not establish
+frame-by-frame appearance. The heading remains in the accessibility tree.
+
 The `single-screen viewport` group rejects a fixed minimum height on the particle
 stage. Its regression plants a 700px rule and restamps the assets, so only the
 layout invariant fails. Short-height CSS keeps project copy, the intro and the
