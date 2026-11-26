@@ -6,6 +6,14 @@ eight-second deadline also covers a missing module. Native refresh/slow-network
 first-paint review remains necessary; the automated gate does not establish
 frame-by-frame appearance. The heading remains in the accessibility tree.
 
+Experience regressions execute real target generation at 42000 points and the
+18000/24000 draw-range prefixes, checking every document quadrant, replication
+lane, annulus sector and complete local orb. `experience-motion.test.cjs` runs
+the shipped frame function against injected rendering seams: flow waits for the
+morph, changes identity only while faded, leaves the original scenes and stops
+while hidden. A planted descending range proves the GLSL constant-range check
+detects undefined smoothstep usage. This is not shader compilation or visual QA.
+
 The `single-screen viewport` group rejects a fixed minimum height on the particle
 stage. Its regression plants a 700px rule and restamps the assets, so only the
 layout invariant fails. Short-height CSS keeps project copy, the intro and the
@@ -17,7 +25,7 @@ from this static gate.
 
 | Command | Runs | Covers |
 |---|---|---|
-| `npm run verify` | every push, PR, deploy | 20 check groups over the repo (`scripts/checks/`), then `scripts/*.test.cjs` |
+| `npm run verify` | every push, PR, deploy | 21 check groups over the repo (`scripts/checks/`), then `scripts/*.test.cjs` |
 | `scripts/smoke.cjs` | after each deploy | live pages equal this commit's `dist/`, carry the CSP and referrer policy, every linked asset and dynamic import loads |
 | `npm run links` | weekly | outbound links still answer (a lapsed service's subdomain can be claimed) |
 | `scripts/observatory.cjs` | weekly | live Mozilla Observatory grade has not dropped |

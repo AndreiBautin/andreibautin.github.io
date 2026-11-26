@@ -30,14 +30,58 @@ try {
   geometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(Float32Array.from({ length: count }, (_, i) => hash(i, 33)), 1));
   const uniforms = {
     uTime: { value: 0 }, uMorph: { value: 1 }, uPointer: { value: new THREE.Vector2(100, 100) }, uForce: { value: 0 },
-    uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uWork: { value: 0 },
+    uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uWork: { value: 0 }, uFlow: { value: 0 }, uFlowWork: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
       attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
-      uniform float uTime,uMorph,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork;uniform vec2 uPointer;uniform vec3 uWave;
+      uniform float uTime,uMorph,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork;uniform vec2 uPointer;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
+      vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
+      vec4 experienceFlow(float work,vec3 p,float part,float seed,float jt){
+        vec3 d=vec3(0.);float energy=0.;
+        if(work<.5||work>3.5)return vec4(d,0.);
+        float travel=fract(jt*.16+seed*2.7);
+        float gate=smoothstep(0.,.1,travel)*(1.-smoothstep(.82,1.,travel));
+        if(work<1.5){
+          float r=length(p.xy);
+          if(part<.5){
+            if(r<1.45){float ang=jt*(r<.85?.22:.08);d.xy=(turn(ang)*p.xy)-p.xy;energy=.35+.65*clamp(.5+p.z,0.,1.);}
+            else d.z=sin(jt*.5+p.x*1.7)*.016;
+          }else if(part<1.5){
+            vec3 fwd=normalize(-p+vec3(.001,.0004,.0002));
+            d=fwd*travel*.62;energy=gate;
+          }else{
+            float span=length(p);
+            energy=smoothstep(0.,.08,fract(jt*.2+span*.16))*(1.-smoothstep(.06,.34,fract(jt*.2+span*.16)));
+            d=normalize(-p+vec3(.001))*sin(jt*.55+seed*8.)*.02;
+          }
+        }else if(work<2.5){
+          vec2 center=laneCenter(p.y);vec2 rel=p.yz-center;
+          if(part<.5){
+            if(p.x<-2.15){d.yz=(turn(jt*.32)*p.yz)-p.yz;energy=.3+.7*(.5+.5*sin(jt*1.15+p.x*2.4));}
+            else{d.yz=(turn(jt*.4)*rel)-rel;energy=.25+.25*sin(jt*1.1-p.x*.8);}
+          }else if(part<1.5){
+            d.x=travel*.7;d.yz=(turn(travel*6.28318)*rel)-rel;energy=gate;
+          }else if(p.x>3.6){
+            d.yz=(turn(jt*.45)*rel)-rel;energy=.35+.65*abs(sin(atan(rel.y,rel.x)-jt*1.2));
+          }else energy=pow(max(0.,sin(p.x*1.35-jt*1.45)),2.);
+        }else{
+          float clock=atan(p.y,p.x);
+          if(part<.5){
+            float sweep=fract((clock+3.14159)/6.28318-jt*.045);
+            energy=smoothstep(0.,.015,sweep)*(1.-smoothstep(.02,.14,sweep));
+            d.z=sin(jt*.65+clock)*.028;
+          }else if(part<1.5){d.x=travel*.9;energy=gate;}
+          else{
+            vec2 knot=p.xy-vec2(-.82,.04);
+            if(p.z>.28&&length(p.xy)> .85&&length(p.xy)<1.65){d.xy=(turn(-jt*.1)*p.xy)-p.xy;energy=.4+.6*abs(sin(clock-jt*.9));}
+            else{energy=pow(max(0.,sin(atan(knot.y,knot.x)*2.-jt*1.5)),2.);d.xy=normalize(vec2(-knot.y,knot.x)+vec2(.001))*sin(jt*.45+atan(knot.y,knot.x))*.018;}
+          }
+        }
+        return vec4(d,energy);
+      }
       void main(){
         float m=uMorph;vec3 p=mix(aFrom.xyz,aTo.xyz,m);vec3 direction=normalize(vec3(sin(aSeed*125.),cos(aSeed*73.),sin(aSeed*53.)));
         float nt=uTime*uMotion;
@@ -46,20 +90,20 @@ try {
         p.xy=turn(sin(nt*.38)*.025*uNameWeight)*p.xy;
         p.y+=sin(nt*.8)*.18*uNameWeight;
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
-        if(uWork>.5&&part>.5&&part<1.5){
-          float pulse=sin(jt*1.3+aSeed*18.)*uMotion;
-          if(uWork<1.5){p.xy+=normalize(p.xy+vec2(.001))*.14*pulse;}
-          else if(uWork<2.5){p.x+=pulse*.22;}
-          else if(uWork<3.5){p.xy=turn(pulse*.045)*p.xy;}
-          else{p.z+=pulse*.12;}
-        }
+        if(uWork>3.5&&part>.5&&part<1.5)p.z+=sin(jt*1.3+aSeed*18.)*uMotion*.12;
+        vec4 flow=experienceFlow(uFlowWork,p,part,aSeed,jt);
+        float alive=uFlow*uMotion;p+=flow.xyz*alive;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
         float age=uTime-uWave.z;float ring=exp(-pow((length(p.xy-uWave.xy)-age*5.)*1.8,2.))*exp(-max(0.,age)*.8)*step(0.,age)*uMotion;p+=direction*ring*.8;
-        vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*uRatio*16./max(5.,-view.z),1.,5.);
-        vColor=mix(aColorFrom,aColorTo,m)+ring*.2;vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;if(uWork>.5&&part>1.5)vAlpha*=.65+.2*sin(jt*.8+aSeed*12.)*uMotion;
+        vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*(1.+.28*flow.w*alive)*uRatio*16./max(5.,-view.z),1.,5.);
+        float depth=clamp(.76+p.z*.24, .52, 1.22);
+        vColor=mix(aColorFrom,aColorTo,m)*mix(1.,depth,uFlow)+vec3(.2,.38,.18)*flow.w*alive+ring*.2;
+        vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
+        if(uWork>3.5&&part>1.5)vAlpha*=.65+.2*sin(jt*.8+aSeed*12.)*uMotion;
+        if(part>.5&&part<1.5)vAlpha*=mix(1.,flow.w,alive);
       }`,
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
   });
@@ -67,6 +111,10 @@ try {
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
   function render() { renderer.render(scene, camera); }
+  function syncFlow() {
+    const id = active >= 4 && active <= 6 ? active - 3 : 0;
+    uniforms.uFlowWork.value = id; uniforms.uFlow.value = id ? 1 : 0;
+  }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight; camera.aspect = width / Math.max(1, height); camera.position.set(0, 0, camera.aspect < 1 ? 18 : 15); camera.updateProjectionMatrix();
     renderer.setSize(width, height, false); uniforms.uRatio.value = renderer.getPixelRatio(); uniforms.uMobile.value = width < 900 ? 1 : 0;
@@ -82,7 +130,7 @@ try {
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
     active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
-    if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; render(); }
+    if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
     if (document.hidden) { frame = 0; last = null; return; }
@@ -90,6 +138,9 @@ try {
     const follow = 1 - Math.exp(-dt * 4);
     uniforms.uNameWeight.value += ((active === 0 ? 1 : 0) - uniforms.uNameWeight.value) * follow;
     uniforms.uJelly.value += ((active === 3 ? 1 : 0) - uniforms.uJelly.value) * follow;
+    const experience = active >= 4 && active <= 6;
+    if (uniforms.uFlow.value < 0.04 && transitionStart === null) uniforms.uFlowWork.value = experience ? active - 3 : 0;
+    uniforms.uFlow.value += ((experience && transitionStart === null ? 1 : 0) - uniforms.uFlow.value) * follow;
     if (active === 1 || active === 2) uniforms.uSpin.value += dt * .08;
     else uniforms.uSpin.value += (Math.round(uniforms.uSpin.value / (Math.PI * 2)) * Math.PI * 2 - uniforms.uSpin.value) * follow;
     if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / 1.45); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
@@ -100,7 +151,7 @@ try {
     frame = motion.matches ? 0 : requestAnimationFrame(draw);
   }
   function resume() {
-    cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1;
+    cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1; if (motion.matches) syncFlow();
     document.querySelector('.interaction-hint').textContent = motion.matches ? 'Choose a project below' : 'Move to disturb\nClick to send a wave';
     if (motion.matches) { uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);

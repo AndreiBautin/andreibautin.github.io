@@ -28,6 +28,15 @@ useful tasks advance to a concrete remaining requirement, not token-burning work
 
 ## Current portfolio composition
 
+November 26 experience refinement: retrieval has layered document stacks,
+a nucleus and orbit traces; replication has a capped source and four ribbed
+channels; payments has a double-depth annulus, teeth, inset ring and output.
+Scene-specific GPU motion adds inward retrieval pulses, advancing replication
+packets, rolling channels, a payment sweep and output packets, with depth shade
+and eased motion handoffs. Adaptive prefixes preserve all structural bins.
+The source gate and 91 tests pass; browser animation quality remains a native
+acceptance item. See EXPERIENCE-QUALITY.md and EXPERIENCE-MOTION.md.
+
 The original fullscreen particle application is the presentation to extend.
 There is one particle stage, with direct links and a dialog fallback. No scrolling
 marketing, experience or career chapters are added. An interruptible optional
