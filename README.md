@@ -7,6 +7,10 @@ jellyfish. The same dots transform between all four forms. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 
+An optional, interruptible first-session tour cycles actual project captures and
+particle forms inside this same stage. It respects reduced motion and data saving.
+Replay is available explicitly; the homepage remains a single-screen application.
+
 ## Run it
 
 Double-click `start-app.bat` (Node.js required), or `npm run dev`, then open

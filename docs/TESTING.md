@@ -10,6 +10,11 @@
 
 ## What the tests are for
 
+`scripts/intro.test.cjs` checks exact timing, interruption, hidden-tab time,
+session/deep-link/motion/data policy, stale readiness and listener disposal. The
+intro is an optional stage enhancement; no test treats it as a real loading
+progress indicator. Browser review remains responsible for composition and feel.
+
 `scripts/presentation.test.cjs` protects the single-screen composition: the
 homepage contains one particle stage, with experience/contact behind explicit
 controls and a direct resume link. It prevents accidentally appending a scrolling

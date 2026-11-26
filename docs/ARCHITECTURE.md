@@ -38,7 +38,13 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    start with 18,000 points; desktop starts at 42,000, with a bounded quality
    reduction under sustained load. A rendering failure leaves the HTML name
    and controls. No third-party project runs inside the scene.
-5. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
+5. **`story.js`** optionally mounts **`intro.js`**, whose pure **`intro-state.js`**
+   timeline advances through actual captures and scene events without selecting a
+   project or changing its URL. The compact overlay lives inside the particle
+   stage; navigation cancels it before taking effect. The renderer announces late
+   readiness so an active intro can resend its current beat. Module URLs are
+   versioned recursively, so a changed dependency invalidates the page URL.
+6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 
 ## Build-time generators and what pins them

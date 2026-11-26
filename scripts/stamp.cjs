@@ -5,14 +5,24 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { hashOf, STAMPED } = require('./checks.cjs');
+const { moduleLinks, SHIPPED_JS } = require('./checks/shared.cjs');
 function stamp(dist) {
-  const heroPath = path.join(dist, 'hero.js');
-  const originalHero = fs.readFileSync(heroPath, 'utf8');
-  const hero = originalHero.replace(/import\('\.\/([^'?#]+)(?:\?[^']*)?'\)/g, (_, file) => `import('./${file}?v=${hashOf(fs.readFileSync(path.join(dist, file)))}')`);
-  if (hero !== originalHero) {
-    const temporary = heroPath + '.stamp-tmp';
-    fs.writeFileSync(temporary, hero); fs.renameSync(temporary, heroPath);
+  const done = new Set(), visiting = new Set();
+  function versionModule(file) {
+    if (done.has(file) || !file.endsWith('.js')) return;
+    if (visiting.has(file)) throw new Error('Versioned module cycle');
+    visiting.add(file);
+    const target = path.join(dist, file), original = fs.readFileSync(target, 'utf8');
+    const dependencies = moduleLinks(original);
+    for (const dependency of dependencies) versionModule(dependency.file);
+    const versioned = original.replace(/(\bimport\(|\bfrom )(['"])\.\/([^'"?#]+)(?:\?v=[^'"]+)?\2/g, (_, prefix, quote, dependency) => `${prefix}${quote}./${dependency}?v=${hashOf(fs.readFileSync(path.join(dist, dependency)))}${quote}`);
+    if (versioned !== original) {
+      const temporary = target + '.stamp-tmp';
+      fs.writeFileSync(temporary, versioned); fs.renameSync(temporary, target);
+    }
+    visiting.delete(file); done.add(file);
   }
+  for (const file of SHIPPED_JS) versionModule(file);
   let html = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const stamps = STAMPED.map((file) => `./${file}?v=${hashOf(fs.readFileSync(path.join(dist, file)))}`);
   STAMPED.forEach((file, i) => {

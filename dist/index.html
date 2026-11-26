@@ -24,6 +24,7 @@
   <link rel="icon" href="./images/favicon.svg?v=outline-1" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./images/apple-touch-icon.png" />
   <link rel="stylesheet" href="./styles.css?v=b716f67174" />
+  <link rel="stylesheet" href="./intro.css?v=e1a4db024a" />
 </head>
 <body>
   <a class="skip-link" href="#projects">Skip to projects</a>
@@ -31,11 +32,12 @@
   <main id="top">
     <section class="particle-stage" aria-label="Interactive portfolio">
       <canvas class="hero-tech" aria-hidden="true"></canvas>
+      <aside id="portfolio-intro" role="region" aria-label="Portfolio introduction" hidden><div class="intro-copy"><p id="intro-message"></p></div><figure class="intro-preview"><img data-intro-image="terra" src="./images/planet-wide.webp" alt="TERRA terrain and clouds" width="1760" height="608" hidden><img data-intro-image="nacre" src="./images/nacre-ribbon.webp" alt="NACRE liquid ribbon" width="1024" height="1024" hidden><img data-intro-image="pelagic" src="./images/pelagic-thumb.webp" alt="PELAGIC jellyfish" width="1024" height="1024" hidden></figure><p id="intro-caption"></p><button id="skip-intro" type="button">Skip intro</button></aside>
       <h1 class="fallback-name">ANDREI<br>BAUTIN<span>.</span></h1>
       <div class="stage-top"><p>Software engineer<span>Denver, Colorado</span></p><p class="interaction-hint">Move to disturb<br>Click to send a wave</p></div>
       <div class="scene-copy" aria-live="polite"><p class="scene-eyebrow" id="scene-category">Independent work</p><h2 id="scene-title">Andrei Bautin</h2><p id="scene-description">.NET, React, and Azure. Senior software engineer at 3Cloud.</p><div class="scene-actions"><a id="scene-launch" href="./Andrei_Bautin_Resume.pdf">View resume</a><button id="scene-details" data-open="about">About me</button></div></div>
       <nav id="projects" class="scene-picker" aria-label="Explore projects" tabindex="-1"><button data-scene="0" aria-pressed="true"><span>INDEX</span><small>Andrei Bautin</small></button><button data-scene="1" aria-pressed="false"><span>TERRA</span><small>Planet explorer</small></button><button data-scene="2" aria-pressed="false"><span>NACRE</span><small>Liquid sculpture</small></button><button data-scene="3" aria-pressed="false"><span>PELAGIC</span><small>Ocean life</small></button></nav>
-      <div class="field-footer"><span id="field-status">Interactive graphics, in the browser.</span><a href="mailto:andreibautin94@gmail.com">Get in touch</a></div>
+      <div class="field-footer"><span id="field-status">Interactive graphics, in the browser.</span><button id="replay-intro" type="button" hidden>Replay intro</button><a href="mailto:andreibautin94@gmail.com">Get in touch</a></div>
     </section>
     <dialog id="about" aria-labelledby="about-title"><div class="dialog-top"><h2 id="about-title">Andrei Bautin</h2><button data-close aria-label="Close experience">Close</button></div><p class="about-intro">Senior software engineer working with .NET, React, and Azure.</p><div id="stack-strip" aria-label="Core technologies"></div>
     <section id="work" class="wrap work-section" aria-labelledby="work-title">
@@ -49,6 +51,7 @@
     <noscript><section class="static-projects"><h2>Projects</h2><p><a href="https://andreibautin.github.io/planet-generator/">TERRA | Procedural Planet Explorer</a></p><p><a href="https://liquid-sculpture-studio.andreibautin94.chatgpt.site/">NACRE | Liquid Sculpture Studio</a></p><p><a href="https://pelagic.andreibautin94.chatgpt.site/">PELAGIC | Interactive Ocean Life</a></p><a href="./Andrei_Bautin_Resume.pdf">Resume and experience</a></section></noscript>
   </main>
   <script src="./script.js?v=116e4442c8" defer></script>
-  <script type="module" src="./hero.js?v=ec9d09083a"></script>
+  <script type="module" src="./hero.js?v=53c013dfae"></script>
+  <script type="module" src="./story.js?v=3d8cf31bd4"></script>
 </body>
 </html>
