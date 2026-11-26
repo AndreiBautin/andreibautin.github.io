@@ -95,6 +95,17 @@ test('career/contact routes use their distinct scenes and reject malformed mode 
   assert.equal(f.scenes.length, before);
   f.mode(null); assert.equal(f.scenes.at(-1), 0);
 });
+test('modified resume clicks keep the native PDF destination without changing the active scene', () => {
+  for (const flags of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }, { defaultPrevented: true }]) {
+    const f = fixture(); f.ready(); f.buttons[2].emit('click');
+    const before = f.scenes.length;
+    let prevented = false;
+    f.resume.dispatchEvent({ type: 'click', ...flags, preventDefault() { prevented = true; } });
+    assert.equal(prevented, false);
+    assert.equal(f.scenes.length, before);
+    assert.equal(f.location.hash, '#nacre');
+  }
+});
 
 test('explicit professional destinations survive delayed mounting without URL changes', () => {
   for (const [hash, index] of [['#work-payments', 6], ['#experience', 4], ['#career', 7], ['#contact', 8]]) {

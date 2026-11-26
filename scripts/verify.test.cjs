@@ -39,6 +39,10 @@ const edit = (root, rel, change) => {
 const failing = (root) => run(root).filter((r) => r.error).map((r) => r.name);
 
 const defects = {
+  'single-screen viewport': (root) => {
+    edit(root, 'dist/styles.css', s => s + '.particle-stage{min-height:700px}\n');
+    edit(root, 'dist/index.html', s => s); stamp(path.join(root, 'dist'));
+  },
   'particle boundary': ['particle-shapes.js', 'work-shapes.js'].map(file => (root) => {
     edit(root, 'dist/' + file, (s) => s + 'void document;\n');
     edit(root, 'dist/index.html', (s) => s); stamp(path.join(root, 'dist'));

@@ -13,6 +13,15 @@ const TEXT = /\.(c?js|css|html|md|ya?ml|json|py|bat|svg)$|^\.githooks\/|^\.git(a
 const scripts = (root) => walk(root, '', SKIP).filter((f) => /\.c?js$/.test(f));
 
 module.exports = [
+  ['single-screen viewport', (c) => {
+    const css = c.read('dist/styles.css');
+    const rules = [...css.matchAll(/\.particle-stage\s*\{([^}]*)\}/g)].map(match => match[1]);
+    assert(rules.some(rule => /(?:^|;)\s*height\s*:\s*100svh\s*(?:;|$)/.test(rule)), 'The stage must fit the visible viewport');
+    for (const rule of rules) {
+      for (const match of rule.matchAll(/(?:^|;)\s*min-height\s*:\s*([^;]+)/g))
+        assert(/^0(?:px)?$/.test(match[1].trim()), 'A fixed minimum stage height forces page scrolling on short screens');
+    }
+  }],
   ['particle boundary', (c) => {
     for (const file of ['particle-shapes.js', 'work-shapes.js']) {
       const source = c.read('dist/' + file);

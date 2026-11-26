@@ -1,5 +1,14 @@
 # Testing
 
+The `single-screen viewport` group rejects a fixed minimum height on the particle
+stage. Its regression plants a 700px rule and restamps the assets, so only the
+layout invariant fails. Short-height CSS keeps project copy, the intro and the
+professional HUD in their existing overlay regions. These checks establish the
+source constraint, not computed browser layout: native checks at small-phone and
+short-landscape sizes remain outstanding, including keyboard access to locally
+scrolling copy and intro Skip. No screenshot or visual-perfection claim follows
+from this static gate.
+
 | Command | Runs | Covers |
 |---|---|---|
 | `npm run verify` | every push, PR, deploy | 20 check groups over the repo (`scripts/checks/`), then `scripts/*.test.cjs` |

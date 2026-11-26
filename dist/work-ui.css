@@ -60,3 +60,5 @@ body.work-view .scene-copy,body.work-view .scene-picker{display:none}
   .work-tab{padding-top:11px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.work-tab{transition:none}}
+@media(max-height:640px){.work-hud{top:100px;bottom:118px;max-height:none}.work-tabs{bottom:54px}}
+@media(max-width:600px) and (max-height:640px){.work-hud{top:84px;bottom:108px}.work-tabs{bottom:54px}}

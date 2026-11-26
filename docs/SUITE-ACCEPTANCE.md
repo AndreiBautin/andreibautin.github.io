@@ -1,5 +1,22 @@
 # Five-app acceptance queue
 
+## Resumed priority: November 26
+
+The user explicitly prioritized the portfolio and standalone demo apps over the
+game. Codex owns the portfolio's short-viewport and navigation corrections;
+Claude is fixing standalone PELAGIC audio lifecycle; Grok is fixing standalone
+NACRE float32 archive/GPU-boundary round trips. Each demo worker uses its own
+isolated checkout and real native CLI. THAUMARA queues remain stopped and their
+completed work preserved. The active demo coordinator and receipts live under
+the November 26 suite-demo-workers control directory outside Git.
+
+Current local evidence: the portfolio passes 21 check groups and their tests plus
+the HTTP smoke check; TERRA passes its full gate with 357 tests in 71 files.
+NACRE and PELAGIC changes require reviewed worker receipts and each original
+app's full gate before integration is reported complete. Browser appearance,
+actual audio and downloaded-file acceptance remain outstanding for the parent
+operator. Preserve the source demos before resuming their game intake.
+
 User direction, November 25: keep working across the portfolio, TERRA, NACRE,
 PELAGIC and THAUMARA with three real native provider CLIs, using existing account
 allowances only. No token purchases, billing/auth changes or public publication.

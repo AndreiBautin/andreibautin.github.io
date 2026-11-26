@@ -60,6 +60,7 @@ addEventListener('portfolio:mode', event => {
 });
 addEventListener('portfolio:graphics-ready', () => { if (workMode !== null) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(workMode) } })); });
 document.querySelector('[data-resume]').addEventListener('click', event => {
+  if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   if (!document.body.classList.contains('work-ui-ready')) return;
   event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));
 });
