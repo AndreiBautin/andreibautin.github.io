@@ -13,9 +13,14 @@ Replay is available explicitly; the homepage remains a single-screen application
 
 ## Run it
 
-Double-click `start-app.bat` (Node.js required), or `npm run dev`, then open
-http://127.0.0.1:4357. `npm run verify` is the gate; after cloning, run
-`git config core.hooksPath .githooks` so it also gates every push.
+Double-click `start-app.bat` (Node.js 20 or newer). It starts the preview,
+waits until http://127.0.0.1:4357 serves this portfolio, and opens that
+address once. `start-app.bat --no-browser` does the same without a browser
+or a pause, for an operator that will refresh the page itself. Details are
+in [startup](docs/STARTUP.md). `npm run dev` still serves the same port.
+`npm run verify` is the gate; after cloning, run
+`git config core.hooksPath .githooks` so it also gates every push. The
+launcher does not change that Git setting.
 
 ## The idea
 

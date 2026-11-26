@@ -1,13 +1,19 @@
 @echo off
+setlocal
 cd /d "%~dp0"
+set "EXTRA="
+if /I "%~1"=="--no-browser" set "EXTRA=-NoBrowser"
 where node >nul 2>nul
 if errorlevel 1 (
-  echo Install Node.js from https://nodejs.org
-  pause
-  exit /b 1
+  echo [ERROR] Node.js was not found on PATH. Install Node.js 20 or newer from https://nodejs.org
+  if /I not "%~1"=="--no-browser" pause
+  exit /b 2
 )
-rem Gate pushes on verify in this clone (see .githooks/pre-push); only when
-rem git is installed and the clone has not chosen its own hooks path.
-where git >nul 2>nul && (git config core.hooksPath >nul 2>nul || git config core.hooksPath .githooks)
-node serve.cjs
-pause
+powershell.exe -NoProfile -File "%~dp0start-app.ps1" %EXTRA%
+set "CODE=%ERRORLEVEL%"
+if not "%CODE%"=="0" (
+  if /I not "%~1"=="--no-browser" pause
+  exit /b %CODE%
+)
+if /I not "%~1"=="--no-browser" ping -n 6 127.0.0.1 >nul
+exit /b 0
