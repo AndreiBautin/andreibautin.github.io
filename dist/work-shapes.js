@@ -297,8 +297,20 @@ function career(band, k, n, h, g) {
       color: tone(CYAN, 1 - h),
     };
   }
-  const t = (k + 0.5) / n;
-  return { at: [-3.5 + t * 6.7, -2.35 + t * 0.25, 0], color: tone(FAINT, h) };
+  // Short orbital trails: one tilted comet arc per milestone, centred on its
+  // node so the renderer can spin them about NODES[node] without a baseline.
+  const tilt = 0.85 + node * 0.28;
+  const ang = TAU * (0.6 + node * 0.23) + u * 1.25;
+  const radius = 0.8 + node * 0.03 + (h - 0.5) * 0.05 * (1 - u);
+  const cos = Math.cos(ang) * radius, sin = Math.sin(ang) * radius;
+  return {
+    at: [
+      NODES[node][0] + cos,
+      NODES[node][1] + sin * Math.cos(tilt),
+      NODES[node][2] + sin * Math.sin(tilt),
+    ],
+    color: tone(CYAN, g),
+  };
 }
 
 function contact(band, k, n, h, g) {

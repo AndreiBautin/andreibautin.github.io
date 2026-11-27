@@ -166,6 +166,17 @@ test('professional scenes and Escape preserve the selected project', () => {
   assert.equal(f.buttons[1].getAttribute('aria-pressed'), 'true');
 });
 
+test('professional Home intent and project Home action restore the welcome and its focus', () => {
+  const f = fixture(); f.ready(); f.resume.emit('click');
+  f.win.dispatchEvent({ type: 'portfolio:mode', detail: { mode: null, destination: 'home' } });
+  assert.equal(f.scenes.at(-1), 0); assert.equal(f.location.hash, '');
+  assert.equal(f.ids.get('welcome-sections').hidden, false);
+  assert.equal(f.document.activeElement, f.ids.get('welcome-resume'));
+  f.buttons[2].emit('click'); f.ids.get('scene-home').emit('click');
+  assert.equal(f.scenes.at(-1), 0);
+  assert.equal(f.document.activeElement, f.ids.get('welcome-resume'));
+});
+
 test('career/contact routes use their distinct scenes and reject malformed mode requests', () => {
   const f = fixture(); f.ready(); let prevented = false;
   f.resume.dispatchEvent({ type: 'click', preventDefault() { prevented = true; } });

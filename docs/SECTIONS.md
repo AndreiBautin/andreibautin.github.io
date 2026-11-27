@@ -1,9 +1,9 @@
 # Sections
 
 The page is one fullscreen particle stage. A clean URL holds the welcome name
-and its three choices; no section is selected automatically. The header orders
+and its three choices; no section is selected automatically. The section order is
 Resume, Experience, Projects and Contact, with number keys 1-4 in the same order.
-The home mark returns to the name and stays there.
+Header tabs stay hidden. In-stage Home actions return to the name and stay there.
 
 | Section | Enhanced view | Fallback |
 | --- | --- | --- |
@@ -39,7 +39,8 @@ Only Experience shows the three professional tabs, with ArrowLeft/ArrowRight,
 Home and End for roving focus. Resume and Contact are named regions, not extra
 Experience tabs. Each professional piece keeps Problem/My contribution/Outcome;
 Resume keeps its career milestones and PDF; Contact keeps clipboard feedback.
-Back or Escape returns to the previously selected project. Manual transitions
+Home returns to the welcome and focuses its Resume choice. Escape returns to the
+previously selected project (TERRA initially). Manual transitions
 retain the existing 1.45-second morph, or an immediate settled form with reduced
 motion. Focus follows explicit navigation, not idle time.
 

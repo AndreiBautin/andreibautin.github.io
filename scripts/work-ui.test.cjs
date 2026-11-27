@@ -68,8 +68,9 @@ function fixture({ clipboard = 'resolve', selection = true } = {}) {
   const stage = h('section', { class: 'particle-stage' });
   const panel = h('div', { id: 'work-panel' }); panel.hidden = true;
   const picker = h('nav', { id: 'projects', tabindex: '-1' });
+  const homeChoice = h('a', { id: 'welcome-resume', href: './Andrei_Bautin_Resume.pdf' });
   const header = h('button', { 'data-open': 'about' });
-  stage.append(panel, picker); body.append(header, stage);
+  stage.append(panel, picker, homeChoice); body.append(header, stage);
   doc.body = body;
   doc.querySelector = (sel) => body.querySelector(sel);
   doc.activeElement = body;
@@ -92,7 +93,7 @@ function fixture({ clipboard = 'resolve', selection = true } = {}) {
   const byClass = (cls) => find((e) => e.classList.contains(cls));
   const view = (mode) => find((e) => e.getAttribute('data-work-mode') === mode && e.tagName === 'SECTION')[0];
   const tab = (mode) => find((e) => e.id === `work-ui-tab-${mode}`)[0];
-  return { win, doc, body, panel, picker, header, send, seen, find, byClass, view, tab, pending, writes, ranges };
+  return { homeChoice, win, doc, body, panel, picker, header, send, seen, find, byClass, view, tab, pending, writes, ranges };
 }
 const flush = () => new Promise((r) => setImmediate(r));
 const MODES = ['knowledge', 'replication', 'payments', 'career', 'contact'];
@@ -234,17 +235,17 @@ test('the main page stays authoritative: a vetoed request changes nothing', () =
   dispose();
 });
 
-test('back button and Escape return to projects and focus the project picker', () => {
+test('Home returns to the welcome choice while Escape retains the project return', () => {
   const f = fixture();
   const { dispose } = ui.mountWorkUI(f.doc);
   f.send('replication');
   const back = f.byClass('work-back')[0];
-  assert.match(back.textContent, /Back to projects/);
+  assert.equal(back.textContent, 'Home');
   back.focus();
   back.fire('click');
   assert.equal(f.seen.at(-1), null);
   assert.equal(f.panel.hidden, true);
-  assert.equal(f.doc.activeElement, f.picker);
+  assert.equal(f.doc.activeElement, f.homeChoice);
   f.send('payments');
   f.tab('payments').focus();
   const esc = f.panel.fire('keydown', { key: 'Escape' });

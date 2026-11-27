@@ -17,7 +17,7 @@ Professional details use unboxed captions; resume milestones show compact dates
 with full descriptive accessible labels. The selected caption retains the degree,
 employer or certification facts and the approved PDF remains available.
 Home has no top branding, role/location label, theme toggle or duplicate menu.
-Other sections retain a quiet Home link and the section menu. A saved theme
+Other sections retain quiet in-stage Home actions; header menus stay hidden. A saved theme
 preference still loads without requiring a visible theme control.
 
 ## Project field notes
@@ -28,8 +28,9 @@ renderer pause. Its Overview, Under the hood and Preview buttons expose one
 content block at a time. Launch/source links and the bottom picker stay usable.
 Changing projects keeps the notes open, selects the new article and starts at
 Overview. Back to project or Escape closes the notes and focuses How it works;
-Home or a professional destination closes them. The professional Back to
-projects action returns to the last demo, or TERRA if none was selected.
+Home or a professional destination closes them. The professional Home action
+returns to the welcome and focuses its Resume choice. Escape retains the
+last-demo return (TERRA initially).
 
 `dist/index.html` retains the actual descriptions and captures; no facts are
 generated. The panel needs only the classic UI script, so it works if graphics
@@ -67,6 +68,16 @@ still renders on demand. Controls appear only after successful graphics startup
 and disappear on context loss. Manual rotation and text navigation are independent.
 Professional Problem / My contribution / Outcome choices reveal the selected
 account in place; the reveal animation is disabled for reduced motion.
+
+## Resume motion
+
+The four career nodes retain their geometry coordinates. `work-shapes.js` replaces
+the former straight baseline with short tilted orbital trails. In `hero.js`,
+flow identity 4 spins the node rings, bobs their centers, sends light pulses along
+the curved journey and gently rocks the assembly. It fades in only after the
+scene morph settles and uses the existing paused/reduced-motion frame lifecycle.
+Selecting a resume milestone updates `portfolio:career-step` and emphasizes that
+node's pulse without navigating or advancing the story automatically.
 
 ## Evidence and limits
 

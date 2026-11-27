@@ -25,6 +25,9 @@
   captions unboxed and resume milestones compact; models are the visual focus.
 - All particle models, including the Home name, support right-drag and wheel
   inspection. Home has no header branding, role/location label or theme toggle;
-  retain bottom section choices. Other sections keep Home, header links and Contact.
+  retain bottom section choices. Keep header tabs hidden in every section; use
+  in-stage Home actions and the section controls instead. Contact remains in panels.
 - Avoid persistent interaction instructions and footer contact shortcuts. Model
   controls reveal only on keyboard focus; right-drag and wheel remain active.
+- Resume has no decorative baseline. Career nodes/rings/trails move in the gated
+  professional shader flow, pause when hidden and settle with reduced motion.

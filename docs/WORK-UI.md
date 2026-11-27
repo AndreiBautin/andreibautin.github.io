@@ -24,7 +24,9 @@ to the main page (`dist/script.js`, `dist/hero.js`); this module draws no canvas
 
 `window` CustomEvent `portfolio:mode`, `detail: { mode }`, where mode is
 `knowledge`, `replication`, `payments`, `career`, `contact` or `null`
-(projects). These events are authoritative. On each valid event the module
+(no professional panel). `destination:home` on a null request asks the page to
+restore Home and focus its Resume choice; other null requests return to projects.
+These events are authoritative. On each valid event the module
 synchronously sets `#work-panel.hidden`, `data-work-mode`, `body.work-view`,
 each view's `hidden` and each tab's `aria-selected`/`tabindex`. Invalid
 details are ignored; re-dispatching the current mode is a no-op.
@@ -40,7 +42,7 @@ responsive sizing as Projects. `work-ui.css` hides only the personal picker
 while professional views are open. Back to projects and Escape restore the last
 selected demo, or TERRA if none was selected, before focusing its picker.
 
-Controls (tabs, Back to projects, Escape inside the panel, the in-panel
+Controls (tabs, Home, Escape inside the panel, the in-panel
 Contact buttons) only *request* navigation by dispatching the same event; the
 module shows what the event says, so a main listener that redirects wins.
 

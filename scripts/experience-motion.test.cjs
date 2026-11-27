@@ -69,6 +69,18 @@ test('hidden frames do not advance flow time or identity', () => {
   assert.equal(state.uniforms.uFlowWork.value, 0);
 });
 
+test('Resume joins the gated flow loop and pauses with hidden frames', () => {
+  const run = frames(), state = run.context; state.active = 7;
+  run.tick(200);
+  assert.equal(state.uniforms.uFlowWork.value, 4);
+  assert(state.uniforms.uFlow.value > .99);
+  const before = state.time; state.document.hidden = true; run.tick(100);
+  assert.equal(state.time, before);
+  state.document.hidden = false; state.active = 8; state.transitionStart = state.time;
+  run.tick(200); assert.equal(state.uniforms.uFlowWork.value, 0);
+  assert(state.uniforms.uFlow.value < .001);
+});
+
 test('welcome particles form once and remain on the name through prolonged idle time', () => {
   const run = frames(); run.context.active = 0; run.context.transitionStart = null;
   run.tick(20); assert(run.context.uniforms.uArrival.value > 0 && run.context.uniforms.uArrival.value < 1);

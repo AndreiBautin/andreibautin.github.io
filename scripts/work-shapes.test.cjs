@@ -251,3 +251,54 @@ test('low and extreme counts allocate deterministically and paint every particle
   assert.deepEqual(tags(shapes.createWorkShapes(1)[0], 1), [1, 0, 0]);
   for (const seed of [-2147483648, -1, 0, 2147483647, Number.MAX_SAFE_INTEGER]) assert.doesNotThrow(() => shapes.createWorkShapes(64, seed));
 });
+
+// The Resume scene once ended in a straight decorative baseline across the
+// bottom of the stage. Every career particle must now belong to a milestone
+// (node, rings, orbital trail) or to the curved journey between milestones.
+function journey(t) {
+  const seg = Math.min(2, Math.floor(Math.min(t, 0.999999) * 3));
+  const u = Math.min(t, 0.999999) * 3 - seg, w = 1 - u;
+  const a = NODES[seg], c = NODES[seg + 1];
+  const b = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2 + 0.38, (a[2] + c[2]) / 2];
+  return [0, 1, 2].map((d) => w * w * a[d] + 2 * w * u * b[d] + u * u * c[d]);
+}
+const JOURNEY = Array.from({ length: 900 }, (_, i) => journey((i + 0.5) / 900));
+
+test('the Resume scene has no isolated straight baseline: every particle is node-centred or on the journey', () => {
+  const career = full()[3];
+  const stray = [];
+  let bottom = 0;
+  each(career, DESKTOP, (x, y, z) => {
+    if (y < -2.3 && x > -2.4) bottom++;
+    const nearNode = NODES.some((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 1.0);
+    const nearPath = JOURNEY.some((p) => Math.hypot(x - p[0], y - p[1], z - p[2]) < 0.1);
+    if (!nearNode && !nearPath && stray.length < 5) stray.push([x, y, z].map((v) => v.toFixed(2)).join(','));
+  });
+  assert.equal(bottom, 0, 'particles strung along the bottom of the stage');
+  assert.deepEqual(stray, []);
+});
+
+test('each Resume milestone carries its own short connection trail that survives quality prefixes', () => {
+  const career = full()[3];
+  // Connection-tagged particles outside the journey tube, binned by nearest node.
+  const trail = (limit) => bins(career, limit, 4, (x, y, z, t) => {
+    if (t !== 2 || JOURNEY.some((p) => Math.hypot(x - p[0], y - p[1], z - p[2]) < 0.1)) return -1;
+    return NODES.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 1.0);
+  });
+  for (const limit of [...PREFIXES, DESKTOP]) {
+    const counts = trail(limit);
+    assert(balanced(counts), `prefix ${limit}: ${counts}`);
+    // A trail is a short arc, not a full ring hiding the node.
+    assert(counts.reduce((s, v) => s + v, 0) > limit * 0.04, `prefix ${limit} trails too thin`);
+  }
+  // Trails are tilted out of the screen plane so they read as dimensional orbits.
+  NODES.forEach((n, i) => {
+    let zLo = Infinity, zHi = -Infinity;
+    each(career, DESKTOP, (x, y, z, t) => {
+      if (t !== 2 || Math.hypot(x - n[0], y - n[1], z - n[2]) > 1.0) return;
+      if (JOURNEY.some((p) => Math.hypot(x - p[0], y - p[1], z - p[2]) < 0.1)) return;
+      zLo = Math.min(zLo, z - n[2]); zHi = Math.max(zHi, z - n[2]);
+    });
+    assert(zHi - zLo > 0.2, `node ${i} trail is flat`);
+  });
+});

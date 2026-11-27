@@ -93,9 +93,9 @@ function select(index, updateUrl = true) {
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index } }));
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
-document.querySelector('[data-home]').addEventListener('click', event => {
+for (const control of [document.querySelector('[data-home]'), document.getElementById('scene-home')]) control.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-  event.preventDefault(); select(0);
+  event.preventDefault(); select(0); document.getElementById('welcome-resume').focus({ preventScroll: true });
 });
 for (const link of [document.querySelector('[data-projects]'), document.getElementById('welcome-projects')]) link?.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
@@ -163,7 +163,11 @@ addEventListener('portfolio:work-ready', () => {
 });
 addEventListener('portfolio:mode', event => {
   const mode = event.detail?.mode;
-  if (mode === null) { if (workMode !== null) select(currentProject || 1); return; }
+  if (mode === null) {
+    if (event.detail?.destination === 'home') { select(0); document.getElementById('welcome-resume').focus({ preventScroll: true }); }
+    else if (workMode !== null) select(currentProject || 1);
+    return;
+  }
   if (!workModes.includes(mode)) return;
   if (document.getElementById('about').open) document.getElementById('about').close();
   closeProjectDetails();

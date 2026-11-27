@@ -65,6 +65,11 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    and applies bounded manual inspection in the shader before stage positioning.
    Text stays upright and native turn/reset buttons remain keyboard accessible.
    See [Interactive details](INTERACTIVE-DETAILS.md) for event/fallback behavior.
+   Header tabs remain hidden throughout. Professional panels request
+   `portfolio:mode` with `mode:null,destination:home`; the classic script restores
+   the welcome and focuses its first section choice. Projects expose an in-stage
+   Home action. Resume uses flow identity 4 for orbiting rings, bobbing milestones
+   and traveling light along the curved journey; no straight baseline remains.
 
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.

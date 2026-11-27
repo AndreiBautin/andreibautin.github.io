@@ -149,7 +149,7 @@ export function mountWorkUI(root = document) {
   const navigate = (next, focusTarget) => {
     if (disposed || !validMode(next)) return;
     request = { mode: next, focus: focusTarget };
-    try { view.dispatchEvent(new view.CustomEvent('portfolio:mode', { detail: { mode: next } })); } finally { request = null; }
+    try { view.dispatchEvent(new view.CustomEvent('portfolio:mode', { detail: { mode: next, destination: focusTarget === 'home' ? 'home' : undefined } })); } finally { request = null; }
   };
 
   // A row of role=tab buttons with roving tabindex. activate(index, viaKey).
@@ -206,8 +206,8 @@ export function mountWorkUI(root = document) {
   const views = {};
   const hud = el('div', 'work-hud');
   const head = el('div', 'work-head');
-  const back = attrs(el('button', 'work-back', '← Back to projects'), { type: 'button' });
-  s.on(back, 'click', () => navigate(null, 'projects'));
+  const back = attrs(el('button', 'work-back', 'Home'), { type: 'button' });
+  s.on(back, 'click', () => navigate(null, 'home'));
   head.append(back);
   hud.append(head);
 
@@ -228,7 +228,11 @@ export function mountWorkUI(root = document) {
     } else if (key === 'career') {
       const sw = switcher(id, 'Career milestones', data.milestones, {
         label(button, [when, what]) { button.setAttribute('aria-label', `${when}: ${what}`); button.append(el('span', 'work-when', when)); },
-        detail(node, [, what, text]) { node.textContent = ''; node.append(el('strong', 'work-detail-title', what), el('p', null, text)); },
+        detail(node, item) {
+          const [, what, text] = item;
+          node.textContent = ''; node.append(el('strong', 'work-detail-title', what), el('p', null, text));
+          view.dispatchEvent(new view.CustomEvent('portfolio:career-step', { detail: { index: data.milestones.indexOf(item) } }));
+        },
       });
       section.append(sw.wrap, actions([attrs(link('work-link work-primary', RESUME, 'Download resume (PDF)'), { type: 'application/pdf' }), contactButton()]));
     } else {
@@ -307,7 +311,8 @@ export function mountWorkUI(root = document) {
     markTabs(tabButtons, EXPERIENCE.indexOf(next));
     if (next === null) {
       if (tabButtons.every((b) => b.getAttribute('tabindex') === '-1')) tabButtons[0].setAttribute('tabindex', '0');
-      if (previous !== null && (source === 'projects' || focusWasInside)) focus(doc.querySelector('#projects'));
+      if (previous !== null && source === 'home') focus(doc.querySelector('#welcome-resume'));
+      else if (previous !== null && (source === 'projects' || focusWasInside)) focus(doc.querySelector('#projects'));
       return;
     }
     if (previous === next) return;
