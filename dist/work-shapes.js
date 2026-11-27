@@ -63,6 +63,11 @@ function tone(base, vary) {
   return [base[0] * scale, base[1] * scale, base[2] * scale];
 }
 
+function surfaceTone(base, point, vary, gain = 1) {
+  const light = 0.35 + 0.65 * Math.max(0, (point[0] * 0.4 + point[1] * 0.6 + point[2] * 0.7) / Math.hypot(...point));
+  return tone(base, vary).map(value => value * light * gain);
+}
+
 function quad(a, b, c, t) {
   const u = 1 - t;
   return [
@@ -109,8 +114,7 @@ function sheet(frame, k, n) {
   return framePoint(frame, u, v);
 }
 
-// Page faces, stepped edges and inset text rows share the same tilted frame.
-// These are solid objects in depth rather than a flat scatter of points.
+// Page faces, edges and text rows share one tilted frame.
 function documentPoint(frame, k, n, h, g) {
   const p = sheet(frame, k, n);
   const layer = Math.floor(h * 5);
@@ -174,7 +178,7 @@ function knowledge(band, k, n, h, g) {
     const a = TAU * (k + 0.5) / n * 7;
     const core = fibonacci(k, n, 0.58 + Math.sin(g * TAU) * 0.035, 0.4);
     const halo = [Math.cos(a) * 1.08, Math.sin(a) * 0.76, Math.sin(a) * 0.67];
-    return { at: orbit ? halo : core, color: tone(orbit ? CYAN : GOLD, h) };
+    return { at: orbit ? halo : core, color: orbit ? tone(CYAN, h) : surfaceTone(GOLD, core, h) };
   }
   if (band === 1) {
     const [bin, u] = slot(k, n, 4);
@@ -266,8 +270,7 @@ function career(band, k, n, h, g) {
   const [node, u] = slot(k, n, 4);
   if (band === 0) {
     const ball = localSphere(k, n, 4, 0.34 + node * 0.035, h);
-    const light = 0.35 + 0.65 * Math.max(0, (ball[0] * 0.4 + ball[1] * 0.6 + ball[2] * 0.7) / (0.34 + node * 0.035));
-    return { at: add(NODES[node], ball), color: tone(node === 3 ? GOLD : SAGE, g).map(value => value * light * (node === 3 ? 1.1 : 1.5)) };
+    return { at: add(NODES[node], ball), color: surfaceTone(node === 3 ? GOLD : SAGE, ball, g, node === 3 ? 1.1 : 1.5) };
   }
   if (band === 1) {
     const ang = TAU * u + h;

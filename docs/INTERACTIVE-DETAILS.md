@@ -86,6 +86,14 @@ Selected milestones receive a restrained light sweep rather than a broad white
 boost. Exposure follows the existing flow fade and stays consistent in reduced
 motion; it does not alter the project models or their palette.
 
+The RAG scene shares that restrained particle footprint and opacity. Its gold
+core has local directional shading and a lower energy floor, so it remains
+separate from the cyan orbits and document surfaces. Packet travel and connection
+pulses retain their existing motion and timing. Resume's tuning is unchanged.
+Both scenes share `surfaceTone` for local shading. The rendering addition stays
+within the existing compressed visual budget, with no new dependency or request.
+Other scene exposure remains unchanged.
+
 ## Contact and presentation scale
 
 The content subheader carries a thin back arrow with a 44px hit area, an accessible

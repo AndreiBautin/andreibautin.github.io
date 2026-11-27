@@ -119,6 +119,29 @@ const TAU = Math.PI * 2;
 const NODES = [[-3.1, -1.82, 0.32], [-1.05, -0.55, -0.8], [1.15, 0.72, 0.9], [3.15, 1.78, -0.22]];
 const DEST = [[-3.15, 1.2, 0.72], [3.25, 1.02, -0.58], [0.15, -2.05, 0.9]];
 
+test('RAG core keeps shaded gold faces separate from its cyan halo', () => {
+  for (const count of [18000, 42000]) {
+    const shape = shapes.createWorkShapes(count)[0], faces = [[], []];
+    let halo = 0;
+    for (let i = 0; i < count; i++) {
+      if (shape.positions[i * 4 + 3] !== 0) continue;
+      const p = Array.from(shape.positions.subarray(i * 4, i * 4 + 3)), radius = Math.hypot(...p);
+      const color = Array.from(shape.colors.subarray(i * 3, i * 3 + 3));
+      if (radius < 0.7) {
+        assert(accent(color), 'shadow must retain the gold hue');
+        const facing = (p[0] * 0.4 + p[1] * 0.6 + p[2] * 0.7) / radius;
+        if (Math.abs(facing) > 0.6) faces[facing > 0 ? 1 : 0].push(color[1]);
+      } else if (radius > 0.9 && radius < 1.2) {
+        halo++; assert(color[2] > color[0] * 2 && color[1] > 0.5, 'halo stays cyan');
+      }
+    }
+    assert(halo > 100); faces.forEach(face => assert(face.length > 100));
+    const mean = values => values.reduce((sum, value) => sum + value, 0) / values.length;
+    assert(mean(faces[1]) > mean(faces[0]) * 2, 'core must have a light and shadow side');
+    assert(mean(faces[0]) > 0.15, 'shadow must stay visible');
+  }
+});
+
 test('Resume nodes keep lit and shadowed faces at phone and desktop populations', () => {
   for (const count of [18000, 42000]) {
     const shape = shapes.createWorkShapes(count)[3];

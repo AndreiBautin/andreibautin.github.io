@@ -18,7 +18,7 @@ try {
   for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
   shapes[0] = createNameShape(mask, 1536, 768, count);
   try {
-    const { createWorkShapes } = await import('./work-shapes.js?v=aff5394a13');
+    const { createWorkShapes } = await import('./work-shapes.js?v=aba8396f72');
     shapes.push(...createWorkShapes(count));
   } catch { /* Keep the original forms available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -46,7 +46,7 @@ try {
         if(work<1.5){
           float r=length(p.xy);
           if(part<.5){
-            if(r<1.45){float ang=jt*(r<.85?.22:.08);d.xy=(turn(ang)*p.xy)-p.xy;energy=.35+.65*clamp(.5+p.z,0.,1.);}
+            if(r<1.45){float ang=jt*(r<.85?.22:.08);d.xy=(turn(ang)*p.xy)-p.xy;energy=.04+.18*clamp(.5+p.z,0.,1.);}
             else d.z=sin(jt*.5+p.x*1.7)*.016;
           }else if(part<1.5){
             vec3 fwd=normalize(-p+vec3(.001,.0004,.0002));
@@ -136,7 +136,7 @@ try {
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
         vec4 flow=experienceFlow(uFlowWork,p,part,aSeed,jt);
         float alive=uFlow*uMotion;p+=flow.xyz*alive;
-        float career=(1.-step(.5,abs(uFlowWork-4.)))*uFlow;
+        float contrast=(1.-step(.5,min(abs(uFlowWork-4.),abs(uFlowWork-1.))))*uFlow;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p.yz=turn(uInspect.y)*p.yz;p.xz=turn(uInspect.x)*p.xz;
         p*=uZoom*uPresentation;
@@ -144,10 +144,10 @@ try {
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
         float age=uTime-uWave.z;float ring=exp(-pow((length(p.xy-uWave.xy)-age*5.)*1.8,2.))*exp(-max(0.,age)*.8)*step(0.,age)*uMotion;p+=direction*ring*.8;
-        vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*(1.+.28*flow.w*alive)*(1.-career*.15)*uRatio*16./max(5.,-view.z),1.,5.);
+        vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*(1.+.28*flow.w*alive)*(1.-contrast*.15)*uRatio*16./max(5.,-view.z),1.,5.);
         float depth=clamp(.76+p.z*.24, .52, 1.22);
         vColor=mix(aColorFrom,aColorTo,m)*mix(1.,depth,uFlow)+vec3(.2,.38,.18)*flow.w*alive+ring*.2;
-        vAlpha=mix(.52,.85,aSeed)*born*mix(1.,.75,career);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
+        vAlpha=mix(.52,.85,aSeed)*born*mix(1.,.75,contrast);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
         if(part>.5&&part<1.5)vAlpha*=mix(1.,flow.w,alive);
       }`,
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
