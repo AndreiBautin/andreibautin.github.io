@@ -95,8 +95,8 @@ try {
         vec4 flow=experienceFlow(uFlowWork,p,part,aSeed,jt);
         float alive=uFlow*uMotion;p+=flow.xyz*alive;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
-        p.yz=turn(uInspect.y*(1.-uNameWeight))*p.yz;p.xz=turn(uInspect.x*(1.-uNameWeight))*p.xz;
-        p*=mix(uZoom,1.,uNameWeight);
+        p.yz=turn(uInspect.y)*p.yz;p.xz=turn(uInspect.x)*p.xz;
+        p*=uZoom;
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
@@ -116,7 +116,7 @@ try {
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
   function inspectionHint() {
-    document.querySelector('.interaction-hint').textContent = active === 0 ? (motion.matches ? 'Choose a section to explore' : 'Move to disturb\nClick to send a wave') : 'Hold right-click to rotate\nScroll to zoom';
+    document.querySelector('.interaction-hint').textContent = 'Hold right-click to rotate\nScroll to zoom';
   }
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
@@ -184,7 +184,7 @@ try {
     render();
   }
   function zoom(delta) {
-    if (!active || overlay || !Number.isFinite(delta)) return;
+    if (overlay || !Number.isFinite(delta)) return;
     uniforms.uZoom.value = Math.max(.65, Math.min(1.5, uniforms.uZoom.value * Math.exp(-delta * .0015)));
     render();
   }
@@ -196,7 +196,7 @@ try {
     const x = event.clientX - drag.x, y = event.clientY - drag.y;
     if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return;
     drag.moved = true; drag.x = event.clientX; drag.y = event.clientY;
-    if (drag.rotate && active !== 0) rotate(x * .008, y * .008);
+    if (drag.rotate) rotate(x * .008, y * .008);
   });
   canvas.addEventListener('pointerleave', () => pointer.set(100, 100));
   canvas.addEventListener('pointerdown', event => {
@@ -211,14 +211,13 @@ try {
   });
   canvas.addEventListener('pointercancel', endDrag);
   canvas.addEventListener('lostpointercapture', endDrag);
-  canvas.addEventListener('contextmenu', event => { if (active !== 0) event.preventDefault(); });
+  canvas.addEventListener('contextmenu', event => event.preventDefault());
   canvas.addEventListener('wheel', event => {
-    if (!active || overlay || event.ctrlKey || event.metaKey || !Number.isFinite(event.deltaY)) return;
+    if (overlay || event.ctrlKey || event.metaKey || !Number.isFinite(event.deltaY)) return;
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? canvas.clientHeight : 1;
     event.preventDefault(); zoom(Math.max(-160, Math.min(160, event.deltaY * unit)));
   }, { passive: false });
   document.querySelectorAll('[data-turn]').forEach(button => button.addEventListener('click', () => {
-    if (!active) return;
     const direction = button.dataset.turn;
     if (direction === 'reset') { uniforms.uInspect.value.set(0, 0); uniforms.uZoom.value = 1; render(); }
     else if (direction === 'closer' || direction === 'further') zoom(direction === 'closer' ? -100 : 100);

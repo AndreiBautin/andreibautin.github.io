@@ -48,8 +48,9 @@ text or changing the camera. Pixel/line/page wheel deltas are normalized and
 bounded per event. Ctrl/Command-wheel preserves browser zoom. Text panels scroll
 independently because their wheel events do not target the canvas.
 Turn and zoom buttons provide keyboard equivalents. Reset view clears manual
-rotation and zoom. Selecting another scene resets inspection. The welcome name remains
-ambient and has no manual rotation controls.
+rotation and zoom. Selecting another scene resets inspection. The welcome name
+supports the same right-drag, wheel and keyboard controls while staying on Home.
+Manual inspection rotates the full particle geometry, including the name.
 
 Reduced motion disables automatic animation and waves; explicit inspection
 still renders on demand. Controls appear only after successful graphics startup

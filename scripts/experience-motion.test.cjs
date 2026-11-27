@@ -173,7 +173,7 @@ test('rotation controls render manually in reduced motion and reset the view', (
   f.right('pointerdown'); f.right('pointermove', { clientX: 200 }); f.right('pointerup');
   assert(f.angle.x > 0); assert.equal(f.waves, 0);
   f.turns.get('reset')(); assert.equal(f.angle.x, 0); assert.equal(f.angle.y, 0);
-  f.context.active = 0; f.turns.get('right')(); assert.equal(f.angle.x, 0);
+  f.context.active = 0; f.turns.get('right')(); assert.equal(f.angle.x, .3, 'the welcome name is inspectable too');
 });
 
 test('only held right mouse drag rotates; left drag, release and context menu stay distinct', () => {
@@ -184,7 +184,7 @@ test('only held right mouse drag rotates; left drag, release and context menu st
   assert.equal(f.send('contextmenu').defaultPrevented, true);
   f.right('pointerdown'); f.right('pointermove', { clientX: 180, buttons: 0 });
   assert.equal(f.angle.x, 0); assert.equal(f.captures.size, 0);
-  f.context.active = 0; assert.equal(f.send('contextmenu').defaultPrevented, false);
+  f.context.active = 0; assert.equal(f.send('contextmenu').defaultPrevented, true);
 });
 
 test('wheel zoom is bounded, normalizes units, preserves browser zoom and resets', () => {
@@ -203,5 +203,14 @@ test('wheel zoom is bounded, normalizes units, preserves browser zoom and resets
   for (const props of [{ ctrlKey: true, deltaY: 100 }, { metaKey: true, deltaY: 100 }, { deltaY: NaN }]) assert.equal(f.send('wheel', props).defaultPrevented, false);
   assert.equal(scale.value, .65);
   f.turns.get('reset')(); assert.equal(scale.value, 1);
-  f.context.active = 0; assert.equal(f.send('wheel', { deltaY: -100 }).defaultPrevented, false); assert.equal(scale.value, 1);
+  f.context.active = 0; assert.equal(f.send('wheel', { deltaY: -100 }).defaultPrevented, true); assert(scale.value > 1);
+});
+
+test('welcome name accepts held-right drag and zoom without selecting another scene', () => {
+  const f = inspection(); f.context.active = 0;
+  f.right('pointerdown'); f.right('pointermove', { clientX: 210, clientY: 150 }); f.right('pointerup');
+  assert(f.angle.x > 0); assert(f.angle.y > 0);
+  f.send('wheel', { deltaY: -100 }); assert(f.context.uniforms.uZoom.value > 1);
+  assert.equal(f.context.active, 0); assert.equal(f.waves, 0);
+  f.turns.get('reset')(); assert.equal(f.angle.x, 0); assert.equal(f.angle.y, 0); assert.equal(f.context.uniforms.uZoom.value, 1);
 });

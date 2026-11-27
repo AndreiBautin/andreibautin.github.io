@@ -38,7 +38,7 @@ body.work-fallback .scene-picker{display:none}
 @media(max-width:600px){#about{left:25px;bottom:145px;width:calc(100vw - 50px);max-height:calc(100svh - 240px)}}
 .field-ready .hero-tech{touch-action:none;cursor:grab}.field-ready .hero-tech:active{cursor:grabbing}
 .model-controls{display:none;position:absolute;right:5vw;bottom:170px;gap:8px 16px;flex-wrap:wrap;max-width:90vw;z-index:2}
-body.field-ready:not([data-section="home"]) .model-controls{display:flex}
+body.field-ready .model-controls{display:flex}
 .model-controls button{font:11px var(--mono);color:var(--muted);padding:8px 0;border-bottom:1px solid var(--line)}
 .model-controls button:hover{color:var(--accent);border-color:var(--accent)}
 @media(max-width:600px){.model-controls{top:135px;bottom:auto;right:25px}.model-controls button{font-size:10px;padding:7px}}
@@ -61,3 +61,4 @@ body.project-details-view .scene-copy{display:none}
 @media(max-height:640px){.project-inspector{top:94px;bottom:140px;max-height:none}}
 @media(prefers-reduced-motion:reduce){.project-inspector [data-detail-content]:not([hidden]){animation:none}}
 body[data-section="home"] .scene-actions{display:none}
+body[data-section="home"] .nav-shell [data-section-link]{display:none}

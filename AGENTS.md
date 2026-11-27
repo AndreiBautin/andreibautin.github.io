@@ -23,3 +23,6 @@
   particle models support explicit drag and keyboard-accessible turn controls.
 - Home uses the same thin-rule scene-picker as Projects and Experience. Keep
   captions unboxed and resume milestones compact; models are the visual focus.
+- All particle models, including the Home name, support right-drag and wheel
+  inspection. Home hides duplicate header section links; retain AB and theme,
+  the bottom section choices and direct contact link. Other sections keep the header.
