@@ -63,3 +63,4 @@ body.project-details-view .scene-copy{display:none}
 body[data-section="home"] .scene-actions{display:none}
 body[data-section="home"] .nav-shell{display:none}
 .home-link{font:12px var(--mono);color:var(--muted)}
+body:not(.field-unavailable) .field-footer{display:none}

@@ -26,7 +26,7 @@ function frames() {
   const context = vm.createContext({
     Math, uniforms: values, document: { hidden: false }, active: 4,
     transitionStart: 0, transitionDuration: 1.45, time: 0, last: 0, frame: 0, lowFrames: 0,
-    effectiveCount: 42000, fpsFrames: 0, fpsTime: 0, overlay: false,
+    effectiveCount: 42000, overlay: false,
     motion: { matches: false }, pointer: {}, status: {}, render() {},
     requestAnimationFrame() { return 1; },
   });

@@ -114,7 +114,7 @@ try {
   uniforms.uInspect = { value: new THREE.Vector2(0, 0) };
   uniforms.uZoom = { value: 1 };
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
-  let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
+  let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, lowFrames = 0, effectiveCount = count;
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
     const id = active >= 4 && active <= 6 ? active - 3 : 0;
@@ -153,14 +153,13 @@ try {
     else uniforms.uSpin.value += (Math.round(uniforms.uSpin.value / (Math.PI * 2)) * Math.PI * 2 - uniforms.uSpin.value) * follow;
     if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / 1.45); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
     uniforms.uPointer.value.lerp(pointer, Math.min(1, dt * 9)); uniforms.uForce.value += ((overlay ? 0 : 1) - uniforms.uForce.value) * Math.min(1, dt * 7);
-    render(); if (elapsed > 0) fpsFrames++; fpsTime += elapsed; if (elapsed > .028) lowFrames++; else lowFrames = Math.max(0, lowFrames - 1);
+    render(); if (elapsed > .028) lowFrames++; else lowFrames = Math.max(0, lowFrames - 1);
     if (lowFrames > 90 && effectiveCount > 18000) { effectiveCount = effectiveCount > 24000 ? 24000 : 18000; geometry.setDrawRange(0, effectiveCount); renderer.setPixelRatio(1); resize(); lowFrames = 0; }
-    if (fpsTime >= 1.5) { status.textContent = `${effectiveCount.toLocaleString('en-US')} points / ${Math.round(fpsFrames / fpsTime)} fps`; fpsFrames = 0; fpsTime = 0; }
     frame = motion.matches ? 0 : requestAnimationFrame(draw);
   }
   function resume() {
     cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1; if (motion.matches) syncFlow();
-    if (motion.matches) { uniforms.uArrival.value = 1; uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
+    if (motion.matches) { uniforms.uArrival.value = 1; uniforms.uMorph.value = 1; transitionStart = null; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
   addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.instant === true));

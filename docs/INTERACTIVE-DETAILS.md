@@ -59,6 +59,8 @@ and reset controls are visually clipped until keyboard focus enters their group,
 then remain visible while focus is within it. Mouse inspection stays active.
 The footer contact shortcut is removed; Contact remains in section navigation
 and the professional panels, with native email and profile links.
+The points/FPS counter is removed. The footer appears only for an actual graphics
+failure; adaptive quality still uses frame timing internally.
 
 Reduced motion disables automatic animation and waves; explicit inspection
 still renders on demand. Controls appear only after successful graphics startup
