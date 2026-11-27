@@ -18,7 +18,7 @@ try {
   for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
   shapes[0] = createNameShape(mask, 1536, 768, count);
   try {
-    const { createWorkShapes } = await import('./work-shapes.js?v=00046573a0');
+    const { createWorkShapes } = await import('./work-shapes.js?v=7ff85e91e6');
     shapes.push(...createWorkShapes(count));
   } catch { /* Keep the original forms available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -38,7 +38,7 @@ try {
       uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uFlow,uFlowWork,uZoom,uCareerStep,uPresentation;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
-      vec3 careerCenter(float n){return n<.5?vec3(-3.1,-1.82,.32):(n<1.5?vec3(-1.05,-.55,-.8):(n<2.5?vec3(1.15,.72,.9):vec3(3.15,1.78,-.22)));}
+      vec3 careerCenter(float n){return n<.5?vec3(-3.1,-1.82,.32):(n<1.5?vec3(-1.05,-.55,-.8):vec3(1.15,.72,.9));}
       vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
       vec4 experienceFlow(float work,vec3 p,float part,float seed,float jt){
         vec3 d=vec3(0.);float energy=0.;
@@ -90,8 +90,8 @@ try {
             d=q-rel;d.y+=sin(jt*.7+node*1.4)*.12;
             energy=.05+.2*pow(max(0.,sin(atan(rel.y,rel.x)-jt*.9+node)),3.);
           }else{
-            float journey=clamp((p.x+3.1)/6.25,0.,1.);
-            float pulse=fract((p.x+3.1)/6.25-jt*.12);
+            float journey=clamp((p.x+3.1)/4.25,0.,1.);
+            float pulse=fract((p.x+3.1)/4.25-jt*.12);
             energy=smoothstep(0.,.025,pulse)*(1.-smoothstep(.045,.2,pulse));
             d.y=sin(jt*.7+journey*4.2)*.12;d.z=sin(jt*.6+journey*6.)*.08;
           }
@@ -216,7 +216,7 @@ try {
   addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.instant === true));
   addEventListener('portfolio:career-step', event => {
     const index = event.detail?.index;
-    if (!Number.isInteger(index) || index < 0 || index > 3) return;
+    if (!Number.isInteger(index) || index < 0 || index > 2) return;
     uniforms.uCareerStep.value = index; render();
   });
   addEventListener('portfolio:theme', event => { uniforms.uLight.value = event.detail?.light ? 1 : 0; material.blending = uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending; render(); });

@@ -59,8 +59,8 @@ and repeated dispatches do not move focus.
 Knowledge assistant, replication and payments each have an eyebrow, a title,
 one short paragraph, an abstract `aria-hidden` line diagram (no text, numbers
 or fake dashboards) and a Problem / My contribution / Outcome switcher.
-Career has four selectable milestones (May 2019 CSU degree, June 2019
-Brainspire/3Cloud, September 2024 senior role, AZ-900/AI-900) and the
+Career has three selectable milestones (May 2019 CSU degree, June 2019
+Brainspire/3Cloud, September 2024 senior role) and the
 approved PDF. Contact shows the selectable address, mailto, LinkedIn, GitHub,
 the PDF and a copy button. All copy is taken from `dist/index.html` and
 `dist/Andrei_Bautin_Resume.pdf`; the only figures are "more than 11 hours of

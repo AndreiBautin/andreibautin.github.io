@@ -32,7 +32,6 @@ const NODES = [
   [-3.1, -1.82, 0.32],
   [-1.05, -0.55, -0.8],
   [1.15, 0.72, 0.9],
-  [3.15, 1.78, -0.22],
 ];
 const DEST = [
   [-3.15, 1.2, 0.72],
@@ -145,8 +144,8 @@ function lanePoint(lane, s, h, g, radius) {
 }
 
 function careerPoint(t) {
-  const seg = Math.min(2, Math.floor(Math.min(t, 0.999999) * 3));
-  const u = Math.min(t, 0.999999) * 3 - seg;
+  const seg = Math.min(NODES.length - 2, Math.floor(Math.min(t, 0.999999) * (NODES.length - 1)));
+  const u = Math.min(t, 0.999999) * (NODES.length - 1) - seg;
   const mid = [
     (NODES[seg][0] + NODES[seg + 1][0]) / 2,
     (NODES[seg][1] + NODES[seg + 1][1]) / 2 + 0.38,
@@ -266,10 +265,10 @@ function payments(band, k, n, h, g) {
 }
 
 function career(band, k, n, h, g) {
-  const [node, u] = slot(k, n, 4);
+  const [node, u] = slot(k, n, NODES.length);
   if (band === 0) {
-    const ball = localSphere(k, n, 4, 0.34 + node * 0.035, h);
-    return { at: add(NODES[node], ball), color: surfaceTone(node === 3 ? GOLD : SAGE, ball, g, node === 3 ? 1.1 : 1.5) };
+    const ball = localSphere(k, n, NODES.length, 0.34 + node * 0.035, h);
+    return { at: add(NODES[node], ball), color: surfaceTone(SAGE, ball, g, 1.5) };
   }
   if (band === 1) {
     const ang = TAU * u + h;
@@ -381,7 +380,7 @@ export function createWorkShapes(count, seed = 69) {
         const sampleIndex = k * stride % n;
         const sample = scene(band, sampleIndex, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
         paint(shape, order[band][k], sample.at, TAG[band], sample.color);
-        if (shape.careerNodes && band !== 2) shape.careerNodes[order[band][k]] = slot(sampleIndex, n, 4)[0];
+        if (shape.careerNodes && band !== 2) shape.careerNodes[order[band][k]] = slot(sampleIndex, n, NODES.length)[0];
         cursor++;
       }
     }

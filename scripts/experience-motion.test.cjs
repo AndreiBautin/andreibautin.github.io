@@ -91,12 +91,12 @@ test('Resume selection renders immediately, rejects invalid nodes and preserves 
   const begin = source.indexOf("  addEventListener('portfolio:career-step'");
   const end = source.indexOf("  addEventListener('portfolio:theme'", begin);
   vm.runInContext(source.slice(begin, end), context);
-  for (const index of [3, 1, 2, 0]) {
+  for (const index of [2, 1, 2, 0]) {
     listeners.get('portfolio:career-step')({ detail: { index } });
     assert.equal(context.uniforms.uCareerStep.value, index);
   }
   assert.equal(renders, 4);
-  for (const index of [-1, 4, NaN, '2', .5, undefined]) listeners.get('portfolio:career-step')({ detail: { index } });
+  for (const index of [-1, 3, 4, NaN, '2', .5, undefined]) listeners.get('portfolio:career-step')({ detail: { index } });
   assert.equal(renders, 4);
   assert.equal(context.uniforms.uMotion.value, 0);
   const focus = source.slice(source.indexOf('        float career='), source.indexOf('        vec4 flow='));

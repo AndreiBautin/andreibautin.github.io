@@ -49,16 +49,16 @@ test('invalid allocations and malformed seeds fail before geometry is built', ()
 });
 
 test('career node ownership survives adaptive prefixes and includes rings and trails', () => {
-  const centers = [[-3.1, -1.82, .32], [-1.05, -.55, -.8], [1.15, .72, .9], [3.15, 1.78, -.22]];
+  const centers = [[-3.1, -1.82, .32], [-1.05, -.55, -.8], [1.15, .72, .9]];
   const scenes = shapes.createWorkShapes(42000);
   assert(scenes.filter(shape => shape.careerNodes).length === 1);
   const career = scenes[3];
   for (const count of [18000, 24000, 42000]) {
-    const populations = [0, 0, 0, 0];
+    const populations = [0, 0, 0];
     let connections = 0;
     for (let i = 0; i < count; i++) {
       const node = career.careerNodes[i];
-      assert(Number.isInteger(node) && node >= -1 && node <= 3);
+      assert(Number.isInteger(node) && node >= -1 && node <= 2);
       if (node < 0) { connections++; continue; }
       populations[node]++;
       const center = centers[node];
@@ -127,7 +127,7 @@ test('each scene keeps a readable silhouette and a restrained accent', () => {
   assert(accents(knowledge) > 400 && accents(knowledge) < 1000);
   assert.equal(accents(replication), 0);
   assert(accents(payments) > 200 && accents(payments) < 900);
-  assert(accents(career) > 80 && accents(career) < 400);
+  assert.equal(accents(career), 0, 'the gold certification node is removed');
   assert.equal(accents(contact), 0);
 });
 
@@ -138,7 +138,7 @@ const DESKTOP = Number(heroSource.match(/\? 18000 : (\d+);/)[1]);
 const PREFIXES = [...new Set([...heroSource.matchAll(/effectiveCount = effectiveCount > (\d+) \? (\d+) : (\d+);/g)].flatMap((m) => [Number(m[2]), Number(m[3])]))].sort((a, b) => a - b);
 const TAG_SHARE = [0.6, 0.12, 0.28]; // bands [0.34, 0.26 | 0.12 | 0.2, 0.08] mapped through TAG
 const TAU = Math.PI * 2;
-const NODES = [[-3.1, -1.82, 0.32], [-1.05, -0.55, -0.8], [1.15, 0.72, 0.9], [3.15, 1.78, -0.22]];
+const NODES = [[-3.1, -1.82, 0.32], [-1.05, -0.55, -0.8], [1.15, 0.72, 0.9]];
 const DEST = [[-3.15, 1.2, 0.72], [3.25, 1.02, -0.58], [0.15, -2.05, 0.9]];
 
 test('RAG core keeps shaded gold faces separate from its cyan halo', () => {
@@ -210,7 +210,7 @@ const STRUCTURE = {
     const r = Math.hypot(x, y / 0.86);
     return t === 0 && r > 1.85 && r < 2.3 ? Math.min(11, Math.floor(((Math.atan2(y / 0.86, x) + Math.PI) / TAU) * 12)) : -1;
   }],
-  'career milestone nodes': [3, 4, (x, y, z, t) => (t === 0 ? NODES.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 0.45) : -1)],
+  'career milestone nodes': [3, 3, (x, y, z, t) => (t === 0 ? NODES.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 0.45) : -1)],
   'contact destinations': [4, 3, (x, y, z, t) => (t === 0 ? DEST.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 0.45) : -1)],
 };
 function bins(shape, limit, size, classify) {
@@ -321,8 +321,8 @@ test('low and extreme counts allocate deterministically and paint every particle
 // bottom of the stage. Every career particle must now belong to a milestone
 // (node, rings, orbital trail) or to the curved journey between milestones.
 function journey(t) {
-  const seg = Math.min(2, Math.floor(Math.min(t, 0.999999) * 3));
-  const u = Math.min(t, 0.999999) * 3 - seg, w = 1 - u;
+  const seg = Math.min(1, Math.floor(Math.min(t, 0.999999) * 2));
+  const u = Math.min(t, 0.999999) * 2 - seg, w = 1 - u;
   const a = NODES[seg], c = NODES[seg + 1];
   const b = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2 + 0.38, (a[2] + c[2]) / 2];
   return [0, 1, 2].map((d) => w * w * a[d] + 2 * w * u * b[d] + u * u * c[d]);
@@ -346,7 +346,7 @@ test('the Resume scene has no isolated straight baseline: every particle is node
 test('each Resume milestone carries its own short connection trail that survives quality prefixes', () => {
   const career = full()[3];
   // Connection-tagged particles outside the journey tube, binned by nearest node.
-  const trail = (limit) => bins(career, limit, 4, (x, y, z, t) => {
+  const trail = (limit) => bins(career, limit, 3, (x, y, z, t) => {
     if (t !== 2 || JOURNEY.some((p) => Math.hypot(x - p[0], y - p[1], z - p[2]) < 0.1)) return -1;
     return NODES.findIndex((n) => Math.hypot(x - n[0], y - n[1], z - n[2]) < 1.0);
   });

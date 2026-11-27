@@ -65,7 +65,6 @@ export const CONTENT = Object.freeze({
       ['May 2019', 'B.S., Applied Computing Technology', 'Colorado State University, Fort Collins, Colorado.'],
       ['June 2019', 'Software Engineer, Brainspire / 3Cloud', 'Built web applications and Azure solutions for healthcare, insurance, retail and industrial clients with .NET, Vue.js, React and SQL Server.'],
       ['Sept 2024', 'Senior Software Engineer, 3Cloud', 'At 3Cloud, a Cognizant company, delivered the knowledge assistant and Service Bus replication work. Mentored and onboarded 5+ engineers through code reviews, architecture guidance and shared standards.'],
-      ['Credentials', 'Microsoft Azure certifications', 'Azure Fundamentals (AZ-900) and Azure AI Fundamentals (AI-900).'],
     ],
   },
   contact: {
@@ -139,7 +138,7 @@ export function mountWorkUI(root = document) {
   let request = null;
   const disposers = [];
 
-  // Tell the renderer which resume milestone node to emphasize (0-3).
+  // Tell the renderer which resume milestone node to emphasize (0-2).
   const emphasize = (index) => { if (!disposed) view.dispatchEvent(new view.CustomEvent('portfolio:career-step', { detail: { index } })); };
   const el = (tag, cls, text) => { const node = doc.createElement(tag); if (cls) node.className = cls; if (text != null) node.textContent = text; return node; };
   const attrs = (node, map) => { for (const [k, v] of Object.entries(map)) node.setAttribute(k, String(v)); return node; };

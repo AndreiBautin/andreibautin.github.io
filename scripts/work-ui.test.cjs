@@ -265,7 +265,7 @@ test('work views carry short factual copy, a three-step switcher and an abstract
   assert(ui.CONTENT.career.milestones.some((m) => m[2].includes('5+ engineers')));
   const all = JSON.stringify(ui.CONTENT);
   assert(!/\d+\s*%|\b\d+x\b|per second|million|dashboard/i.test(all), 'no invented metrics or dashboards');
-  for (const fact of ['Azure OpenAI', 'AI Search', 'Service Bus', 'AZ-900', 'AI-900', 'Colorado State University']) assert(html.includes(fact) && all.includes(fact), fact);
+  for (const fact of ['Azure OpenAI', 'AI Search', 'Service Bus', 'Colorado State University']) assert(html.includes(fact) && all.includes(fact), fact);
   for (const mode of ['knowledge', 'replication', 'payments']) {
     f.send(mode);
     const v = f.view(mode);
@@ -295,7 +295,7 @@ test('work views carry short factual copy, a three-step switcher and an abstract
   dispose();
 });
 
-test('career offers four selectable milestones in a bottom scene picker and the approved PDF', () => {
+test('career offers three selectable milestones in a bottom scene picker and the approved PDF', () => {
   const f = fixture();
   const emphasized = [];
   f.win.addEventListener('portfolio:career-step', event => emphasized.push(event.detail.index));
@@ -309,41 +309,39 @@ test('career offers four selectable milestones in a bottom scene picker and the 
   assert.equal(v.all((e) => e.getAttribute('role') === 'tab').length, 0, 'no inline milestone row in the HUD');
   assert.equal(v.all((e) => e.classList.contains('work-steps')).length, 0);
   const steps = row.all((e) => e.getAttribute('role') === 'tab');
-  assert.equal(steps.length, 4);
+  assert.equal(steps.length, 3);
   steps.forEach((step, i) => {
     assert.deepEqual(step.children.map((c) => c.tagName), ['SPAN', 'SMALL'], 'project title/subtitle markup');
     assert.equal(step.children[0].textContent, ui.CONTENT.career.milestones[i][0]);
     assert.equal(step.children[1].textContent, ui.CONTENT.career.milestones[i][1]);
     assert.equal(step.getAttribute('aria-controls'), 'work-ui-career-detail');
   });
-  assert.deepEqual(steps.map((s) => s.children[0].textContent), ['May 2019', 'June 2019', 'Sept 2024', 'Credentials']);
+  assert.deepEqual(steps.map((s) => s.children[0].textContent), ['May 2019', 'June 2019', 'Sept 2024']);
   assert.match(steps[0].textContent, /B.S., Applied Computing Technology/);
   assert.match(steps[1].textContent, /^June 2019Software Engineer, Brainspire/);
   assert.match(steps[2].textContent, /Senior Software Engineer/);
-  assert.match(steps[3].textContent, /Microsoft Azure certifications/);
+  assert(!row.textContent.includes('Credentials'));
   const detail = v.all((e) => e.getAttribute('role') === 'tabpanel')[0];
   assert(v.contains(detail), 'detail copy stays in the left HUD');
   assert.equal(v.all((e) => e.classList.contains('work-lede')).length, 0, 'no redundant lede');
   assert.equal(steps[0].getAttribute('aria-selected'), 'true');
-  assert.deepEqual(steps.map((s) => s.getAttribute('tabindex')), ['0', '-1', '-1', '-1']);
-  steps[3].fire('click');
-  assert.equal(emphasized.at(-1), 3);
-  assert.match(detail.textContent, /AZ-900.*AI-900/);
-  assert.equal(detail.getAttribute('aria-labelledby'), steps[3].id);
-  assert.deepEqual(steps.map((s) => s.getAttribute('aria-selected')), ['false', 'false', 'false', 'true']);
-  assert.deepEqual(steps.map((s) => s.getAttribute('tabindex')), ['-1', '-1', '-1', '0']);
-  assert(steps[3].fire('keydown', { key: 'ArrowRight' }).defaultPrevented);
+  assert.deepEqual(steps.map((s) => s.getAttribute('tabindex')), ['0', '-1', '-1']);
+  steps[2].fire('click');
+  assert.equal(emphasized.at(-1), 2);
+  assert.match(detail.textContent, /Senior Software Engineer/);
+  assert.equal(detail.getAttribute('aria-labelledby'), steps[2].id);
+  assert.deepEqual(steps.map((s) => s.getAttribute('aria-selected')), ['false', 'false', 'true']);
+  assert.deepEqual(steps.map((s) => s.getAttribute('tabindex')), ['-1', '-1', '0']);
+  assert(steps[2].fire('keydown', { key: 'ArrowRight' }).defaultPrevented);
   assert.equal(emphasized.at(-1), 0, 'wraps to the degree');
   assert.equal(f.doc.activeElement, steps[0]);
   steps[0].fire('keydown', { key: 'ArrowLeft' });
-  assert.equal(emphasized.at(-1), 3);
-  assert.equal(f.doc.activeElement, steps[3]);
-  steps[3].fire('keydown', { key: 'Home' });
+  assert.equal(emphasized.at(-1), 2);
+  assert.equal(f.doc.activeElement, steps[2]);
+  steps[2].fire('keydown', { key: 'Home' });
   assert.equal(emphasized.at(-1), 0);
   assert.match(detail.textContent, /Colorado State University/);
   steps[0].fire('keydown', { key: 'End' });
-  assert.equal(emphasized.at(-1), 3);
-  steps[3].fire('keydown', { key: 'ArrowLeft' });
   assert.equal(emphasized.at(-1), 2);
   assert.match(detail.textContent, /Senior Software Engineer/);
   assert.equal(f.doc.activeElement, steps[2]);
@@ -400,21 +398,20 @@ test('re-entering Resume keeps the selected milestone and re-announces its index
   assert.deepEqual(emphasized.slice(before), [2], 're-entry announces the kept milestone without a reset');
   assert.equal(steps[2].getAttribute('aria-selected'), 'true');
   assert.match(f.view('career').all((e) => e.getAttribute('role') === 'tabpanel')[0].textContent, /Senior Software Engineer/);
-  assert(emphasized.every((index) => Number.isInteger(index) && index >= 0 && index <= 3));
+  assert(emphasized.every((index) => Number.isInteger(index) && index >= 0 && index <= 2));
   dispose();
   f.send(null);
   f.send('career');
   assert.equal(emphasized.length, before + 1, 'no events after dispose');
 });
 
-test('milestone styles give four equal desktop columns and a 2x2 phone grid', () => {
+test('milestone styles share the three-column project grid on all screens', () => {
   const rules = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const phoneAt = rules.indexOf('@media(max-width:600px){');
   assert(phoneAt > 0);
-  assert(rules.slice(0, phoneAt).includes('.work-milestones.scene-picker{grid-template-columns:repeat(4,minmax(0,1fr))}'));
+  assert(rules.slice(0, phoneAt).includes('.work-milestones.scene-picker{grid-template-columns:repeat(3,minmax(0,1fr))}'));
   const phone = rules.slice(phoneAt, rules.indexOf('\n}', phoneAt));
-  assert(phone.includes('.work-milestones.scene-picker{grid-template-columns:repeat(2,minmax(0,1fr))}'));
-  assert.match(phone, /\.work-hud\.work-hud-milestones\{bottom:\d+px\}/, 'the HUD clears the two-row picker');
+  assert(!phone.includes('.work-milestones.scene-picker{grid-template-columns:'));
 });
 
 test('explicit Home navigation focuses the title even when hiding its opener restores body focus', () => {
