@@ -90,6 +90,8 @@ returns to the welcome choices rather than following browser history. Home keeps
 four matching bottom choices (two columns on phones) and hides the interior
 subheader. Scrolling project notes keeps that row sticky. Only `#scene-summary`
 announces project copy changes; the relocated navigation is outside its live region.
+Short screens move the content's upper bound to 28px so the row remains reachable
+while details scroll inside their panel.
 
 Contact joins the same gated loop as flow identity 5. Its open nexus ring turns,
 satellite bodies rotate, packet bands travel and curved connections carry pulses.

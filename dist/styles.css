@@ -75,3 +75,4 @@ body:not(.field-unavailable) .field-footer{display:none}
 :is(#scene-home,.scene-back):focus-visible{outline:1px solid var(--accent);outline-offset:2px;border-radius:50%}
 .project-inspector>.nav-shell,.scene-copy>.nav-shell{position:sticky;top:0;background:var(--bg)}
 @media(max-width:600px){.nav-shell{gap:4px;margin-bottom:8px}.nav-shell nav{gap:10px}.nav-shell nav>a,.nav-shell nav>button{font-size:10px}#welcome-sections{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-height:640px){.scene-copy,.project-inspector{top:28px}}
