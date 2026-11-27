@@ -77,6 +77,10 @@ loop. Rotation and zoom preserve the selected milestone.
 Every tab row is `role=tablist` with roving tabindex and automatic activation:
 ArrowLeft/ArrowRight wrap, Home/End jump.
 
+Detail text grows naturally and fades in without a translating overflow area.
+The outer work view owns scrolling on constrained screens; the switcher and
+detail never create a second scrollbar when changing steps.
+
 Copy email reports success only after `navigator.clipboard.writeText`
 resolves. On rejection or a missing API it selects the address and says how
 to copy it; without selection support it names the address. A late answer

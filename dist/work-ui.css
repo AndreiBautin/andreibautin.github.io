@@ -19,18 +19,18 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
 .work-art .work-art-accent{stroke:var(--accent)}
 .work-art circle.work-art-accent[r="3"]{fill:var(--accent)}
 
-.work-switch{display:flex;flex-direction:column;min-height:0}
+.work-switch{display:flex;flex-direction:column;flex-shrink:0}
 .work-steps{display:flex;flex-wrap:wrap;gap:4px 16px;border-bottom:1px solid var(--line)}
 .work-step{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 0 7px;margin-bottom:-1px;border-bottom:1px solid transparent;text-align:left}
 .work-step:hover{color:var(--ink)}
 .work-step[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
-.work-detail{font-size:14px;line-height:1.7;color:var(--ink);padding:12px 0 2px;min-height:64px;overflow:auto;overscroll-behavior:contain}
+.work-detail{font-size:14px;line-height:1.7;color:var(--ink);padding:12px 0 2px;min-height:64px;flex-shrink:0}
 .work-detail:focus{outline:none}
 .work-detail:focus-visible{outline:1px solid var(--line);outline-offset:2px}
 .work-detail p{margin:4px 0 0;color:var(--muted)}
 .work-detail-title{font-weight:500}
 .work-reveal{display:block;animation:work-reveal .35s ease-out both}
-@keyframes work-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes work-reveal{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.work-reveal{animation:none}}
 
 .work-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-top:12px}
