@@ -81,6 +81,29 @@ test('Resume joins the gated flow loop and pauses with hidden frames', () => {
   assert(state.uniforms.uFlow.value > .99);
 });
 
+test('Resume selection renders immediately, rejects invalid nodes and preserves reduced motion', () => {
+  const listeners = new Map();
+  let renders = 0;
+  const context = vm.createContext({
+    Number, uniforms: { uCareerStep: { value: 0 }, uMotion: { value: 0 } },
+    addEventListener(type, handler) { listeners.set(type, handler); }, render() { renders++; },
+  });
+  const begin = source.indexOf("  addEventListener('portfolio:career-step'");
+  const end = source.indexOf("  addEventListener('portfolio:theme'", begin);
+  vm.runInContext(source.slice(begin, end), context);
+  for (const index of [3, 1, 2, 0]) {
+    listeners.get('portfolio:career-step')({ detail: { index } });
+    assert.equal(context.uniforms.uCareerStep.value, index);
+  }
+  assert.equal(renders, 4);
+  for (const index of [-1, 4, NaN, '2', .5, undefined]) listeners.get('portfolio:career-step')({ detail: { index } });
+  assert.equal(renders, 4);
+  assert.equal(context.uniforms.uMotion.value, 0);
+  const focus = source.slice(source.indexOf('        float career='), source.indexOf('        vec4 flow='));
+  assert(focus.includes('aCareerNode-uCareerStep'));
+  assert(!focus.includes('uMotion'), 'stable selection must survive reduced motion');
+});
+
 test('every professional scene including Contact reaches its own idle flow and leaves it cleanly', () => {
   for (const index of [4, 5, 6, 7, 8]) {
     const run = frames(), state = run.context; state.active = index; run.tick(200);

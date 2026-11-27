@@ -18,7 +18,7 @@ try {
   for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
   shapes[0] = createNameShape(mask, 1536, 768, count);
   try {
-    const { createWorkShapes } = await import('./work-shapes.js?v=aba8396f72');
+    const { createWorkShapes } = await import('./work-shapes.js?v=00046573a0');
     shapes.push(...createWorkShapes(count));
   } catch { /* Keep the original forms available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -27,16 +27,18 @@ try {
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3));
   for (const [name, data, size] of [['aFrom', shapes[0].positions, 4], ['aTo', shapes[0].positions, 4], ['aColorFrom', shapes[0].colors, 3], ['aColorTo', shapes[0].colors, 3]]) geometry.setAttribute(name, new THREE.Float32BufferAttribute(data.slice(), size));
   geometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(Float32Array.from({ length: count }, (_, i) => hash(i, 33)), 1));
+  geometry.setAttribute('aCareerNode', new THREE.Float32BufferAttribute(shapes[7]?.careerNodes ?? new Float32Array(count).fill(-1), 1));
   const uniforms = {
     uTime: { value: 0 }, uMorph: { value: 1 }, uArrival: { value: 0 }, uPointer: { value: new THREE.Vector2(100, 100) }, uForce: { value: 0 },
     uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uFlow: { value: 0 }, uFlowWork: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
-      attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
+      attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed,aCareerNode;
       uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uFlow,uFlowWork,uZoom,uCareerStep,uPresentation;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
+      vec3 careerCenter(float n){return n<.5?vec3(-3.1,-1.82,.32):(n<1.5?vec3(-1.05,-.55,-.8):(n<2.5?vec3(1.15,.72,.9):vec3(3.15,1.78,-.22)));}
       vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
       vec4 experienceFlow(float work,vec3 p,float part,float seed,float jt){
         vec3 d=vec3(0.);float energy=0.;
@@ -79,18 +81,14 @@ try {
             else{energy=pow(max(0.,sin(atan(knot.y,knot.x)*2.-jt*1.5)),2.);d.xy=normalize(vec2(-knot.y,knot.x)+vec2(.001))*sin(jt*.45+atan(knot.y,knot.x))*.018;}
           }
         }else if(work<4.5){
-          vec3 center;float node;
-          if(p.x< -2.075){center=vec3(-3.1,-1.82,.32);node=0.;}
-          else if(p.x<.05){center=vec3(-1.05,-.55,-.8);node=1.;}
-          else if(p.x<2.15){center=vec3(1.15,.72,.9);node=2.;}
-          else{center=vec3(3.15,1.78,-.22);node=3.;}
+          float node=aCareerNode;
+          vec3 center=careerCenter(node);
           vec3 rel=p-center;
-          if(part<1.5){
+          if(node>=0.){
             float speed=part>.5?.4:.23;
             vec3 q=rel;q.yz=turn(jt*speed+node*.45)*q.yz;q.xz=turn(sin(jt*.35+node)*.4)*q.xz;
             d=q-rel;d.y+=sin(jt*.7+node*1.4)*.12;
-            float selected=1.-step(.5,abs(node-uCareerStep));
-            energy=.05+.2*pow(max(0.,sin(atan(rel.y,rel.x)-jt*.9+node)),3.)+selected*.12;
+            energy=.05+.2*pow(max(0.,sin(atan(rel.y,rel.x)-jt*.9+node)),3.);
           }else{
             float journey=clamp((p.x+3.1)/6.25,0.,1.);
             float pulse=fract((p.x+3.1)/6.25-jt*.12);
@@ -134,6 +132,11 @@ try {
         p.xy=turn(sin(nt*.38)*.025*uNameWeight)*p.xy;
         p.y+=sin(nt*.8)*.18*uNameWeight;
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
+        float career=(1.-step(.5,abs(uFlowWork-4.)))*uFlow;
+        float nodeBody=step(-.5,aCareerNode);
+        float selected=nodeBody*(1.-step(.5,abs(aCareerNode-uCareerStep)));
+        float focus=career*selected;
+        p+=(p-careerCenter(aCareerNode))*focus*.22;
         vec4 flow=experienceFlow(uFlowWork,p,part,aSeed,jt);
         float alive=uFlow*uMotion;p+=flow.xyz*alive;
         float contrast=(1.-step(.5,min(abs(uFlowWork-4.),abs(uFlowWork-1.))))*uFlow;
@@ -144,9 +147,11 @@ try {
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
         float age=uTime-uWave.z;float ring=exp(-pow((length(p.xy-uWave.xy)-age*5.)*1.8,2.))*exp(-max(0.,age)*.8)*step(0.,age)*uMotion;p+=direction*ring*.8;
-        vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*(1.+.28*flow.w*alive)*(1.-contrast*.15)*uRatio*16./max(5.,-view.z),1.,5.);
+        vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*(1.+.28*flow.w*alive+focus*.38)*(1.-contrast*.15)*uRatio*16./max(5.,-view.z),1.,5.);
         float depth=clamp(.76+p.z*.24, .52, 1.22);
         vColor=mix(aColorFrom,aColorTo,m)*mix(1.,depth,uFlow)+vec3(.2,.38,.18)*flow.w*alive+ring*.2;
+        vColor*=1.-career*nodeBody*(1.-selected)*.35;
+        vColor+=vec3(.22,.3,.16)*focus;
         vAlpha=mix(.52,.85,aSeed)*born*mix(1.,.75,contrast);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
         if(part>.5&&part<1.5)vAlpha*=mix(1.,flow.w,alive);
       }`,

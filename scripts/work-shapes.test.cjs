@@ -48,6 +48,28 @@ test('invalid allocations and malformed seeds fail before geometry is built', ()
   for (const input of [null, [], NaN, Infinity, '69', 69.5]) assert.throws(() => shapes.createWorkShapes(100, input), TypeError);
 });
 
+test('career node ownership survives adaptive prefixes and includes rings and trails', () => {
+  const centers = [[-3.1, -1.82, .32], [-1.05, -.55, -.8], [1.15, .72, .9], [3.15, 1.78, -.22]];
+  const scenes = shapes.createWorkShapes(42000);
+  assert(scenes.filter(shape => shape.careerNodes).length === 1);
+  const career = scenes[3];
+  for (const count of [18000, 24000, 42000]) {
+    const populations = [0, 0, 0, 0];
+    let connections = 0;
+    for (let i = 0; i < count; i++) {
+      const node = career.careerNodes[i];
+      assert(Number.isInteger(node) && node >= -1 && node <= 3);
+      if (node < 0) { connections++; continue; }
+      populations[node]++;
+      const center = centers[node];
+      const distance = Math.hypot(...center.map((value, axis) => career.positions[i * 4 + axis] - value));
+      assert(distance < 1, 'node metadata must follow the generated local geometry');
+    }
+    assert(populations.every(population => population > count * .17));
+    assert(connections > count * .18 && connections < count * .22);
+  }
+});
+
 test('low counts still separate the five motifs', () => {
   const one = shapes.createWorkShapes(1, 69);
   assert.equal(one.length, 5);

@@ -1,5 +1,4 @@
-// Deterministic, browser-free professional targets for hero.js.
-// positions.w is a motif tag: 0 body/anchor, 1 moving packet, 2 connection.
+// positions.w: 0 body, 1 packet, 2 connection.
 
 export function hash(value, salt = 17) {
   const n = Math.sin(value * 127.1 + salt * 311.7) * 43758.5453;
@@ -372,14 +371,17 @@ export function createWorkShapes(count, seed = 69) {
   }
   return SCENES.map((scene, sceneIndex) => {
     const shape = { positions: new Float32Array(count * 4), colors: new Float32Array(count * 3) };
+    if (scene === career) shape.careerNodes = new Float32Array(count).fill(-1);
     let cursor = 0;
     for (let band = 0; band < counts.length; band++) {
       const n = counts[band];
       const stride = spatialStride(n);
       for (let k = 0; k < n; k++) {
         // Coprime sampling spreads each motif through every prefix.
-        const sample = scene(band, k * stride % n, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
+        const sampleIndex = k * stride % n;
+        const sample = scene(band, sampleIndex, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
         paint(shape, order[band][k], sample.at, TAG[band], sample.color);
+        if (shape.careerNodes && band !== 2) shape.careerNodes[order[band][k]] = slot(sampleIndex, n, 4)[0];
         cursor++;
       }
     }

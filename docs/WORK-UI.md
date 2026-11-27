@@ -66,6 +66,14 @@ the PDF and a copy button. All copy is taken from `dist/index.html` and
 `dist/Andrei_Bautin_Resume.pdf`; the only figures are "more than 11 hours of
 manual work each day" and "5+ engineers".
 
+Resume uses a separate bottom `.scene-picker` milestone row. Selection emits
+`portfolio:career-step` with its zero-based index. `work-shapes.js` supplies
+explicit per-particle node ownership, including each node's rings and trails;
+journey connections have no node owner. `hero.js` enlarges and brightens the
+selected node while keeping its neighbours visible. This emphasis is independent
+of the motion uniform, so reduced motion retains selection without an animation
+loop. Rotation and zoom preserve the selected milestone.
+
 Every tab row is `role=tablist` with roving tabindex and automatic activation:
 ArrowLeft/ArrowRight wrap, Home/End jump.
 
