@@ -113,6 +113,7 @@ test('instant startup paints the work target without the name-to-work morph', ()
     motion: { matches: false }, endDrag() {}, inspectionHint() {}, syncFlow() {}, render() {},
   });
   context.uniforms.uInspect = { value: { set() {} } };
+  context.uniforms.uZoom = { value: 1 };
   vm.runInContext(source.slice(begin, end), context);
   context.change(7, true);
   assert.equal(context.active, 7); assert.equal(context.uniforms.uMorph.value, 1);
@@ -132,24 +133,28 @@ function inspection() {
   let waves = 0, renders = 0;
   const context = vm.createContext({
     Math, active: 4, overlay: false, time: 2,
-    uniforms: { uInspect: { value: angle }, uWave: { value: { set() { waves++; } } } },
+    uniforms: { uInspect: { value: angle }, uZoom: { value: 1 }, uWave: { value: { set() { waves++; } } } },
     motion: { matches: false }, pointer: { set() {} }, projectPointer() {}, render() { renders++; },
-    canvas: { addEventListener(type, fn) { listeners.set(type, fn); }, setPointerCapture(id) { captures.add(id); }, hasPointerCapture(id) { return captures.has(id); }, releasePointerCapture(id) { captures.delete(id); } },
-    document: { querySelectorAll() { return ['left', 'right', 'reset'].map(turn => ({ dataset: { turn }, addEventListener(_type, fn) { turns.set(turn, fn); } })); } },
+    canvas: { clientHeight: 900, addEventListener(type, fn) { listeners.set(type, fn); }, setPointerCapture(id) { captures.add(id); }, hasPointerCapture(id) { return captures.has(id); }, releasePointerCapture(id) { captures.delete(id); } },
+    document: { querySelectorAll() { return ['left', 'right', 'closer', 'further', 'reset'].map(turn => ({ dataset: { turn }, addEventListener(_type, fn) { turns.set(turn, fn); } })); } },
   });
   const begin = source.indexOf('  let drag = null;'), end = source.indexOf("  addEventListener('resize'", begin);
   vm.runInContext(source.slice(begin, end), context);
-  const send = (type, extra = {}) => listeners.get(type)({ button: 0, isPrimary: true, pointerId: 1, clientX: 100, clientY: 100, ...extra });
-  return { context, angle, send, turns, captures, get waves() { return waves; }, get renders() { return renders; } };
+  const send = (type, extra = {}) => {
+    const event = { button: 0, buttons: 1, pointerType: 'mouse', isPrimary: true, pointerId: 1, clientX: 100, clientY: 100, defaultPrevented: false, preventDefault() { this.defaultPrevented = true; }, ...extra };
+    listeners.get(type)(event); return event;
+  };
+  const right = (type, extra = {}) => send(type, { button: 2, buttons: 2, ...extra });
+  return { context, angle, send, right, turns, captures, get waves() { return waves; }, get renders() { return renders; } };
 }
 
 test('drag inspection separates waves from rotation and cancels cleanly', () => {
   const f = inspection();
   f.send('pointerdown'); f.send('pointermove', { clientX: 103 }); f.send('pointerup');
   assert.equal(f.angle.x, 0); assert.equal(f.waves, 1); assert.equal(f.captures.size, 0);
-  f.send('pointerdown'); f.send('pointermove', { pointerId: 2, clientX: 200 });
+  f.right('pointerdown'); f.right('pointermove', { pointerId: 2, clientX: 200 });
   assert.equal(f.angle.x, 0, 'another pointer cannot steer the captured model');
-  f.send('pointermove', { clientX: 200, clientY: 10000 }); f.send('pointerup');
+  f.right('pointermove', { clientX: 200, clientY: 10000 }); f.right('pointerup');
   assert(f.angle.x > 0); assert.equal(f.angle.y, Math.PI / 3); assert.equal(f.waves, 1);
   const before = f.angle.x;
   f.send('pointerdown'); f.send('pointercancel'); f.send('pointermove', { clientX: 300 });
@@ -165,8 +170,38 @@ test('rotation controls render manually in reduced motion and reset the view', (
   const f = inspection(); f.context.motion.matches = true;
   f.turns.get('right')(); assert.equal(f.angle.x, .3); assert(f.renders > 0);
   f.turns.get('left')(); assert.equal(f.angle.x, 0);
-  f.send('pointerdown'); f.send('pointermove', { clientX: 200 }); f.send('pointerup');
+  f.right('pointerdown'); f.right('pointermove', { clientX: 200 }); f.right('pointerup');
   assert(f.angle.x > 0); assert.equal(f.waves, 0);
   f.turns.get('reset')(); assert.equal(f.angle.x, 0); assert.equal(f.angle.y, 0);
   f.context.active = 0; f.turns.get('right')(); assert.equal(f.angle.x, 0);
+});
+
+test('only held right mouse drag rotates; left drag, release and context menu stay distinct', () => {
+  const f = inspection();
+  f.send('pointerdown'); f.send('pointermove', { clientX: 250 }); f.send('pointerup');
+  assert.equal(f.angle.x, 0); assert.equal(f.waves, 0);
+  f.right('pointerdown'); f.right('pointerup'); assert.equal(f.waves, 0);
+  assert.equal(f.send('contextmenu').defaultPrevented, true);
+  f.right('pointerdown'); f.right('pointermove', { clientX: 180, buttons: 0 });
+  assert.equal(f.angle.x, 0); assert.equal(f.captures.size, 0);
+  f.context.active = 0; assert.equal(f.send('contextmenu').defaultPrevented, false);
+});
+
+test('wheel zoom is bounded, normalizes units, preserves browser zoom and resets', () => {
+  const f = inspection(), scale = f.context.uniforms.uZoom;
+  f.context.motion.matches = true;
+  assert.equal(f.send('wheel', { deltaY: -100, deltaMode: 0 }).defaultPrevented, true);
+  assert(scale.value > 1); assert(f.renders > 0);
+  f.turns.get('reset')(); assert.equal(scale.value, 1);
+  f.send('wheel', { deltaY: -6.25, deltaMode: 1 }); const lineZoom = scale.value;
+  f.turns.get('reset')(); f.send('wheel', { deltaY: -100, deltaMode: 0 });
+  assert.equal(scale.value, lineZoom);
+  for (let i = 0; i < 20; i++) f.send('wheel', { deltaY: -1, deltaMode: 2 });
+  assert.equal(scale.value, 1.5);
+  for (let i = 0; i < 20; i++) f.turns.get('further')();
+  assert.equal(scale.value, .65);
+  for (const props of [{ ctrlKey: true, deltaY: 100 }, { metaKey: true, deltaY: 100 }, { deltaY: NaN }]) assert.equal(f.send('wheel', props).defaultPrevented, false);
+  assert.equal(scale.value, .65);
+  f.turns.get('reset')(); assert.equal(scale.value, 1);
+  f.context.active = 0; assert.equal(f.send('wheel', { deltaY: -100 }).defaultPrevented, false); assert.equal(scale.value, 1);
 });

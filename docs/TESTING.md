@@ -134,6 +134,10 @@ project switching and Escape focus return. Inspection tests execute the renderer
 actual pointer listeners with injected events and render calls, covering capture
 identity, threshold, cancel/lost capture, pitch limits and reduced-motion manual
 rendering. Native GPU/drag and preview checks complement these state checks.
+Right-drag tests distinguish mouse buttons, release and cancellation; left-drag
+cannot rotate or emit a click wave. Wheel tests normalize pixel/line/page deltas,
+bound zoom and preserve browser zoom modifiers. Explicit Home focus intent is
+tested with body focus to cover browsers that do not focus clicked links.
 
 - **Browser rendering and layout.** No headless browser in the gate: it
   would be the slowest and flakiest part of verify for a site whose layout

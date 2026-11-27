@@ -35,7 +35,7 @@ try {
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
       attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
-      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
+      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork,uZoom;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
       vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
@@ -96,6 +96,7 @@ try {
         float alive=uFlow*uMotion;p+=flow.xyz*alive;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p.yz=turn(uInspect.y*(1.-uNameWeight))*p.yz;p.xz=turn(uInspect.x*(1.-uNameWeight))*p.xz;
+        p*=mix(uZoom,1.,uNameWeight);
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
@@ -111,10 +112,11 @@ try {
   });
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
   uniforms.uInspect = { value: new THREE.Vector2(0, 0) };
+  uniforms.uZoom = { value: 1 };
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
   function inspectionHint() {
-    document.querySelector('.interaction-hint').textContent = active === 0 ? (motion.matches ? 'Choose a section to explore' : 'Move to disturb\nClick to send a wave') : (motion.matches ? 'Drag to inspect\nUse rotation controls below' : 'Drag to inspect\nClick to send a wave');
+    document.querySelector('.interaction-hint').textContent = active === 0 ? (motion.matches ? 'Choose a section to explore' : 'Move to disturb\nClick to send a wave') : 'Hold right-click to rotate\nScroll to zoom';
   }
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
@@ -129,7 +131,7 @@ try {
   }
   function change(index, instant = false) {
     if (!Number.isInteger(index) || !shapes[index] || (index === active && !instant)) return;
-    uniforms.uInspect.value.set(0, 0); endDrag();
+    uniforms.uInspect.value.set(0, 0); uniforms.uZoom.value = 1; endDrag();
     if (index !== 0) uniforms.uArrival.value = 1;
     const m = uniforms.uMorph.value;
     for (const [fromName, toName] of [['aFrom', 'aTo'], ['aColorFrom', 'aColorTo']]) {
@@ -181,32 +183,45 @@ try {
     angle.y = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, angle.y + dy));
     render();
   }
+  function zoom(delta) {
+    if (!active || overlay || !Number.isFinite(delta)) return;
+    uniforms.uZoom.value = Math.max(.65, Math.min(1.5, uniforms.uZoom.value * Math.exp(-delta * .0015)));
+    render();
+  }
   canvas.addEventListener('pointermove', event => {
     if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
     projectPointer(event);
-    if (!drag || drag.id !== event.pointerId || active === 0) return;
+    if (!drag || drag.id !== event.pointerId) return;
+    if (drag.rotate && event.pointerType !== 'touch' && !(event.buttons & 2)) { endDrag(); return; }
     const x = event.clientX - drag.x, y = event.clientY - drag.y;
     if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return;
     drag.moved = true; drag.x = event.clientX; drag.y = event.clientY;
-    rotate(x * .008, y * .008);
+    if (drag.rotate && active !== 0) rotate(x * .008, y * .008);
   });
   canvas.addEventListener('pointerleave', () => pointer.set(100, 100));
   canvas.addEventListener('pointerdown', event => {
-    if (event.button !== 0 || overlay || !event.isPrimary || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
-    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false };
+    if (![0, 2].includes(event.button) || overlay || !event.isPrimary || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+    drag = { id: event.pointerId, rotate: event.button === 2 || event.pointerType === 'touch', wave: event.button === 0, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false };
     canvas.setPointerCapture(event.pointerId);
   });
   canvas.addEventListener('pointerup', event => {
     if (!drag || drag.id !== event.pointerId) return;
-    if (!drag.moved && !motion.matches) { projectPointer(event); uniforms.uWave.value.set(pointer.x, pointer.y, time); }
+    if (drag.wave && !drag.moved && !motion.matches) { projectPointer(event); uniforms.uWave.value.set(pointer.x, pointer.y, time); }
     endDrag();
   });
   canvas.addEventListener('pointercancel', endDrag);
   canvas.addEventListener('lostpointercapture', endDrag);
+  canvas.addEventListener('contextmenu', event => { if (active !== 0) event.preventDefault(); });
+  canvas.addEventListener('wheel', event => {
+    if (!active || overlay || event.ctrlKey || event.metaKey || !Number.isFinite(event.deltaY)) return;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? canvas.clientHeight : 1;
+    event.preventDefault(); zoom(Math.max(-160, Math.min(160, event.deltaY * unit)));
+  }, { passive: false });
   document.querySelectorAll('[data-turn]').forEach(button => button.addEventListener('click', () => {
     if (!active) return;
     const direction = button.dataset.turn;
-    if (direction === 'reset') { uniforms.uInspect.value.set(0, 0); render(); }
+    if (direction === 'reset') { uniforms.uInspect.value.set(0, 0); uniforms.uZoom.value = 1; render(); }
+    else if (direction === 'closer' || direction === 'further') zoom(direction === 'closer' ? -100 : 100);
     else if (direction === 'left' || direction === 'right') rotate(direction === 'left' ? -.3 : .3, 0);
   }));
   addEventListener('resize', resize); motion.addEventListener('change', resume); document.addEventListener('visibilitychange', resume);

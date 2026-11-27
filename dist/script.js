@@ -70,6 +70,7 @@ function select(index, updateUrl = true) {
   closeProjectDetails();
   currentProject = index; workMode = null; fallbackMode = null;
   markSection(index === 0 ? 'home' : 'projects');
+  document.querySelector('.scene-copy')?.setAttribute('aria-live', index === 0 ? 'off' : 'polite');
   document.body.classList.remove('work-view', 'work-fallback');
   dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: null } }));
   const [key, category, title, description, url, launch] = projects[index];
@@ -102,7 +103,7 @@ for (const link of [document.querySelector('[data-projects]'), document.getEleme
 });
 document.getElementById('scene-launch').addEventListener('click', event => {
   if (currentProject !== 0 || workMode !== null || fallbackMode !== null || event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !document.body.classList.contains('work-ui-ready')) return;
-  event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));
+  event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career', focus: 'title' } }));
 });
 // Home previews respond to intent only; they never navigate or cycle scenes.
 const homePreviews = [
@@ -178,7 +179,7 @@ addEventListener('portfolio:graphics-ready', () => { const mode = workMode ?? fa
 for (const control of [document.querySelector('[data-resume]'), document.getElementById('welcome-resume')]) control.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   if (!document.body.classList.contains('work-ui-ready')) return;
-  event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));
+  event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career', focus: 'title' } }));
 });
 document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => {
   if (button.dataset.open === 'project-info') {
@@ -186,7 +187,7 @@ document.querySelectorAll('[data-open]').forEach(button => button.addEventListen
     openProjectDetails();
     return;
   }
-  if (button.dataset.open === 'about' && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: button.hasAttribute('data-contact') ? 'contact' : 'knowledge' } })); return; }
+  if (button.dataset.open === 'about' && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: button.hasAttribute('data-contact') ? 'contact' : 'knowledge', focus: 'title' } })); return; }
   const dialog = document.getElementById(button.dataset.open);
   if (!(dialog instanceof HTMLDialogElement)) return;
   aboutOpener = button; dialog.show();

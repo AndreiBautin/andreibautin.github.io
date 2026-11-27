@@ -294,10 +294,10 @@ export function mountWorkUI(root = document) {
   }
 
   // Synchronously reflect the authoritative mode in visibility and ARIA state.
-  const apply = (next) => {
+  const apply = (next, intent = null) => {
     const previous = mode;
     const focusWasInside = panel.contains(doc.activeElement);
-    const source = request && request.mode === next ? request.focus : null;
+    const source = request && request.mode === next ? request.focus : intent;
     mode = next;
     tabs.hidden = !EXPERIENCE.includes(next);
     panel.hidden = next === null;
@@ -320,7 +320,7 @@ export function mountWorkUI(root = document) {
   const onMode = (event) => {
     const detail = event && event.detail;
     if (disposed || !detail || typeof detail !== 'object' || !('mode' in detail) || !validMode(detail.mode)) return;
-    apply(detail.mode);
+    apply(detail.mode, detail.focus === 'title' ? 'title' : null);
   };
 
   s.on(view, 'portfolio:mode', onMode);

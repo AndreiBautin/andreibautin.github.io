@@ -56,4 +56,4 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
   .work-art{max-width:200px}
 }
 @media(max-height:640px){.work-hud{top:100px;bottom:118px;max-height:none}}
-@media(max-width:600px) and (max-height:640px){.work-hud{top:84px;bottom:108px}}
+@media(max-width:600px) and (max-height:640px){.work-hud{top:220px;bottom:108px}}

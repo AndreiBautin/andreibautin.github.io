@@ -315,6 +315,14 @@ test('career offers four selectable milestones and the approved PDF', () => {
   dispose();
 });
 
+test('explicit Home navigation focuses the title even when hiding its opener restores body focus', () => {
+  const f = fixture(); const { dispose } = ui.mountWorkUI(f.doc);
+  assert.equal(f.doc.activeElement, f.body);
+  f.win.dispatchEvent(new f.win.CustomEvent('portfolio:mode', { detail: { mode: 'career', focus: 'title' } }));
+  assert.equal(f.doc.activeElement, f.view('career').all(e => e.id === 'work-ui-career-title')[0]);
+  dispose();
+});
+
 test('contact shows selectable email, mailto, LinkedIn, GitHub and resume links', () => {
   const f = fixture();
   const { dispose } = ui.mountWorkUI(f.doc);
