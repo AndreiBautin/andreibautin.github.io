@@ -79,6 +79,20 @@ scene morph settles and uses the existing paused/reduced-motion frame lifecycle.
 Selecting a resume milestone updates `portfolio:career-step` and emphasizes that
 node's pulse without navigating or advancing the story automatically.
 
+## Contact and presentation scale
+
+Contact joins the same gated loop as flow identity 5. Its open nexus ring turns,
+satellite bodies rotate, packet bands travel and curved connections carry pulses.
+A slow whole-shape precession, breathing and float make the scene visibly alive
+without pointer input. The old ungated Contact wobble/alpha floor is removed.
+All nine scenes retain their distinct idle movement: name rock/float, planet and
+sculpture spin, jellyfish pulse, and five professional flow identities. Reduced
+motion deliberately settles them; hidden frames pause their clock.
+
+Default presentation is 12 percent larger (8 percent on narrow phones), applied
+to model coordinates before stage positioning. Wheel zoom/reset remains relative
+to that baseline; text and interface sizing do not change.
+
 ## Evidence and limits
 
 Navigation tests execute the shipped classic script: direct Home Experience,

@@ -1,4 +1,3 @@
-// GPU point field: deterministic target shapes and interruptible transitions.
 const canvas = document.querySelector('.hero-tech'), status = document.getElementById('field-status');
 try {
   const [THREE, { createShapes, createNameShape, hash, interpolateInto }, { default: marks }] = await Promise.all([
@@ -21,7 +20,7 @@ try {
   try {
     const { createWorkShapes } = await import('./work-shapes.js?v=b4a24f7118');
     shapes.push(...createWorkShapes(count));
-  } catch { /* Factual controls and the original four forms remain available. */ }
+  } catch { /* Keep the original forms available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.debug.onShaderError = () => { throw new Error('Particle shader unavailable'); };
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(42, 1, .1, 100), geometry = new THREE.BufferGeometry();
@@ -30,18 +29,18 @@ try {
   geometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(Float32Array.from({ length: count }, (_, i) => hash(i, 33)), 1));
   const uniforms = {
     uTime: { value: 0 }, uMorph: { value: 1 }, uArrival: { value: 0 }, uPointer: { value: new THREE.Vector2(100, 100) }, uForce: { value: 0 },
-    uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uWork: { value: 0 }, uFlow: { value: 0 }, uFlowWork: { value: 0 },
+    uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uFlow: { value: 0 }, uFlowWork: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
       attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
-      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork,uZoom,uCareerStep;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
+      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uFlow,uFlowWork,uZoom,uCareerStep,uPresentation;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
       vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
       vec4 experienceFlow(float work,vec3 p,float part,float seed,float jt){
         vec3 d=vec3(0.);float energy=0.;
-        if(work<.5||work>4.5)return vec4(d,0.);
+        if(work<.5||work>5.5)return vec4(d,0.);
         float travel=fract(jt*.16+seed*2.7);
         float gate=smoothstep(0.,.1,travel)*(1.-smoothstep(.82,1.,travel));
         if(work<1.5){
@@ -79,7 +78,7 @@ try {
             if(p.z>.28&&length(p.xy)> .85&&length(p.xy)<1.65){d.xy=(turn(-jt*.1)*p.xy)-p.xy;energy=.4+.6*abs(sin(clock-jt*.9));}
             else{energy=pow(max(0.,sin(atan(knot.y,knot.x)*2.-jt*1.5)),2.);d.xy=normalize(vec2(-knot.y,knot.x)+vec2(.001))*sin(jt*.45+atan(knot.y,knot.x))*.018;}
           }
-        }else{
+        }else if(work<4.5){
           vec3 center;float node;
           if(p.x< -2.075){center=vec3(-3.1,-1.82,.32);node=0.;}
           else if(p.x<.05){center=vec3(-1.05,-.55,-.8);node=1.;}
@@ -99,6 +98,30 @@ try {
             d.y=sin(jt*.7+journey*4.2)*.12;d.z=sin(jt*.6+journey*6.)*.08;
           }
           vec3 q=p+d;q.xz=turn(sin(jt*.28)*.14)*q.xz;q.xy=turn(sin(jt*.2)*.018)*q.xy;d=q-p;
+        }else{
+          float radius=length(p.xy);
+          if(part<.5){
+            if(radius<1.1){d.xy=turn(jt*.3)*p.xy-p.xy;d.z=sin(jt*.7+atan(p.y,p.x))*.06;}
+            else{
+              vec3 center=p.x< -1.5?vec3(-3.15,1.2,.72):(p.x>1.5?vec3(3.25,1.02,-.58):vec3(.15,-2.05,.9));
+              vec3 rel=p-center;vec3 q=rel;q.yz=turn(jt*.35)*q.yz;d=q-rel;
+            }
+            energy=.25+.4*pow(max(0.,sin(atan(p.y,p.x)-jt*.9)),2.);
+          }else if(part<1.5){
+            vec3 dest=p.y< -.2?vec3(.15,-2.05,.9):(p.x<0.?vec3(-3.15,1.2,.72):vec3(3.25,1.02,-.58));
+            float start=clamp(dot(p.xy,dest.xy)/dot(dest.xy,dest.xy),0.,1.);
+            float next=mix(start,1.,travel);
+            float z0=2.*(1.-start)*start*.4+start*start*dest.z;
+            vec3 q=vec3(dest.xy*next+(p.xy-dest.xy*start)*(1.-travel),2.*(1.-next)*next*.4+next*next*dest.z+(p.z-z0)*(1.-travel));
+            d=q-p;energy=gate;
+          }else{
+            float pulse=fract(radius*.28-jt*.18);
+            energy=smoothstep(0.,.035,pulse)*(1.-smoothstep(.07,.24,pulse));
+            d.z=sin(jt*.6+p.x*.4)*.04;
+          }
+          vec3 q=(p+d)*(1.+sin(jt*.75)*.035);
+          q.xz=turn(sin(jt*.32)*.32)*q.xz;q.xy=turn(sin(jt*.23)*.16)*q.xy;
+          q.y+=sin(jt*.6)*.12;d=q-p;
         }
         return vec4(d,energy);
       }
@@ -111,12 +134,11 @@ try {
         p.xy=turn(sin(nt*.38)*.025*uNameWeight)*p.xy;
         p.y+=sin(nt*.8)*.18*uNameWeight;
         float part=mix(aFrom.w,aTo.w,m);float jt=uTime*uMotion;
-        if(uWork>4.5&&part>.5&&part<1.5)p.z+=sin(jt*1.3+aSeed*18.)*uMotion*.12;
         vec4 flow=experienceFlow(uFlowWork,p,part,aSeed,jt);
         float alive=uFlow*uMotion;p+=flow.xyz*alive;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
         p.yz=turn(uInspect.y)*p.yz;p.xz=turn(uInspect.x)*p.xz;
-        p*=uZoom;
+        p*=uZoom*uPresentation;
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
@@ -125,7 +147,6 @@ try {
         float depth=clamp(.76+p.z*.24, .52, 1.22);
         vColor=mix(aColorFrom,aColorTo,m)*mix(1.,depth,uFlow)+vec3(.2,.38,.18)*flow.w*alive+ring*.2;
         vAlpha=mix(.52,.85,aSeed)*born;if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
-        if(uWork>4.5&&part>1.5)vAlpha*=.65+.2*sin(jt*.8+aSeed*12.)*uMotion;
         if(part>.5&&part<1.5)vAlpha*=mix(1.,flow.w,alive);
       }`,
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
@@ -133,18 +154,20 @@ try {
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
   uniforms.uInspect = { value: new THREE.Vector2(0, 0) };
   uniforms.uZoom = { value: 1 };
+  uniforms.uPresentation = { value: 1.12 };
   const selectedCareerTab = document.querySelector('#work-ui-career .work-step[aria-selected="true"]');
   uniforms.uCareerStep = { value: Number(selectedCareerTab?.id.slice(-1) ?? 0) };
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, lowFrames = 0, effectiveCount = count;
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
-    const id = active >= 4 && active <= 7 ? active - 3 : 0;
+    const id = active >= 4 && active <= 8 ? active - 3 : 0;
     uniforms.uFlowWork.value = id; uniforms.uFlow.value = id ? 1 : 0;
   }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight; camera.aspect = width / Math.max(1, height); camera.position.set(0, 0, camera.aspect < 1 ? 18 : 15); camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false); uniforms.uRatio.value = renderer.getPixelRatio(); uniforms.uMobile.value = width < 900 || camera.aspect < 1 ? 1 : 0;
+    renderer.setSize(width, height, false); uniforms.uRatio.value = renderer.getPixelRatio(); uniforms.uMobile.value = width < 900 || camera.aspect < 1.3 ? 1 : 0;
+    uniforms.uPresentation.value = width < 600 ? 1.08 : 1.12;
     const worldWidth = 2 * camera.position.z * Math.tan(42 * Math.PI / 360) * camera.aspect;
     uniforms.uNameScale.value = Math.min(.8, worldWidth / 17); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
   }
@@ -158,7 +181,7 @@ try {
       interpolateInto(from.array, to.array, m);
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
-    active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
+    active = index; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
     if (motion.matches || instant) { uniforms.uMorph.value = 1; transitionStart = null; uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
@@ -168,7 +191,7 @@ try {
     const follow = 1 - Math.exp(-dt * 4);
     uniforms.uNameWeight.value += ((active === 0 ? 1 : 0) - uniforms.uNameWeight.value) * follow;
     uniforms.uJelly.value += ((active === 3 ? 1 : 0) - uniforms.uJelly.value) * follow;
-    const experience = active >= 4 && active <= 7;
+    const experience = active >= 4 && active <= 8;
     if (uniforms.uFlow.value < 0.04 && transitionStart === null) uniforms.uFlowWork.value = experience ? active - 3 : 0;
     uniforms.uFlow.value += ((experience && transitionStart === null ? 1 : 0) - uniforms.uFlow.value) * follow;
     if (active === 1 || active === 2) uniforms.uSpin.value += dt * .08;

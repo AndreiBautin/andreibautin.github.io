@@ -70,6 +70,9 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    the welcome and focuses its first section choice. Projects expose an in-stage
    Home action. Resume uses flow identity 4 for orbiting rings, bobbing milestones
    and traveling light along the curved journey; no straight baseline remains.
+   Contact uses flow identity 5 for its turning nexus, traveling packets and slow
+   precession. All nine scenes have distinct idle motion and share slightly
+   enlarged model framing, with narrower-screen limits and settled reduced motion.
 
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.

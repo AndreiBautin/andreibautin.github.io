@@ -77,8 +77,41 @@ test('Resume joins the gated flow loop and pauses with hidden frames', () => {
   const before = state.time; state.document.hidden = true; run.tick(100);
   assert.equal(state.time, before);
   state.document.hidden = false; state.active = 8; state.transitionStart = state.time;
-  run.tick(200); assert.equal(state.uniforms.uFlowWork.value, 0);
-  assert(state.uniforms.uFlow.value < .001);
+  run.tick(200); assert.equal(state.uniforms.uFlowWork.value, 5);
+  assert(state.uniforms.uFlow.value > .99);
+});
+
+test('every professional scene including Contact reaches its own idle flow and leaves it cleanly', () => {
+  for (const index of [4, 5, 6, 7, 8]) {
+    const run = frames(), state = run.context; state.active = index; run.tick(200);
+    assert.equal(state.uniforms.uFlowWork.value, index - 3);
+    assert(state.uniforms.uFlow.value > .99);
+    const before = state.time; state.document.hidden = true; run.tick(30);
+    assert.equal(state.time, before);
+    state.document.hidden = false; state.active = 1; state.transitionStart = state.time;
+    run.tick(200); assert.equal(state.uniforms.uFlowWork.value, 0); assert(state.uniforms.uFlow.value < .001);
+  }
+});
+
+test('Contact reduced motion initializes its still target without scheduling animation', () => {
+  const state = frames().context; state.active = 8; state.motion.matches = true;
+  let scheduled = 0; state.cancelAnimationFrame = () => {}; state.requestAnimationFrame = () => { scheduled++; };
+  const syncStart = source.indexOf('  function syncFlow()'), syncEnd = source.indexOf('  function resize()', syncStart);
+  const resumeStart = source.indexOf('  function resume()'), resumeEnd = source.indexOf("  addEventListener('portfolio:scene'", resumeStart);
+  vm.runInContext(source.slice(syncStart, syncEnd) + source.slice(resumeStart, resumeEnd), state);
+  state.resume();
+  assert.equal(state.uniforms.uMotion.value, 0); assert.equal(state.uniforms.uFlowWork.value, 5);
+  assert.equal(state.uniforms.uMorph.value, 1); assert.equal(scheduled, 0);
+});
+
+test('the four original idle scenes retain their distinct renderer motion weights', () => {
+  for (const index of [0, 1, 2, 3]) {
+    const run = frames(), state = run.context; state.active = index; run.tick(200);
+    assert.equal(state.active, index, 'idle movement never navigates');
+    if (index === 0) assert(state.uniforms.uNameWeight.value > .99);
+    if (index === 1 || index === 2) assert(state.uniforms.uSpin.value > 0);
+    if (index === 3) assert(state.uniforms.uJelly.value > .99);
+  }
 });
 
 test('welcome particles form once and remain on the name through prolonged idle time', () => {
@@ -90,12 +123,13 @@ test('welcome particles form once and remain on the name through prolonged idle 
 
 test('portrait desktop framing keeps the bounded Resume geometry inside the view', () => {
   const begin = source.indexOf('  function resize()'), end = source.indexOf('  function change(', begin);
-  for (const [width, height] of [[1024, 1366], [900, 1200], [390, 844], [1920, 1080]]) {
+  for (const [width, height] of [[1024, 1366], [900, 1200], [900, 1000], [1000, 900], [1280, 1024], [390, 844], [1920, 1080]]) {
     const camera = { aspect: 1, position: { z: 15, set(_x, _y, z) { this.z = z; } }, updateProjectionMatrix() {} };
-    const uniforms = Object.fromEntries(['uRatio', 'uMobile', 'uNameScale', 'uShapeScale'].map(key => [key, { value: 0 }]));
+    const uniforms = Object.fromEntries(['uRatio', 'uMobile', 'uNameScale', 'uShapeScale', 'uPresentation'].map(key => [key, { value: 0 }]));
     const context = vm.createContext({ Math, canvas: { clientWidth: width, clientHeight: height }, camera, uniforms, renderer: { setSize() {}, getPixelRatio() { return 1; } }, render() {} });
     vm.runInContext(source.slice(begin, end), context); context.resize();
-    const compact = uniforms.uMobile.value, scale = compact ? uniforms.uShapeScale.value : 1;
+    const compact = uniforms.uMobile.value, scale = (compact ? uniforms.uShapeScale.value : 1) * uniforms.uPresentation.value;
+    assert(uniforms.uPresentation.value > 1, 'default model framing is slightly enlarged');
     // Conservative career extents, including orbital trails, projected through
     // the actual resize-selected camera and stage scale/offset.
     const depth = camera.position.z - 1.8 * scale;

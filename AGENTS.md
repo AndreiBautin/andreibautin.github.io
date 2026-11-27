@@ -31,3 +31,5 @@
   controls reveal only on keyboard focus; right-drag and wheel remain active.
 - Resume has no decorative baseline. Career nodes/rings/trails move in the gated
   professional shader flow, pause when hidden and settle with reduced motion.
+- Every model has visible idle motion, including Contact flow 5. Keep motion gated
+  through transitions and reduced motion; base enlargement must preserve framing.
