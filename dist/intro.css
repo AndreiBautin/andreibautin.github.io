@@ -1,12 +1,13 @@
 /* File pair: intro.js, intro-state.js and intro.css are coupled adapters. */
 #portfolio-intro{position:absolute;left:5vw;bottom:182px;z-index:3;width:min(310px,36vw);color:var(--ink);pointer-events:none}
-#replay-intro{color:var(--muted);font:9px var(--mono);padding:8px}.intro-playing .scene-copy{visibility:hidden}
+#replay-intro{color:var(--muted);font:9px var(--mono);padding:8px}.intro-playing .scene-copy,.intro-playing .work-hud,.intro-playing .work-tabs{visibility:hidden}
 #portfolio-intro[hidden]{display:none}
 #portfolio-intro .intro-copy{margin-bottom:14px}
 #intro-message{margin:0;font:500 26px var(--font);letter-spacing:-.04em}
-#portfolio-intro .intro-preview{margin:0;aspect-ratio:16/9;overflow:hidden;mask-image:linear-gradient(#000 70%,transparent);opacity:.8}
+#portfolio-intro .intro-preview{display:none;margin:0;aspect-ratio:16/9;overflow:hidden;mask-image:linear-gradient(#000 70%,transparent);opacity:.8}
 #portfolio-intro .intro-preview img{display:block;width:100%;height:100%;object-fit:cover}
-#portfolio-intro[data-intro-beat="identity"] .intro-preview{display:none}
+#portfolio-intro[data-intro-beat="terra"] .intro-preview,#portfolio-intro[data-intro-beat="nacre"] .intro-preview,#portfolio-intro[data-intro-beat="pelagic"] .intro-preview{display:block}
+#intro-step{margin:0 0 14px;color:var(--accent);font:10px var(--mono);text-transform:uppercase;letter-spacing:.12em}
 #intro-caption{margin:14px 0;color:var(--muted);font-size:13px;line-height:1.6}
 #skip-intro{pointer-events:auto;padding:8px 0;color:var(--accent);font-size:12px;text-decoration:underline;text-underline-offset:4px}
 #skip-intro:focus-visible{outline:2px solid var(--accent);outline-offset:4px}

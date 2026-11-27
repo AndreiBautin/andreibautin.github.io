@@ -14,21 +14,21 @@ async function modules(context = vm.createContext({})) {
 }
 test.before(async () => { policy = (await modules()).state; });
 
-test('exact visible sequence lasts 4800ms with 900ms identity and 1300ms per project', () => {
+test('nine-second overview shows professional experience before personal projects', () => {
   let state = policy.createIntroState(100);
-  for (const [elapsed, key, index] of [[0, 'identity', 0], [899, 'identity', 0], [900, 'terra', 1], [2199, 'terra', 1], [2200, 'nacre', 2], [3499, 'nacre', 2], [3500, 'pelagic', 3], [4799, 'pelagic', 3]]) {
+  for (const [elapsed, key, index] of [[0, 'identity', 0], [899, 'identity', 0], [900, 'knowledge', 4], [2199, 'knowledge', 4], [2200, 'replication', 5], [3500, 'payments', 6], [4800, 'terra', 1], [6200, 'nacre', 2], [7600, 'pelagic', 3], [8999, 'pelagic', 3]]) {
     state = policy.advanceIntro(state, elapsed + 100);
     assert.equal(policy.introBeat(state).key, key);
     assert.equal(policy.introBeat(state).index, index);
   }
-  state = policy.advanceIntro(state, 4900);
-  assert.equal(state.elapsed, 4800);
+  state = policy.advanceIntro(state, 9100);
+  assert.equal(state.elapsed, 9000);
   assert.equal(policy.introBeat(state), null);
 });
 
 test('policy skips seen sessions, motion, data saving and direct destinations', () => {
   assert.equal(policy.shouldStartIntro(), true);
-  for (const options of [{ seen: true }, { reducedMotion: true }, { saveData: true }, ...['terra', 'nacre', 'pelagic', 'construct', 'experience', 'career', 'contact'].map(key => ({ hash: `#${key}` }))]) {
+  for (const options of [{ seen: true }, { reducedMotion: true }, { saveData: true }, ...['top', 'projects', 'terra', 'nacre', 'pelagic', 'construct', 'experience', 'resume', 'career', 'contact', 'work-payments'].map(key => ({ hash: `#${key}` }))]) {
     assert.equal(policy.shouldStartIntro(options), false);
   }
   assert.equal(policy.shouldStartIntro({ hash: '#unrelated' }), true);
@@ -48,7 +48,7 @@ test('hostile clocks cannot corrupt progress; paused time is excluded; interrupt
   assert.equal(policy.advanceIntro(interrupted, Number.MAX_VALUE), interrupted);
   assert.equal(policy.introBeat(interrupted), null);
   for (const now of [NaN, Infinity, -1, '1']) assert.equal(policy.createIntroState(now).anchor, null);
-  assert.equal(policy.advanceIntro(policy.createIntroState(0), Number.MAX_VALUE).elapsed, 4800);
+  assert.equal(policy.advanceIntro(policy.createIntroState(0), Number.MAX_VALUE).elapsed, 9000);
 });
 
 class Target {
@@ -60,7 +60,7 @@ class Target {
   contains(node) { return node === this || (this.children ?? []).includes(node); }
   focus() { this.focused = true; }
 }
-function fixture({ denied = false, seen = false, hash = '', reduced = false, saveData = false, selected = 0 } = {}) {
+function fixture({ denied = false, seen = false, hash = '', reduced = false, saveData = false, selected = 0, workReady = true } = {}) {
   const doc = new Target(), win = new Target(), overlay = new Target(), replay = new Target(), skip = new Target(), message = new Target(), caption = new Target();
   const images = ['terra', 'nacre', 'pelagic'].map(key => Object.assign(new Target(), { dataset: { introImage: key } }));
   const motion = Object.assign(new Target(), { matches: reduced });
@@ -71,6 +71,8 @@ function fixture({ denied = false, seen = false, hash = '', reduced = false, sav
   overlay.querySelectorAll = () => images;
   overlay.children = [skip, message, caption, ...images];
   doc.defaultView = win;
+  const classes = new Set(workReady ? ['work-ui-ready'] : []);
+  doc.body = { classList: { add: key => classes.add(key), remove: key => classes.delete(key), contains: key => classes.has(key) } };
   doc.hidden = false;
   win.navigator = { connection };
   win.matchMedia = () => motion;
@@ -86,16 +88,20 @@ function fixture({ denied = false, seen = false, hash = '', reduced = false, sav
   return { doc, win, overlay, replay, skip, message, caption, images, frames, scenes, frame, motion, connection };
 }
 
-test('adapter cycles actual images with scene events and restores the selected scene without navigation', async () => {
+test('adapter showcases work then actual project images and completes once without stale restoration', async () => {
   const { adapter } = await modules(), f = fixture({ selected: 2 });
+  let completions = 0; f.win.addEventListener('portfolio:intro-complete', () => completions++);
   adapter.mountIntro(f.doc);
   f.frame(0); f.frame(900);
+  assert.equal(f.images.every(image => image.hidden), true);
+  f.frame(2200); f.frame(3500); f.frame(4800);
   assert.equal(f.images[0].hidden, false);
   assert.equal(f.images[1].hidden, true);
-  f.frame(2200); assert.equal(f.images[1].hidden, false);
-  f.frame(3500); assert.equal(f.images[2].hidden, false);
-  f.frame(4800);
-  assert.deepEqual(f.scenes, [0, 1, 2, 3, 2]);
+  f.frame(6200); assert.equal(f.images[1].hidden, false);
+  f.frame(7600); assert.equal(f.images[2].hidden, false);
+  f.frame(9000); f.frame(15000);
+  assert.deepEqual(f.scenes, [0, 4, 5, 6, 1, 2, 3]);
+  assert.equal(completions, 1);
   assert.equal(f.overlay.hidden, true);
   assert.equal(f.win.location.hash, '');
   assert.equal(f.frames.size, 0);
@@ -106,10 +112,10 @@ test('a late graphics renderer receives the current intro beat without interrupt
   adapter.mountIntro(f.doc);
   f.frame(0); f.frame(900);
   f.win.emit('portfolio:graphics-ready');
-  assert.deepEqual(f.scenes, [0, 1, 1]);
+  assert.deepEqual(f.scenes, [0, 4, 4]);
   assert.equal(f.overlay.hidden, false);
   f.frame(2200);
-  assert.equal(f.scenes.at(-1), 2);
+  assert.equal(f.scenes.at(-1), 5);
 });
 
 test('the integrated page supplies the optional intro contract and keeps replay outside it', () => {
@@ -145,7 +151,7 @@ test('hidden tabs pause beats, passive pointer movement does not cancel, skip wo
   assert.equal(f.frames.size, 0);
   f.doc.hidden = false; f.doc.emit('visibilitychange');
   f.frame(10000); assert.equal(f.overlay.dataset.introBeat, 'identity');
-  f.frame(10400); assert.equal(f.overlay.dataset.introBeat, 'terra');
+  f.frame(10400); assert.equal(f.overlay.dataset.introBeat, 'knowledge');
   f.skip.emit('click'); assert.equal(f.overlay.hidden, true);
   mounted.replay(); assert.equal(f.overlay.hidden, false);
   f.skip.emit('click'); assert.equal(f.frames.size, 0);
@@ -176,4 +182,35 @@ test('external scenes never get restored over; live preferences, pagehide and di
     mounted.dispose();
     assert.equal([...f.doc.handlers.values()].reduce((sum, set) => sum + set.size, 0), 0);
   }
+});
+
+test('Skip completes once, outside navigation does not complete, and interruption restores a professional scene', async () => {
+  const { adapter } = await modules();
+  const f = fixture();
+  const query = f.doc.querySelector;
+  f.doc.querySelector = selector => selector === '#work-panel' ? { getAttribute: () => 'payments' } : query(selector);
+  let completions = 0; f.win.addEventListener('portfolio:intro-complete', () => completions++);
+  const mounted = adapter.mountIntro(f.doc);
+  f.doc.emit('pointerdown', { target: new Target() });
+  assert.equal(completions, 0);
+  assert.equal(f.scenes.at(-1), 6, 'interrupted replay restores the current professional target');
+  mounted.replay(); f.skip.emit('click'); f.skip.emit('click');
+  assert.equal(completions, 1); assert.equal(f.overlay.hidden, true);
+  assert.equal(f.frames.size, 0);
+});
+
+test('keyboard can reach Skip; Escape is consumed, and failed work enhancement restores matching copy', async () => {
+  const { adapter } = await modules();
+  const f = fixture(); adapter.mountIntro(f.doc);
+  f.doc.emit('keydown', { key: 'Tab', target: new Target() });
+  assert.equal(f.overlay.hidden, false, 'Tab must be able to reach Skip');
+  let prevented = false;
+  f.overlay.emit('keydown', { key: 'Escape', preventDefault() { prevented = true; } });
+  assert.equal(prevented, true); assert.equal(f.overlay.hidden, true);
+  f.replay.emit('click'); prevented = false;
+  f.doc.emit('keydown', { key: 'Escape', target: f.replay, preventDefault() { prevented = true; } });
+  assert.equal(prevented, true); assert.equal(f.overlay.hidden, true, 'Escape on Replay also finishes');
+  const fallback = fixture({ workReady: false, selected: 2 }); adapter.mountIntro(fallback.doc);
+  fallback.frame(0); fallback.frame(9000);
+  assert.equal(fallback.scenes.at(-1), 2);
 });

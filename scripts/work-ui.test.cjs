@@ -96,6 +96,7 @@ function fixture({ clipboard = 'resolve', selection = true } = {}) {
 }
 const flush = () => new Promise((r) => setImmediate(r));
 const MODES = ['knowledge', 'replication', 'payments', 'career', 'contact'];
+const EXPERIENCE = MODES.slice(0, 3);
 
 // ---- tests -----------------------------------------------------------------
 test('mount builds a hidden, labelled HUD and flags the body; dispose removes everything', () => {
@@ -110,11 +111,12 @@ test('mount builds a hidden, labelled HUD and flags the body; dispose removes ev
   assert.equal(tablist.getAttribute('role'), 'tablist');
   assert.equal(tablist.getAttribute('aria-label'), 'Professional work');
   for (const mode of MODES) {
+    assert.equal(f.view(mode).getAttribute('role'), EXPERIENCE.includes(mode) ? 'tabpanel' : 'region');
+    assert(f.view(mode).hidden);
+    if (!EXPERIENCE.includes(mode)) { assert.equal(f.tab(mode), undefined); continue; }
     const t = f.tab(mode);
     assert.equal(t.getAttribute('role'), 'tab');
     assert.equal(t.getAttribute('aria-controls'), `work-ui-${mode}`);
-    assert.equal(f.view(mode).getAttribute('role'), 'tabpanel');
-    assert(f.view(mode).hidden);
     assert(t.textContent.length > 0);
   }
   const ids = f.find((e) => e.id).map((e) => e.id);
@@ -155,9 +157,11 @@ test('portfolio:mode events synchronously set visibility, tabs and body state', 
     assert.equal(f.panel.getAttribute('data-work-mode'), mode);
     for (const other of MODES) {
       assert.equal(f.view(other).hidden, other !== mode, `${other} visibility under ${mode}`);
+      if (!EXPERIENCE.includes(other)) continue;
       assert.equal(f.tab(other).getAttribute('aria-selected'), String(other === mode));
       assert.equal(f.tab(other).getAttribute('tabindex'), other === mode ? '0' : '-1');
     }
+    assert.equal(f.byClass('work-tabs')[0].hidden, !EXPERIENCE.includes(mode));
   }
   for (const bad of [undefined, {}, { mode: 'resume' }, { mode: 3 }]) {
     f.win.dispatchEvent({ type: 'portfolio:mode', detail: bad });
@@ -167,7 +171,7 @@ test('portfolio:mode events synchronously set visibility, tabs and body state', 
   assert.equal(f.panel.hidden, true);
   assert(!f.body.classList.contains('work-view'));
   assert(MODES.every((m) => f.view(m).hidden));
-  assert.equal(MODES.filter((m) => f.tab(m).getAttribute('tabindex') === '0').length, 1, 'one tab stays reachable');
+  assert.equal(EXPERIENCE.filter((m) => f.tab(m).getAttribute('tabindex') === '0').length, 1, 'one tab stays reachable');
   dispose();
 });
 
@@ -198,14 +202,14 @@ test('tabs request navigation through the event and rove with the arrow keys', (
   assert.equal(f.doc.activeElement, f.tab('payments'));
   const press = (mode, key) => f.tab(mode).fire('keydown', { key });
   assert(press('payments', 'ArrowRight').defaultPrevented);
-  assert.equal(f.doc.activeElement, f.tab('career'));
-  press('career', 'End');
-  assert.equal(f.doc.activeElement, f.tab('contact'));
-  press('contact', 'ArrowRight');
+  assert.equal(f.doc.activeElement, f.tab('knowledge'));
+  press('knowledge', 'End');
+  assert.equal(f.doc.activeElement, f.tab('payments'));
+  press('payments', 'ArrowRight');
   assert.equal(f.doc.activeElement, f.tab('knowledge'), 'wraps');
   press('knowledge', 'ArrowLeft');
-  assert.equal(f.doc.activeElement, f.tab('contact'));
-  press('contact', 'Home');
+  assert.equal(f.doc.activeElement, f.tab('payments'));
+  press('payments', 'Home');
   assert.equal(f.doc.activeElement, f.tab('knowledge'));
   assert.equal(f.view('knowledge').hidden, false);
   assert.equal(press('knowledge', 'ArrowDown').defaultPrevented, false, 'other keys pass through');
@@ -385,7 +389,7 @@ test('dispose returns focus to the projects when it was inside the panel', () =>
   const f = fixture();
   const { dispose } = ui.mountWorkUI(f.doc);
   f.send('career');
-  f.tab('career').focus();
+  f.view('career').all((e) => e.tagName === 'BUTTON')[0].focus();
   dispose();
   assert.equal(f.doc.activeElement, f.picker);
   assert(!f.body.classList.contains('work-view'));

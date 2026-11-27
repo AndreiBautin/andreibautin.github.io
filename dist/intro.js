@@ -1,5 +1,5 @@
 // File pair: intro.js, intro-state.js and intro.css are coupled adapters.
-import { shouldStartIntro, createIntroState, advanceIntro, pauseIntro, interruptIntro, introBeat } from './intro-state.js?v=0bf7f7b499';
+import { INTRO_BEATS, shouldStartIntro, createIntroState, advanceIntro, pauseIntro, interruptIntro, introBeat } from './intro-state.js?v=b829e54b6e';
 
 export function mountIntro(root = document) {
   const doc = root.ownerDocument ?? root;
@@ -8,6 +8,7 @@ export function mountIntro(root = document) {
   const replayButton = root.querySelector('#replay-intro');
   const message = overlay?.querySelector('#intro-message');
   const caption = overlay?.querySelector('#intro-caption');
+  const step = overlay?.querySelector('#intro-step');
   const skip = overlay?.querySelector('#skip-intro');
   const images = [...(overlay?.querySelectorAll('[data-intro-image]') ?? [])];
   const noop = { replay() {}, dispose() {} };
@@ -18,7 +19,7 @@ export function mountIntro(root = document) {
 
   const motion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
   const connection = win.navigator.connection;
-  const storageKey = 'portfolio-intro-seen';
+  const storageKey = 'portfolio-intro-seen-v2';
   let seen = false;
   try { seen = win.sessionStorage.getItem(storageKey) === '1'; } catch { seen = true; }
   let state = interruptIntro(createIntroState());
@@ -34,12 +35,20 @@ export function mountIntro(root = document) {
   }
   function scene(index) {
     dispatching = true;
-    try { win.dispatchEvent(new win.CustomEvent('portfolio:scene', { detail: { index } })); }
+    try { win.dispatchEvent(new win.CustomEvent('portfolio:scene', { detail: { index, showcase: state.active } })); }
     finally { dispatching = false; }
   }
   function selectedScene() {
+    const mode = root.querySelector('#work-panel')?.getAttribute('data-work-mode');
+    const work = ['knowledge', 'replication', 'payments', 'career', 'contact'].indexOf(mode);
+    if (work >= 0) return 4 + work;
     const value = Number(root.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene);
     return Number.isInteger(value) && value >= 0 && value <= 3 ? value : 0;
+  }
+  function finish() {
+    if (!state.active) return;
+    stop(!doc.body?.classList.contains('work-ui-ready'));
+    win.dispatchEvent(new win.CustomEvent('portfolio:intro-complete'));
   }
   function stop(restore = true) {
     const active = state.active;
@@ -59,6 +68,7 @@ export function mountIntro(root = document) {
     overlay.dataset.introBeat = beat.key;
     message.textContent = beat.message;
     caption.textContent = beat.caption;
+    if (step) step.textContent = `${beat.section} / ${INTRO_BEATS.indexOf(beat) + 1} of ${INTRO_BEATS.length}`;
     images.forEach(img => { img.hidden = img.dataset.introImage !== beat.key; });
     scene(beat.index);
   }
@@ -67,7 +77,7 @@ export function mountIntro(root = document) {
     if (!state.active || disposed) return;
     if (doc.hidden) { state = pauseIntro(state); return; }
     const next = advanceIntro(state, now);
-    if (!next.active) { stop(); return; }
+    if (!next.active) { finish(); return; }
     state = next;
     try { paint(); frame = win.requestAnimationFrame(tick); } catch { stop(); }
   }
@@ -90,14 +100,17 @@ export function mountIntro(root = document) {
     } catch { stop(); }
   }
   function outside(event) {
-    if (!state.active || overlay.contains(event.target) || replayButton?.contains(event.target)) return;
+    if (!state.active || overlay.contains(event.target)) return;
+    if (event.type === 'keydown' && event.key === 'Tab') return;
+    if (event.type === 'keydown' && event.key === 'Escape') { event.preventDefault(); finish(); return; }
+    if (replayButton?.contains(event.target)) return;
     // Capture restores before the control's own handler chooses another scene.
     stop();
   }
-  listen(skip, 'click', () => stop());
-  listen(overlay, 'keydown', event => { if (event.key === 'Escape') stop(); });
+  listen(skip, 'click', finish);
+  listen(overlay, 'keydown', event => { if (event.key === 'Escape') { event.preventDefault(); finish(); } });
   listen(replayButton, 'click', replay);
-  for (const type of ['pointerdown', 'keydown', 'click', 'wheel']) listen(doc, type, outside, { capture: true, passive: true });
+  for (const type of ['pointerdown', 'keydown', 'click', 'wheel']) listen(doc, type, outside, { capture: true, passive: type !== 'keydown' });
   listen(win, 'portfolio:scene', () => { if (!dispatching) stop(false); });
   listen(win, 'portfolio:graphics-ready', () => { if (state.active) scene(introBeat(state).index); });
   listen(win, 'hashchange', () => stop(false));

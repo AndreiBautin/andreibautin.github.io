@@ -30,10 +30,16 @@ try { setTheme(localStorage.getItem('portfolio-theme') === 'light'); } catch { s
 themeButton.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
 const buttons = [...document.querySelectorAll('[data-scene]')];
 const workModes = ['knowledge', 'replication', 'payments', 'career', 'contact'];
-let currentProject = 0, workMode = null;
+let currentProject = 0, workMode = null, navigated = false;
+function markSection(section) {
+  document.body.setAttribute('data-section', section);
+  document.querySelectorAll('[data-section-link]').forEach(link => link.setAttribute('aria-current', link.dataset.sectionLink === section ? 'location' : 'false'));
+}
 function select(index, updateUrl = true) {
   if (!Number.isInteger(index) || !projects[index]) return;
   currentProject = index; workMode = null;
+  if (updateUrl) navigated = true;
+  markSection(index === 0 ? 'home' : 'projects');
   document.body.classList.remove('work-view');
   dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: null } }));
   const [key, category, title, description, url, launch] = projects[index];
@@ -50,27 +56,38 @@ function select(index, updateUrl = true) {
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
 document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); });
+document.querySelector('[data-projects]')?.addEventListener('click', event => {
+  if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault(); select(currentProject || 1); document.getElementById('projects').focus({ preventScroll: true });
+});
 function fromHash() {
   const key = location.hash.slice(1).replace(/^work-/, '');
   const mode = key === 'experience' ? 'knowledge' : key === 'resume' ? 'career' : key;
   if (workModes.includes(mode) && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode, updateUrl: false } })); return; }
   if (location.hash === '#construct') { select(2, false); return; }
+  if (location.hash === '#projects') { select(currentProject || 1, false); return; }
   select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false);
 }
 addEventListener('hashchange', fromHash); fromHash();
 addEventListener('portfolio:work-ready', () => {
   if (/^#(?:work-(?:knowledge|replication|payments|career|contact)|experience|career|resume|contact)$/.test(location.hash)) fromHash();
+  else if (!location.hash && !navigated && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'knowledge', updateUrl: false } }));
 });
 addEventListener('portfolio:mode', event => {
   const mode = event.detail?.mode;
   if (mode === null) { if (workMode !== null) select(currentProject); return; }
   if (!workModes.includes(mode)) return;
+  if (event.detail?.updateUrl !== false) navigated = true;
   workMode = mode; document.body.classList.add('work-view');
+  markSection(mode === 'career' ? 'resume' : mode === 'contact' ? 'contact' : 'experience');
   buttons.forEach(button => button.setAttribute('aria-pressed', 'false'));
   if (event.detail?.updateUrl !== false) history.replaceState(null, '', `#work-${mode}`);
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode) } }));
 });
-addEventListener('portfolio:graphics-ready', () => { if (workMode !== null) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(workMode) } })); });
+addEventListener('portfolio:graphics-ready', () => { if (workMode !== null && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(workMode) } })); });
+addEventListener('portfolio:intro-complete', () => {
+  if (document.body.classList.contains('work-ui-ready')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'knowledge', updateUrl: !!location.hash } }));
+});
 document.querySelector('[data-resume]').addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   if (!document.body.classList.contains('work-ui-ready')) return;
@@ -90,10 +107,10 @@ document.querySelectorAll('dialog').forEach(dialog => {
   dialog.addEventListener('close', () => dispatchEvent(new CustomEvent('portfolio:overlay', { detail: { open: false } })));
 });
 addEventListener('keydown', event => {
-  if (document.querySelector('dialog[open]') || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.defaultPrevented || document.querySelector('dialog[open]') || event.ctrlKey || event.metaKey || event.altKey) return;
   if (workMode !== null && event.key === 'Escape') { select(currentProject); return; }
   const index = ['1', '2', '3', '4'].indexOf(event.key);
-  if (index >= 0) { select(index); buttons[index].focus(); }
+  if (index >= 0) document.querySelectorAll('[data-section-link]')[index]?.click();
 });
 document.getElementById('copy-email').addEventListener('click', async () => {
   const status = document.getElementById('copy-status');

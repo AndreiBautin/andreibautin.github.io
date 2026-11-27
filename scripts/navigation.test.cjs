@@ -22,6 +22,7 @@ function fixture(hash = '') {
     hasAttribute(key) { return this.attributes.has(key); }
     focus() { document.activeElement = this; }
     scrollIntoView() {}
+    click() { this.emit('click'); }
   }
   class Dialog extends Element {
     constructor() { super(); this.closeButton = new Element(); }
@@ -30,9 +31,11 @@ function fixture(hash = '') {
     querySelector() { return this.closeButton; }
   }
   class CustomEvent { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } }
-  const win = new Target(), body = new Element(), icon = new Element(), theme = new Element(), home = new Element(), resume = new Element();
+  const win = new Target(), body = new Element(), icon = new Element(), theme = new Element(), home = new Element(), resume = new Element(), projectsLink = new Element();
   const buttons = Array.from({ length: 4 }, (_, scene) => new Element({ scene: String(scene) }));
   const experience = new Element({ open: 'about' }), contact = new Element({ open: 'about' }); contact.setAttribute('data-contact', '');
+  const sectionLinks = [experience, resume, projectsLink, contact];
+  sectionLinks.forEach((link, i) => { link.dataset.sectionLink = ['experience', 'resume', 'projects', 'contact'][i]; });
   const details = new Element({ open: 'about' });
   const about = new Dialog(), projectInfo = new Dialog();
   const ids = new Map([['about', about], ['project-info', projectInfo], ['scene-details', details]]);
@@ -41,9 +44,9 @@ function fixture(hash = '') {
     body, activeElement: body,
     getElementById(id) { if (!ids.has(id)) ids.set(id, new Element()); return ids.get(id); },
     querySelector(selector) {
-      return selector === '.theme-toggle' ? theme : selector === 'link[rel="icon"]' ? icon : selector === '[data-home]' ? home : selector === '[data-resume]' ? resume : selector === 'dialog[open]' ? [about, projectInfo].find(d => d.open) : null;
+      return selector === '.theme-toggle' ? theme : selector === 'link[rel="icon"]' ? icon : selector === '[data-home]' ? home : selector === '[data-resume]' ? resume : selector === '[data-projects]' ? projectsLink : selector === 'dialog[open]' ? [about, projectInfo].find(d => d.open) : null;
     },
-    querySelectorAll(selector) { return selector === '[data-scene]' ? buttons : selector === '[data-project-note]' ? notes : selector === '[data-open]' ? [experience, contact, details] : selector === 'dialog' ? [about, projectInfo] : []; },
+    querySelectorAll(selector) { return selector === '[data-section-link]' ? sectionLinks : selector === '[data-scene]' ? buttons : selector === '[data-project-note]' ? notes : selector === '[data-open]' ? [experience, contact, details] : selector === 'dialog' ? [about, projectInfo] : []; },
   };
   const location = { pathname: '/', hash };
   const scenes = [];
@@ -56,7 +59,7 @@ function fixture(hash = '') {
   });
   const mode = key => win.dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: key } }));
   const ready = () => { body.classList.add('work-ui-ready'); win.dispatchEvent(new CustomEvent('portfolio:work-ready')); };
-  return { win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready };
+  return { win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home };
 }
 
 test('fallback experience remains a native dialog when enhancement is unavailable', () => {
@@ -65,12 +68,18 @@ test('fallback experience remains a native dialog when enhancement is unavailabl
   assert.equal(prevented, false, 'approved PDF must remain a direct fallback');
 });
 
-test('late enhancement readiness does not reset the scene or interrupt an intro', () => {
-  const f = fixture(); const count = f.scenes.length; f.ready();
-  assert.equal(f.scenes.length, count, 'readiness on the default route must emit no replacement scene');
+test('default entry is Experience but late enhancement cannot overwrite visitor navigation or an intro', () => {
+  const f = fixture(); f.ready();
+  assert.equal(f.scenes.at(-1), 4);
+  assert.equal(f.location.hash, '', 'automatic default keeps the clean home URL');
+  assert.equal(f.experience.getAttribute('aria-current'), 'location');
   f.buttons[2].emit('click'); const afterSelection = f.scenes.length; f.ready();
   assert.equal(f.scenes.length, afterSelection);
   assert.equal(f.location.hash, '#nacre');
+  const playing = fixture(); playing.body.classList.add('intro-playing');
+  const before = playing.scenes.length; playing.ready();
+  assert.equal(playing.scenes.length, before);
+  playing.win.emit('portfolio:graphics-ready'); assert.equal(playing.scenes.length, before);
 });
 
 test('professional scenes and Escape preserve the selected project', () => {
@@ -112,4 +121,54 @@ test('explicit professional destinations survive delayed mounting without URL ch
     const f = fixture(hash); f.ready();
     assert.equal(f.scenes.at(-1), index); assert.equal(f.location.hash, hash);
   }
+});
+
+test('four ordered sections keep their own active state and remember the selected personal project', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../dist/index.html'), 'utf8');
+  assert.deepEqual([...html.matchAll(/data-section-link="([^"]+)"/g)].map(m => m[1]), ['experience', 'resume', 'projects', 'contact']);
+  assert.deepEqual([...html.matchAll(/data-scene="(\d)"/g)].map(m => Number(m[1])), [1, 2, 3]);
+  const f = fixture(); f.ready();
+  f.resume.emit('click'); assert.equal(f.resume.getAttribute('aria-current'), 'location');
+  f.projectsLink.emit('click'); assert.equal(f.scenes.at(-1), 1);
+  assert.equal(f.projectsLink.getAttribute('aria-current'), 'location');
+  f.buttons[3].emit('click'); f.contact.emit('click');
+  assert.equal(f.contact.getAttribute('aria-current'), 'location');
+  f.projectsLink.emit('click'); assert.equal(f.scenes.at(-1), 3);
+  assert.equal(f.location.hash, '#pelagic');
+  assert.equal(f.sectionLinks.filter(link => link.getAttribute('aria-current') === 'location').length, 1);
+});
+
+test('intro completion lands on Experience with a reload-consistent URL, including explicit replay', () => {
+  for (const hash of ['', '#nacre', '#work-career']) {
+    const f = fixture(hash); f.ready();
+    f.win.emit('portfolio:intro-complete');
+    assert.equal(f.scenes.at(-1), 4);
+    assert.equal(f.location.hash, hash ? '#work-knowledge' : '');
+    assert.equal(f.experience.getAttribute('aria-current'), 'location');
+  }
+});
+
+test('explicit Projects deep link and early Home choice survive delayed enhancement', () => {
+  const projects = fixture('#projects'); projects.ready();
+  assert.equal(projects.scenes.at(-1), 1); assert.equal(projects.location.hash, '#projects');
+  const home = fixture(); home.home.emit('click'); const before = home.scenes.length; home.ready();
+  assert.equal(home.scenes.length, before); assert.equal(home.scenes.at(-1), 0);
+});
+
+test('late graphics readiness cannot replace a running professional showcase', () => {
+  const f = fixture(); f.ready(); f.body.classList.add('intro-playing');
+  f.win.emit('portfolio:scene', { detail: { index: 6 } }); const before = f.scenes.length;
+  f.win.emit('portfolio:graphics-ready'); assert.equal(f.scenes.length, before);
+  f.body.classList.remove('intro-playing'); f.win.emit('portfolio:graphics-ready');
+  assert.equal(f.scenes.at(-1), 4);
+});
+
+test('number shortcuts follow section order and a consumed Escape cannot leave Experience again', () => {
+  const f = fixture(); f.ready();
+  for (const [key, scene] of [['2', 7], ['3', 1], ['4', 8], ['1', 4]]) {
+    f.win.emit('keydown', { key }); assert.equal(f.scenes.at(-1), scene);
+  }
+  const before = f.scenes.length;
+  f.win.emit('keydown', { key: 'Escape', defaultPrevented: true });
+  assert.equal(f.scenes.length, before);
 });

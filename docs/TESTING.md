@@ -1,5 +1,23 @@
 # Testing
 
+Section navigation regressions execute the shipped UI script: default Experience,
+ordered header selection, remembered personal project, deep links, completion
+with a reload-consistent URL, late renderer readiness and consumed Escape.
+The intro tests cover the nine-second professional-before-personal sequence,
+one completion event, actual image selection, cancellation, keyboard access to
+Skip, reduced motion/data saving, hidden tabs and missing-work-UI restoration.
+The renderer frame test checks the showcase morph settles before the next beat;
+it does not judge visual quality. Native desktop and small-screen review remains
+a separate acceptance step.
+
+Native fullscreen Chrome review on November 26 confirmed each top-level
+section, the three-project picker and local TERRA launch destination, the
+dedicated career/resume view with its PDF link, and the separate Contact view.
+Replay showed the professional and project overview beats with actual captures,
+then completed on Experience at `#work-knowledge`. The page had refreshed itself
+after the passing gate. Status remained approximately 60 fps at 42000 points.
+This desktop check does not establish physical mobile or screen-reader behavior.
+
 The HTML name is permanently visually clipped, including during startup and
 graphics failure. Its previous timed reveal is removed; readiness classes cannot
 bring back a large plain-text overlay. The heading remains in the accessibility

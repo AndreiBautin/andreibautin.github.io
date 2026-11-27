@@ -29,6 +29,11 @@ synchronously sets `#work-panel.hidden`, `data-work-mode`, `body.work-view`,
 each view's `hidden` and each tab's `aria-selected`/`tabindex`. Invalid
 details are ignored; re-dispatching the current mode is a no-op.
 
+Only knowledge, replication and payments appear in this tab row. Resume
+(`career`) and Contact are separate header sections with named regions and no
+professional tab row. See [Sections](SECTIONS.md) for the ordered navigation,
+default Experience entry and introductory showcase.
+
 Controls (tabs, Back to projects, Escape inside the panel, the in-panel
 Contact buttons) only *request* navigation by dispatching the same event; the
 module shows what the event says, so a main listener that redirects wins.

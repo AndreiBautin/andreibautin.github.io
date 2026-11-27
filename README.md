@@ -7,9 +7,11 @@ jellyfish. The same dots transform between all four forms. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 
-An optional, interruptible first-session tour cycles actual project captures and
-particle forms inside this same stage. It respects reduced motion and data saving.
-Replay is available explicitly; the homepage remains a single-screen application.
+Experience, Resume, Projects and Contact are separate views of this same stage,
+in that order. Experience opens first. An optional nine-second first-session
+tour showcases professional work and personal projects, then lands on Experience.
+It respects reduced motion and data saving, with Skip and Replay controls.
+See [section navigation](docs/SECTIONS.md).
 
 ## Run it
 

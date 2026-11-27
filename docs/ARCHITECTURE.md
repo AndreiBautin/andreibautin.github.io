@@ -49,7 +49,15 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    stage; navigation cancels it before taking effect. The renderer announces late
    readiness so an active intro can resend its current beat. Module URLs are
    versioned recursively, so a changed dependency invalidates the page URL.
-   It independently mounts **`work-ui.js`** inside the stage's hidden work panel.
+   It mounts **`work-ui.js`** inside the stage's hidden work panel before the
+   optional intro. The header orders Experience, Resume, Projects and Contact;
+   only Experience has the three professional subscene tabs. A clean entry
+   defaults to Experience. The nine-second intro showcases the name, three
+   professional forms and three projects, then returns to Experience. Showcase
+   scene events use a bounded 0.55-second morph so the forms can settle between
+   beats; ordinary navigation retains its 1.45-second morph. Skip and Escape
+   complete the intro; other navigation cancels it before taking effect. Modified
+   Resume clicks retain the PDF. See [Sections](SECTIONS.md) for routes and fallbacks.
    Header navigation has its original dialog/PDF fallback until that mount
    succeeds. **`script.js`** maps validated professional modes to the five
    **`work-shapes.js`** targets in the same renderer. Startup tolerates having no

@@ -25,7 +25,7 @@ function frames() {
   values.uPointer = { value: { lerp() {} } };
   const context = vm.createContext({
     Math, uniforms: values, document: { hidden: false }, active: 4,
-    transitionStart: 0, time: 0, last: 0, frame: 0, lowFrames: 0,
+    transitionStart: 0, transitionDuration: 1.45, time: 0, last: 0, frame: 0, lowFrames: 0,
     effectiveCount: 42000, fpsFrames: 0, fpsTime: 0, overlay: false,
     motion: { matches: false }, pointer: {}, status: {}, render() {},
     requestAnimationFrame() { return 1; },
@@ -67,6 +67,14 @@ test('hidden frames do not advance flow time or identity', () => {
   assert.equal(state.time, 0);
   assert.equal(state.uniforms.uFlow.value, 0);
   assert.equal(state.uniforms.uFlowWork.value, 0);
+});
+
+test('showcase transition settles early enough to display the complete professional form', () => {
+  const run = frames(); run.context.transitionDuration = .55;
+  run.tick(70);
+  assert.equal(run.context.uniforms.uMorph.value, 1);
+  assert.equal(run.context.transitionStart, null);
+  assert(run.context.uniforms.uFlow.value > .85);
 });
 
 test('renderer startup announces readiness when a work deep link leaves no project selected', () => {

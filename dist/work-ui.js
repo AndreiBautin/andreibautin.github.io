@@ -8,6 +8,7 @@
 // event to request navigation; null returns to the projects.
 
 export const MODES = Object.freeze(['knowledge', 'replication', 'payments', 'career', 'contact']);
+const EXPERIENCE = MODES.slice(0, 3);
 export const RESUME = './Andrei_Bautin_Resume.pdf';
 export const EMAIL = 'andreibautin94@gmail.com';
 export const LINKS = Object.freeze({
@@ -57,8 +58,8 @@ export const CONTENT = Object.freeze({
     ],
   },
   career: {
-    eyebrow: 'Career',
-    title: 'Milestones',
+    eyebrow: 'Resume',
+    title: 'Career & credentials',
     lede: 'Senior software engineer in Denver with 7+ years building enterprise applications in C#, .NET, React and Azure.',
     milestones: [
       ['May 2019', 'B.S., Applied Computing Technology', 'Colorado State University, Fort Collins, Colorado.'],
@@ -212,7 +213,7 @@ export function mountWorkUI(root = document) {
   for (const key of MODES) {
     const data = CONTENT[key];
     const id = `work-ui-${key}`;
-    const section = attrs(el('section', 'work-view'), { id, role: 'tabpanel', 'aria-labelledby': `work-ui-tab-${key} ${id}-title`, 'data-work-mode': key });
+    const section = attrs(el('section', 'work-view'), { id, role: EXPERIENCE.includes(key) ? 'tabpanel' : 'region', 'aria-labelledby': EXPERIENCE.includes(key) ? `work-ui-tab-${key} ${id}-title` : `${id}-title`, 'data-work-mode': key });
     section.hidden = true;
     const title = attrs(el('h2', 'work-title', data.title), { id: `${id}-title`, tabindex: '-1' });
     section.append(el('p', 'work-eyebrow', data.eyebrow), title, el('p', 'work-lede', data.lede));
@@ -241,8 +242,8 @@ export function mountWorkUI(root = document) {
   }
 
   const tabs = attrs(el('div', 'work-tabs'), { role: 'tablist', 'aria-label': 'Professional work' });
-  const tabButtons = MODES.map((key) => attrs(el('button', 'work-tab', TAB_LABELS[key]), { type: 'button', role: 'tab', id: `work-ui-tab-${key}`, 'aria-controls': `work-ui-${key}`, 'aria-selected': 'false', tabindex: '-1' }));
-  tabRow(tabs, tabButtons, (index) => navigate(MODES[index], 'tab'));
+  const tabButtons = EXPERIENCE.map((key) => attrs(el('button', 'work-tab', TAB_LABELS[key]), { type: 'button', role: 'tab', id: `work-ui-tab-${key}`, 'aria-controls': `work-ui-${key}`, 'aria-selected': 'false', tabindex: '-1' }));
+  tabRow(tabs, tabButtons, (index) => navigate(EXPERIENCE[index], 'tab'));
 
   s.on(panel, 'keydown', (event) => {
     if (event.key !== 'Escape' || mode === null || event.defaultPrevented) return;
@@ -293,11 +294,12 @@ export function mountWorkUI(root = document) {
     const focusWasInside = panel.contains(doc.activeElement);
     const source = request && request.mode === next ? request.focus : null;
     mode = next;
+    tabs.hidden = !EXPERIENCE.includes(next);
     panel.hidden = next === null;
     panel.setAttribute('data-work-mode', next || 'projects');
     body.classList.toggle('work-view', next !== null);
     for (const key of MODES) views[key].section.hidden = key !== next;
-    markTabs(tabButtons, MODES.indexOf(next));
+    markTabs(tabButtons, EXPERIENCE.indexOf(next));
     if (next === null) {
       if (tabButtons.every((b) => b.getAttribute('tabindex') === '-1')) tabButtons[0].setAttribute('tabindex', '0');
       if (previous !== null && (source === 'projects' || focusWasInside)) focus(doc.querySelector('#projects'));
@@ -306,7 +308,7 @@ export function mountWorkUI(root = document) {
     if (previous === next) return;
     // Only navigation moves focus: never on load, and never from an external
     // event while the visitor's focus rests on the page body.
-    if (source === 'tab') focus(tabButtons[MODES.indexOf(next)]);
+    if (source === 'tab') focus(tabButtons[EXPERIENCE.indexOf(next)]);
     else if (source === 'title' || (doc.activeElement && doc.activeElement !== body)) focus(views[next].title);
   };
 

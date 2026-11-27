@@ -109,7 +109,7 @@ try {
   });
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
-  let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
+  let active = 0, transitionStart = null, transitionDuration = 1.45, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
     const id = active >= 4 && active <= 6 ? active - 3 : 0;
@@ -121,7 +121,7 @@ try {
     const worldWidth = 2 * camera.position.z * Math.tan(42 * Math.PI / 360) * camera.aspect;
     uniforms.uNameScale.value = Math.min(.8, worldWidth / 17); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
   }
-  function change(index) {
+  function change(index, showcase = false) {
     if (!Number.isInteger(index) || !shapes[index] || index === active) return;
     const m = uniforms.uMorph.value;
     for (const [fromName, toName] of [['aFrom', 'aTo'], ['aColorFrom', 'aColorTo']]) {
@@ -129,7 +129,7 @@ try {
       interpolateInto(from.array, to.array, m);
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
-    active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
+    active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time; transitionDuration = showcase === true ? .55 : 1.45;
     if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
@@ -143,7 +143,7 @@ try {
     uniforms.uFlow.value += ((experience && transitionStart === null ? 1 : 0) - uniforms.uFlow.value) * follow;
     if (active === 1 || active === 2) uniforms.uSpin.value += dt * .08;
     else uniforms.uSpin.value += (Math.round(uniforms.uSpin.value / (Math.PI * 2)) * Math.PI * 2 - uniforms.uSpin.value) * follow;
-    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / 1.45); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
+    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / transitionDuration); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
     uniforms.uPointer.value.lerp(pointer, Math.min(1, dt * 9)); uniforms.uForce.value += ((overlay ? 0 : 1) - uniforms.uForce.value) * Math.min(1, dt * 7);
     render(); if (elapsed > 0) fpsFrames++; fpsTime += elapsed; if (elapsed > .028) lowFrames++; else lowFrames = Math.max(0, lowFrames - 1);
     if (lowFrames > 90 && effectiveCount > 18000) { effectiveCount = effectiveCount > 24000 ? 24000 : 18000; geometry.setDrawRange(0, effectiveCount); renderer.setPixelRatio(1); resize(); lowFrames = 0; }
@@ -156,7 +156,7 @@ try {
     if (motion.matches) { uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
-  addEventListener('portfolio:scene', event => change(event.detail?.index));
+  addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.showcase === true));
   addEventListener('portfolio:theme', event => { uniforms.uLight.value = event.detail?.light ? 1 : 0; material.blending = uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending; render(); });
   addEventListener('portfolio:overlay', event => { overlay = !!event.detail?.open; pointer.set(100, 100); });
   function projectPointer(event) { const box = canvas.getBoundingClientRect(), height = 2 * camera.position.z * Math.tan(42 * Math.PI / 360); pointer.set(((event.clientX - box.left) / box.width - .5) * height * camera.aspect, (.5 - (event.clientY - box.top) / box.height) * height); }

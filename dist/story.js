@@ -1,11 +1,11 @@
 // Optional stage enhancements. The single-screen application works without them.
 let intro = null, workUI = null, disposed = false;
-import('./work-ui.js?v=394b87910f').then(module => {
+const professional = import('./work-ui.js?v=d84fad3d13').then(module => {
   if (disposed) return;
   workUI = module.mountWorkUI(document);
   dispatchEvent(new CustomEvent('portfolio:work-ready'));
 }).catch(() => {});
-import('./intro.js?v=c9a90e5d46').then(module => {
+professional.then(() => import('./intro.js?v=6f36698c48')).then(module => {
   if (disposed) return;
   intro = module.mountIntro(document);
   const replay = document.getElementById('replay-intro');
