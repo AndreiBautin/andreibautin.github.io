@@ -161,7 +161,7 @@ try {
   uniforms.uInspect = { value: new THREE.Vector2(0, 0) };
   uniforms.uZoom = { value: 1 };
   uniforms.uPresentation = { value: 1.12 };
-  const selectedCareerTab = document.querySelector('#work-ui-career .work-step[aria-selected="true"]');
+  const selectedCareerTab = document.querySelector('.work-milestones [aria-selected="true"]');
   uniforms.uCareerStep = { value: Number(selectedCareerTab?.id.slice(-1) ?? 0) };
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, lowFrames = 0, effectiveCount = count;
