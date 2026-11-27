@@ -1,6 +1,6 @@
 // UI and direct project links do not depend on the graphics renderer.
 const projects = [
-  ['index', 'Software engineer', 'Andrei Bautin', '.NET, React, and Azure. Senior software engineer at 3Cloud.', './Andrei_Bautin_Resume.pdf', 'Explore my background'],
+  ['index', 'Software engineer', 'Andrei Bautin', '7+ years building enterprise applications with .NET, React, and Azure.', './Andrei_Bautin_Resume.pdf', 'Explore my background'],
   ['terra', 'Procedural planet explorer', 'TERRA', 'Create a world from a seed. Fly from orbit down to its terrain.', 'https://andreibautin.github.io/planet-generator/', 'Open TERRA'],
   ['nacre', 'Liquid sculpture studio', 'NACRE', 'Pull, split, merge, and freeze liquid into sculptures.', 'https://liquid-sculpture-studio.andreibautin94.chatgpt.site/', 'Open NACRE'],
   ['pelagic', 'Interactive ocean life', 'PELAGIC', 'Meet a luminous jellyfish. Build an aquarium and watch its inhabitants respond.', 'https://pelagic.andreibautin94.chatgpt.site/', 'Open PELAGIC'],
@@ -118,7 +118,7 @@ document.getElementById('scene-launch').addEventListener('click', event => {
 // Home previews respond to intent only; they never navigate or cycle scenes.
 const homePreviews = [
   ['welcome-resume', 'Resume', 'Career & credentials', 'Explore my career milestones, Azure certifications and the full resume.'],
-  ['welcome-experience', 'Experience', 'Engineering in practice', 'Explore the problem, my contribution and the outcome across three projects at 3Cloud.'],
+  ['welcome-experience', 'Experience', 'Engineering in practice', 'Explore the problem, my contribution and the outcome across three professional projects.'],
   ['welcome-projects', 'Projects', 'Independent experiments', 'Explore TERRA, NACRE and PELAGIC, then open their working applications.'],
   ['welcome-contact', 'Contact', 'Get in touch', 'Find my email, LinkedIn and GitHub, or download the full resume.'],
 ];
