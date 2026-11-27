@@ -139,6 +139,8 @@ export function mountWorkUI(root = document) {
   let request = null;
   const disposers = [];
 
+  // Tell the renderer which resume milestone node to emphasize (0-3).
+  const emphasize = (index) => { if (!disposed) view.dispatchEvent(new view.CustomEvent('portfolio:career-step', { detail: { index } })); };
   const el = (tag, cls, text) => { const node = doc.createElement(tag); if (cls) node.className = cls; if (text != null) node.textContent = text; return node; };
   const attrs = (node, map) => { for (const [k, v] of Object.entries(map)) node.setAttribute(k, String(v)); return node; };
   const link = (cls, href, text) => attrs(el('a', cls, text), { href });
@@ -181,12 +183,13 @@ export function mountWorkUI(root = document) {
     return svg;
   };
 
-  // A small switcher: three (or four) tabs over one shared detail paragraph.
-  const switcher = (id, label, items, render) => {
+  // A small switcher: tabs over one shared detail paragraph. A detached row
+  // (career) is placed by the caller, outside the scrolling HUD.
+  const switcher = (id, label, items, render, detached = false) => {
     const wrap = el('div', 'work-switch');
-    const row = attrs(el('div', 'work-steps'), { role: 'tablist', 'aria-label': label });
+    const row = attrs(el('div', detached ? 'work-milestones scene-picker' : 'work-steps'), { role: 'tablist', 'aria-label': label });
     const detail = attrs(el('div', 'work-detail'), { role: 'tabpanel', id: `${id}-detail`, tabindex: '0' });
-    const buttons = items.map((item, index) => attrs(el('button', 'work-step'), { type: 'button', role: 'tab', id: `${id}-step-${index}`, 'aria-controls': `${id}-detail` }));
+    const buttons = items.map((item, index) => attrs(el('button', detached ? 'work-milestone' : 'work-step'), { type: 'button', role: 'tab', id: `${id}-step-${index}`, 'aria-controls': `${id}-detail` }));
     items.forEach((item, index) => render.label(buttons[index], item));
     let selected = 0;
     const select = (index, viaKey) => {
@@ -198,11 +201,12 @@ export function mountWorkUI(root = document) {
     };
     tabRow(row, buttons, select);
     select(0, false);
-    wrap.append(row, detail);
-    return { wrap, buttons, get selected() { return selected; } };
+    if (detached) wrap.append(detail); else wrap.append(row, detail);
+    return { wrap, row, buttons, get selected() { return selected; } };
   };
 
   const views = {};
+  let career = null;
   const hud = el('div', 'work-hud');
   const head = attrs(el('div', 'work-head'), { id: 'work-navigation' });
   const back = attrs(el('button', 'work-back scene-back'), { type: 'button', 'aria-label': 'Back to home' });
@@ -227,13 +231,15 @@ export function mountWorkUI(root = document) {
       section.append(sw.wrap, actions([resumeLink(), contactButton()]));
     } else if (key === 'career') {
       const sw = switcher(id, 'Career milestones', data.milestones, {
-        label(button, [when, what]) { button.setAttribute('aria-label', `${when}: ${what}`); button.append(el('span', 'work-when', when)); },
+        label(button, [when, what]) { button.append(el('span', null, when), el('small', null, what)); },
         detail(node, item) {
           const [, what, text] = item;
           node.textContent = ''; node.append(el('strong', 'work-detail-title', what), el('p', null, text));
-          view.dispatchEvent(new view.CustomEvent('portfolio:career-step', { detail: { index: data.milestones.indexOf(item) } }));
+          emphasize(data.milestones.indexOf(item));
         },
-      });
+      }, true);
+      career = sw;
+      sw.row.hidden = true;
       section.append(sw.wrap, actions([attrs(link('work-link work-primary', RESUME, 'Download resume (PDF)'), { type: 'application/pdf' }), contactButton()]));
     } else {
       const email = link('work-email', `mailto:${EMAIL}`, EMAIL);
@@ -304,6 +310,10 @@ export function mountWorkUI(root = document) {
     const source = request && request.mode === next ? request.focus : intent;
     mode = next;
     tabs.hidden = !EXPERIENCE.includes(next);
+    career.row.hidden = next !== 'career';
+    hud.classList.toggle('work-hud-milestones', next === 'career');
+    // Re-entry keeps the visitor's milestone and re-announces it to the scene.
+    if (next === 'career' && previous !== 'career') emphasize(career.selected);
     panel.hidden = next === null;
     panel.setAttribute('data-work-mode', next || 'projects');
     body.classList.toggle('work-view', next !== null);
@@ -329,7 +339,7 @@ export function mountWorkUI(root = document) {
   };
 
   s.on(view, 'portfolio:mode', onMode);
-  panel.append(hud, tabs);
+  panel.append(hud, tabs, career.row);
   tabButtons[0].setAttribute('tabindex', '0');
   panel.hidden = true;
   panel.setAttribute('data-work-mode', 'projects');
@@ -344,6 +354,7 @@ export function mountWorkUI(root = document) {
       const focusWasInside = panel.contains(doc.activeElement);
       hud.remove();
       tabs.remove();
+      career.row.remove();
       panel.hidden = wasHidden;
       panel.removeAttribute('data-work-mode');
       body.classList.remove('work-ui-ready', 'work-view');

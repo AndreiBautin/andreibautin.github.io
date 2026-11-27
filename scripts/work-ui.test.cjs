@@ -295,30 +295,126 @@ test('work views carry short factual copy, a three-step switcher and an abstract
   dispose();
 });
 
-test('career offers four selectable milestones and the approved PDF', () => {
+test('career offers four selectable milestones in a bottom scene picker and the approved PDF', () => {
   const f = fixture();
   const emphasized = [];
   f.win.addEventListener('portfolio:career-step', event => emphasized.push(event.detail.index));
   const { dispose } = ui.mountWorkUI(f.doc);
   f.send('career');
   const v = f.view('career');
-  const steps = v.all((e) => e.getAttribute('role') === 'tab');
+  const row = f.byClass('work-milestones')[0];
+  assert(row.classList.contains('scene-picker'), 'Resume shares the Projects layout');
+  assert.equal(row.getAttribute('role'), 'tablist');
+  assert.equal(row.getAttribute('aria-label'), 'Career milestones');
+  assert.equal(v.all((e) => e.getAttribute('role') === 'tab').length, 0, 'no inline milestone row in the HUD');
+  assert.equal(v.all((e) => e.classList.contains('work-steps')).length, 0);
+  const steps = row.all((e) => e.getAttribute('role') === 'tab');
   assert.equal(steps.length, 4);
-  assert.match(steps[0].getAttribute('aria-label'), /May 2019: B.S., Applied Computing Technology/);
-  assert.deepEqual(steps.map((s) => s.all((c) => c.classList.contains('work-when'))[0].textContent), ['May 2019', 'June 2019', 'Sept 2024', 'Credentials']);
+  steps.forEach((step, i) => {
+    assert.deepEqual(step.children.map((c) => c.tagName), ['SPAN', 'SMALL'], 'project title/subtitle markup');
+    assert.equal(step.children[0].textContent, ui.CONTENT.career.milestones[i][0]);
+    assert.equal(step.children[1].textContent, ui.CONTENT.career.milestones[i][1]);
+    assert.equal(step.getAttribute('aria-controls'), 'work-ui-career-detail');
+  });
+  assert.deepEqual(steps.map((s) => s.children[0].textContent), ['May 2019', 'June 2019', 'Sept 2024', 'Credentials']);
+  assert.match(steps[0].textContent, /B.S., Applied Computing Technology/);
+  assert.match(steps[1].textContent, /^June 2019Software Engineer, Brainspire/);
+  assert.match(steps[2].textContent, /Senior Software Engineer/);
+  assert.match(steps[3].textContent, /Microsoft Azure certifications/);
   const detail = v.all((e) => e.getAttribute('role') === 'tabpanel')[0];
+  assert(v.contains(detail), 'detail copy stays in the left HUD');
+  assert.equal(v.all((e) => e.classList.contains('work-lede')).length, 0, 'no redundant lede');
+  assert.equal(steps[0].getAttribute('aria-selected'), 'true');
+  assert.deepEqual(steps.map((s) => s.getAttribute('tabindex')), ['0', '-1', '-1', '-1']);
   steps[3].fire('click');
   assert.equal(emphasized.at(-1), 3);
   assert.match(detail.textContent, /AZ-900.*AI-900/);
-  steps[0].fire('keydown', { key: 'End' });
-  assert.match(detail.textContent, /AI-900/);
+  assert.equal(detail.getAttribute('aria-labelledby'), steps[3].id);
+  assert.deepEqual(steps.map((s) => s.getAttribute('aria-selected')), ['false', 'false', 'false', 'true']);
+  assert.deepEqual(steps.map((s) => s.getAttribute('tabindex')), ['-1', '-1', '-1', '0']);
+  assert(steps[3].fire('keydown', { key: 'ArrowRight' }).defaultPrevented);
+  assert.equal(emphasized.at(-1), 0, 'wraps to the degree');
+  assert.equal(f.doc.activeElement, steps[0]);
+  steps[0].fire('keydown', { key: 'ArrowLeft' });
+  assert.equal(emphasized.at(-1), 3);
+  assert.equal(f.doc.activeElement, steps[3]);
   steps[3].fire('keydown', { key: 'Home' });
   assert.equal(emphasized.at(-1), 0);
   assert.match(detail.textContent, /Colorado State University/);
+  steps[0].fire('keydown', { key: 'End' });
+  assert.equal(emphasized.at(-1), 3);
+  steps[3].fire('keydown', { key: 'ArrowLeft' });
+  assert.equal(emphasized.at(-1), 2);
+  assert.match(detail.textContent, /Senior Software Engineer/);
+  assert.equal(f.doc.activeElement, steps[2]);
+  assert.equal(steps[2].fire('keydown', { key: 'ArrowDown' }).defaultPrevented, false, 'other keys pass through');
+  assert.deepEqual(f.seen.filter((m) => m !== 'career'), [], 'milestones never navigate');
   const pdf = v.all((e) => e.getAttribute('href') === './Andrei_Bautin_Resume.pdf');
   assert.equal(pdf.length, 1);
   assert(fs.existsSync(path.join(ROOT, 'dist/Andrei_Bautin_Resume.pdf')));
   dispose();
+});
+
+test('the milestone row sits outside the scrolling HUD and shows only for career', () => {
+  const f = fixture();
+  const { dispose } = ui.mountWorkUI(f.doc);
+  const row = f.byClass('work-milestones')[0];
+  const hud = f.byClass('work-hud')[0];
+  const tabs = f.byClass('work-tabs')[0];
+  assert.equal(row.parentElement, f.panel, 'a direct panel child like the Experience row');
+  assert(!hud.contains(row));
+  assert.deepEqual(f.panel.children, [hud, tabs, row]);
+  assert(row.hidden, 'hidden before any mode');
+  for (const mode of [...MODES, null, 'career', 'contact']) {
+    f.send(mode);
+    assert.equal(row.hidden, mode !== 'career', `milestones under ${mode}`);
+    assert.equal(hud.classList.contains('work-hud-milestones'), mode === 'career');
+    assert.equal(tabs.hidden, !EXPERIENCE.includes(mode));
+  }
+  f.send('career');
+  row.all((e) => e.getAttribute('role') === 'tab')[1].focus();
+  dispose();
+  assert(!f.panel.contains(row), 'dispose removes the row');
+  assert.equal(row.parentElement, null);
+  assert.equal(f.doc.activeElement, f.picker, 'focus inside the row is restored');
+  assert(!f.body.classList.contains('work-view'));
+});
+
+test('re-entering Resume keeps the selected milestone and re-announces its index', () => {
+  const f = fixture();
+  const emphasized = [];
+  f.win.addEventListener('portfolio:career-step', event => emphasized.push(event.detail.index));
+  const { dispose } = ui.mountWorkUI(f.doc);
+  assert.deepEqual(emphasized, [0], 'the initial selection is announced');
+  f.send('career');
+  assert.deepEqual(emphasized, [0, 0], 'entering career announces the selection');
+  f.send('career');
+  assert.equal(emphasized.length, 2, 'repeating the current mode does not re-announce');
+  const steps = f.byClass('work-milestones')[0].all((e) => e.getAttribute('role') === 'tab');
+  steps[2].fire('click');
+  assert.equal(emphasized.at(-1), 2);
+  f.send('knowledge');
+  f.send(null);
+  const before = emphasized.length;
+  f.send('career');
+  assert.deepEqual(emphasized.slice(before), [2], 're-entry announces the kept milestone without a reset');
+  assert.equal(steps[2].getAttribute('aria-selected'), 'true');
+  assert.match(f.view('career').all((e) => e.getAttribute('role') === 'tabpanel')[0].textContent, /Senior Software Engineer/);
+  assert(emphasized.every((index) => Number.isInteger(index) && index >= 0 && index <= 3));
+  dispose();
+  f.send(null);
+  f.send('career');
+  assert.equal(emphasized.length, before + 1, 'no events after dispose');
+});
+
+test('milestone styles give four equal desktop columns and a 2x2 phone grid', () => {
+  const rules = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const phoneAt = rules.indexOf('@media(max-width:600px){');
+  assert(phoneAt > 0);
+  assert(rules.slice(0, phoneAt).includes('.work-milestones.scene-picker{grid-template-columns:repeat(4,minmax(0,1fr))}'));
+  const phone = rules.slice(phoneAt, rules.indexOf('\n}', phoneAt));
+  assert(phone.includes('.work-milestones.scene-picker{grid-template-columns:repeat(2,minmax(0,1fr))}'));
+  assert.match(phone, /\.work-hud\.work-hud-milestones\{bottom:\d+px\}/, 'the HUD clears the two-row picker');
 });
 
 test('explicit Home navigation focuses the title even when hiding its opener restores body focus', () => {

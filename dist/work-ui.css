@@ -24,8 +24,6 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
 .work-step{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 0 7px;margin-bottom:-1px;border-bottom:1px solid transparent;text-align:left}
 .work-step:hover{color:var(--ink)}
 .work-step[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
-.work-when{display:block}
-.work-hud>.work-view[data-work-mode="career"] .work-steps{display:flex;gap:6px 18px}
 .work-detail{font-size:14px;line-height:1.7;color:var(--ink);padding:12px 0 2px;min-height:64px;overflow:auto;overscroll-behavior:contain}
 .work-detail:focus{outline:none}
 .work-detail:focus-visible{outline:1px solid var(--line);outline-offset:2px}
@@ -45,7 +43,9 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
 .work-email:hover{color:var(--accent)}
 .work-status{font-size:12px;line-height:1.5;color:var(--accent);min-height:18px;margin:10px 0 0}
 
-/* The Experience row uses the same scene-picker grid as personal projects. */
+/* The Experience and Resume rows use the same scene-picker grid as personal
+   projects, outside the scrolling HUD; Resume has four milestones. */
+.work-milestones.scene-picker{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:900px){.work-hud{width:min(44vw,400px)}}
 @media(max-width:600px){
   .work-hud{left:25px;right:25px;width:auto;min-width:0;top:auto;bottom:118px;max-height:38svh;justify-content:flex-end}
@@ -53,6 +53,8 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
   .work-title{font-size:18px}
   .work-lede,.work-detail{font-size:12px}
   .work-art{max-width:200px}
+  .work-milestones.scene-picker{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .work-hud.work-hud-milestones{bottom:160px}
 }
 @media(max-height:640px){.work-hud{top:28px;bottom:118px;max-height:none}}
-@media(max-width:600px) and (max-height:640px){.work-hud{top:28px;bottom:108px}}
+@media(max-width:600px) and (max-height:640px){.work-hud{top:28px;bottom:108px}.work-hud.work-hud-milestones{bottom:146px}}
