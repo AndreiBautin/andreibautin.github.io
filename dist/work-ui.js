@@ -61,7 +61,6 @@ export const CONTENT = Object.freeze({
   career: {
     eyebrow: 'Resume',
     title: 'Career & credentials',
-    lede: 'Senior software engineer in Denver with 7+ years building enterprise applications in C#, .NET, React and Azure.',
     milestones: [
       ['May 2019', 'B.S., Applied Computing Technology', 'Colorado State University, Fort Collins, Colorado.'],
       ['June 2019', 'Software Engineer, Brainspire / 3Cloud', 'Built web applications and Azure solutions for healthcare, insurance, retail and industrial clients with .NET, Vue.js, React and SQL Server.'],
@@ -217,7 +216,8 @@ export function mountWorkUI(root = document) {
     const section = attrs(el('section', 'work-view'), { id, role: EXPERIENCE.includes(key) ? 'tabpanel' : 'region', 'aria-labelledby': EXPERIENCE.includes(key) ? `work-ui-tab-${key} ${id}-title` : `${id}-title`, 'data-work-mode': key });
     section.hidden = true;
     const title = attrs(el('h2', 'work-title', data.title), { id: `${id}-title`, tabindex: '-1' });
-    section.append(el('p', 'work-eyebrow', data.eyebrow), title, el('p', 'work-lede', data.lede));
+    section.append(el('p', 'work-eyebrow', data.eyebrow), title);
+    if (data.lede) section.append(el('p', 'work-lede', data.lede));
     if (data.steps) {
       section.append(art(key));
       const sw = switcher(id, `${data.title}: problem, contribution and outcome`, data.steps.map((text, i) => [STEPS[i], text]), {

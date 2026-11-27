@@ -34,7 +34,7 @@ const workFallbacks = {
   knowledge: ['Experience', 'Engineering knowledge assistant', 'An Azure RAG platform for searching engineering documentation.'],
   replication: ['Experience', 'Asynchronous data replication', 'An asynchronous replication design using Azure Service Bus.'],
   payments: ['Experience', 'Payment automation', 'Automated payment-processing workflows, including a microservice integrated with a bank.'],
-  career: ['Resume', 'Career & credentials', 'Senior software engineer in Denver. C#, .NET, React and Azure.'],
+  career: ['Resume', 'Career & credentials', ''],
   contact: ['Contact', 'Get in touch', 'Based in Denver, Colorado.'],
 };
 let currentProject = 0, workMode = null, fallbackMode = null;
