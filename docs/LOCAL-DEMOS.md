@@ -60,3 +60,15 @@ keeps every link byte for byte with no attribute writes or requests, both local
 origins route exactly the three demo links while facts, the resume and the
 `Source` link stay put, and lookalike, other-port and malformed locations keep
 the published links and never assign, replace, reload or set `location`.
+
+
+## Native review window
+
+The local review default is browser fullscreen with one existing tab per demo
+and one portfolio tab. Reuse those tabs for before/after views and restore
+fullscreen after addressing a URL. Same-tab project/return links retain browser
+fullscreen; the website does not claim it can force browser fullscreen on page
+load without a user action. Operators must verify the final native window state.
+Thaumara is no longer in the active demo set: its tab and port 4398 server were
+closed, and its private worker control has a STOP guard. Do not recreate the
+user's deleted Notion Projects structure to track this work.

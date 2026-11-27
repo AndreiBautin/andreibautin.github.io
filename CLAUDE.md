@@ -43,3 +43,13 @@ Static portfolio; `dist/` is the published source. See docs/ARCHITECTURE.md.
   deterministic: the particle-boundary gate enforces that rule. The renderer
   owns shader motion; script.js owns UI and direct links. Never require the
   scene to load before a visitor can open a project, resume or contact link.
+
+
+## Local review defaults
+
+- Keep the project Chrome window in browser fullscreen after each inspection
+  or navigation. Reuse one tab per TERRA, NACRE and PELAGIC, plus one portfolio
+  tab; close duplicate comparison tabs rather than accumulating them.
+- Thaumara is tabled and is not an active portfolio project. Its local server
+  and worker queues were stopped at the user's request on 2026-11-27. Do not
+  relaunch it or recreate the user's trashed Notion Projects setup.
