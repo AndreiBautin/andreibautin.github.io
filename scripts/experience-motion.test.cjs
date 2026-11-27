@@ -21,7 +21,7 @@ test('particle shader uses defined ascending constant smoothstep ranges', () => 
 });
 
 function frames() {
-  const values = Object.fromEntries(['uTime', 'uMotion', 'uNameWeight', 'uJelly', 'uFlow', 'uFlowWork', 'uSpin', 'uMorph', 'uForce'].map(key => [key, { value: 0 }]));
+  const values = Object.fromEntries(['uTime', 'uArrival', 'uMotion', 'uNameWeight', 'uJelly', 'uFlow', 'uFlowWork', 'uSpin', 'uMorph', 'uForce'].map(key => [key, { value: 0 }]));
   values.uPointer = { value: { lerp() {} } };
   const context = vm.createContext({
     Math, uniforms: values, document: { hidden: false }, active: 4,
@@ -69,28 +69,28 @@ test('hidden frames do not advance flow time or identity', () => {
   assert.equal(state.uniforms.uFlowWork.value, 0);
 });
 
-test('showcase transition settles early enough to display the complete professional form', () => {
-  const run = frames(); run.context.transitionDuration = .55;
-  run.tick(70);
-  assert.equal(run.context.uniforms.uMorph.value, 1);
-  assert.equal(run.context.transitionStart, null);
-  assert(run.context.uniforms.uFlow.value > .85);
+test('welcome particles form once and remain on the name through prolonged idle time', () => {
+  const run = frames(); run.context.active = 0; run.context.transitionStart = null;
+  run.tick(20); assert(run.context.uniforms.uArrival.value > 0 && run.context.uniforms.uArrival.value < 1);
+  run.tick(50); assert.equal(run.context.uniforms.uArrival.value, 1);
+  run.tick(1200); assert.equal(run.context.active, 0); assert.equal(run.context.uniforms.uArrival.value, 1);
 });
 
-test('renderer starts directly on the requested work target and keeps name only for the showcase', () => {
+test('renderer initializes direct work routes and the welcome name without a tour', () => {
   const begin = source.lastIndexOf('  const initialMode =');
   const end = source.indexOf('\n} catch', begin);
   assert(begin > 0 && end > begin);
-  for (const [selected, mode, hash, intro, expected] of [[null, 'career', '', false, 7], [null, null, '#resume', false, 7], [null, null, '#work-payments', false, 6], [null, 'career', '', true, 0], [{ dataset: { scene: '2' } }, null, '#nacre', false, 2], [null, null, '', false, 0]]) {
+  for (const [selected, mode, hash, expected] of [[null, 'career', '', 7], [null, null, '#resume', 7], [null, null, '#work-payments', 6], [{ dataset: { scene: '2' } }, null, '#nacre', 2], [null, null, '', 0]]) {
     const calls = [];
     const context = vm.createContext({
       document: {
         querySelector(selector) { return selector === '#work-panel' ? { getAttribute: () => mode } : selected; },
-        body: { classList: { contains: () => intro, add(name) { calls.push(name); } } },
+        body: { classList: { add(name) { calls.push(name); } } },
       },
       location: { hash },
+      uniforms: { uArrival: { value: 0 } }, motion: { matches: false },
       resize() { calls.push('resize'); },
-      change(index, showcase, instant) { assert.equal(showcase, false); assert.equal(instant, true); calls.push(index); },
+      change(index, instant) { assert.equal(instant, true); calls.push(index); },
       render() { calls.push('render'); },
       resume() { calls.push('resume'); },
       CustomEvent: class { constructor(type) { this.type = type; } },
@@ -98,6 +98,7 @@ test('renderer starts directly on the requested work target and keeps name only 
     });
     vm.runInContext(source.slice(begin, end), context);
     assert.deepEqual(calls, ['resize', expected, 'render', 'field-ready', 'resume', 'portfolio:graphics-ready']);
+    assert.equal(context.uniforms.uArrival.value, expected === 0 ? 0 : 1);
   }
 });
 
@@ -108,18 +109,18 @@ test('instant startup paints the work target without the name-to-work morph', ()
     active: 0, transitionStart: null, transitionDuration: 1.45, time: 0,
     shapes: Array.from({ length: 9 }, () => ({ positions: new Float32Array([1, 2, 3]), colors: new Float32Array([1, 1, 1]) })),
     geometry: { getAttribute: key => attributes[key] }, interpolateInto() {},
-    uniforms: Object.fromEntries(['uMorph', 'uWork', 'uNameWeight', 'uJelly'].map(key => [key, { value: key === 'uNameWeight' ? 1 : 0 }])),
+    uniforms: Object.fromEntries(['uMorph', 'uArrival', 'uWork', 'uNameWeight', 'uJelly'].map(key => [key, { value: key === 'uNameWeight' ? 1 : 0 }])),
     motion: { matches: false }, syncFlow() {}, render() {},
   });
   vm.runInContext(source.slice(begin, end), context);
-  context.change(7, false, true);
+  context.change(7, true);
   assert.equal(context.active, 7); assert.equal(context.uniforms.uMorph.value, 1);
   assert.equal(context.uniforms.uNameWeight.value, 0); assert.equal(context.transitionStart, null);
   context.change(4);
-  assert.equal(context.uniforms.uMorph.value, 0); assert.equal(context.transitionDuration, 1.45);
-  context.change(4, false, true);
+  assert.equal(context.uniforms.uMorph.value, 0);
+  context.change(4, true);
   assert.equal(context.uniforms.uMorph.value, 1); assert.equal(context.transitionStart, null);
-  context.change(0); context.change(0, false, true);
+  context.change(0); context.change(0, true);
   assert.equal(context.uniforms.uMorph.value, 1); assert.equal(context.uniforms.uNameWeight.value, 1);
   assert.equal(context.transitionStart, null, 'instant identity must settle the preceding Home selection');
 });

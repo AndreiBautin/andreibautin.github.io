@@ -42,12 +42,11 @@ acceptance item. See EXPERIENCE-QUALITY.md and EXPERIENCE-MOTION.md.
 
 The original fullscreen particle application is the presentation to extend.
 There is one particle stage, with direct links and a dialog fallback. No scrolling
-marketing, experience or career chapters are added. An interruptible optional
-10.8-second introduction showcases the name, Resume, three professional forms
-and three personal projects, then lands on Resume. The header orders Resume,
-Experience, Projects and Contact; only Experience has the three professional tabs.
-It skips reduced motion, data saving and explicit destinations. Replay is an
-explicit control, not a blocking loader. Navigation cancels it synchronously.
+marketing, experience or career chapters are added. The welcome holds the name
+after one renderer-only formation. Explore my background opens Resume; Explore
+projects opens the demos. The header orders Resume, Experience, Projects and
+Contact. Only Experience has the three professional tabs. There is no automatic
+tour or timed section change. See WELCOME.md for current behavior.
 
 Professional work uses five additional particle targets in the same scene:
 knowledge retrieval, asynchronous replication, payment automation, career, and

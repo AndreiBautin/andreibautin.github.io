@@ -14,3 +14,6 @@
   inline script/style, innerHTML or eval. Port 4357 is pinned.
 - Run npm run stamp and npm run verify before committing. Do not push or publish
   during a local design correction; publication requires its own authorization.
+- The approved opening is a calm welcome: one renderer-only name formation,
+  then ambient interaction. Never cycle sections or auto-land on Resume after
+  loading. Resume, Experience, Projects and Contact change only on selection.

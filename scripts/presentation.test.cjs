@@ -12,4 +12,7 @@ test('homepage stays a single scene with experience and contact behind explicit 
   assert.match(homepage, /<button data-open="about" data-contact data-section-link="contact">[\s\S]*?Contact<\/button>/);
   assert.match(homepage, /href="\.\/Andrei_Bautin_Resume\.pdf">(?:<span[^>]*>01<\/span>)?Resume<\/a>/);
   assert.match(html, /<dialog id="about"/);
+  assert.match(homepage, /id="scene-launch" href="\.\/Andrei_Bautin_Resume\.pdf">Explore my background<\/a>/);
+  assert.match(homepage, /id="welcome-projects" href="#projects">Explore projects<\/a>/);
+  assert.doesNotMatch(homepage, /portfolio-intro|skip-intro|replay-intro|data-intro-image/);
 });

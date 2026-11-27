@@ -29,13 +29,13 @@ try {
   for (const [name, data, size] of [['aFrom', shapes[0].positions, 4], ['aTo', shapes[0].positions, 4], ['aColorFrom', shapes[0].colors, 3], ['aColorTo', shapes[0].colors, 3]]) geometry.setAttribute(name, new THREE.Float32BufferAttribute(data.slice(), size));
   geometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(Float32Array.from({ length: count }, (_, i) => hash(i, 33)), 1));
   const uniforms = {
-    uTime: { value: 0 }, uMorph: { value: 1 }, uPointer: { value: new THREE.Vector2(100, 100) }, uForce: { value: 0 },
+    uTime: { value: 0 }, uMorph: { value: 1 }, uArrival: { value: 0 }, uPointer: { value: new THREE.Vector2(100, 100) }, uForce: { value: 0 },
     uWave: { value: new THREE.Vector3(100, 100, -100) }, uRatio: { value: 1 }, uLight: { value: document.body.classList.contains('light') ? 1 : 0 }, uMotion: { value: 1 }, uMobile: { value: innerWidth < 900 ? 1 : 0 }, uNameScale: { value: 1 }, uShapeScale: { value: 1 }, uSpin: { value: 0 }, uJelly: { value: 0 }, uNameWeight: { value: 1 }, uWork: { value: 0 }, uFlow: { value: 0 }, uFlowWork: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
       attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
-      uniform float uTime,uMorph,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork;uniform vec2 uPointer;uniform vec3 uWave;
+      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork;uniform vec2 uPointer;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
       vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
@@ -84,6 +84,7 @@ try {
       }
       void main(){
         float m=uMorph;vec3 p=mix(aFrom.xyz,aTo.xyz,m);vec3 direction=normalize(vec3(sin(aSeed*125.),cos(aSeed*73.),sin(aSeed*53.)));
+        float born=smoothstep(aSeed*.3,aSeed*.3+.65,uArrival);p+=direction*(1.-born)*1.4;
         float nt=uTime*uMotion;
         p.yz=turn((.08+sin(nt*.48)*.12)*uNameWeight)*p.yz;
         p.xz=turn(uSpin+(-.12+sin(nt*.65)*.38)*uNameWeight)*p.xz;
@@ -101,7 +102,7 @@ try {
         vec4 view=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*view;gl_PointSize=clamp((1.7+aSeed*1.8)*(1.+.28*flow.w*alive)*uRatio*16./max(5.,-view.z),1.,5.);
         float depth=clamp(.76+p.z*.24, .52, 1.22);
         vColor=mix(aColorFrom,aColorTo,m)*mix(1.,depth,uFlow)+vec3(.2,.38,.18)*flow.w*alive+ring*.2;
-        vAlpha=mix(.52,.85,aSeed);if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
+        vAlpha=mix(.52,.85,aSeed)*born;if(mix(aFrom.w,aTo.w,m)>2.5)vAlpha*=.4;
         if(uWork>3.5&&part>1.5)vAlpha*=.65+.2*sin(jt*.8+aSeed*12.)*uMotion;
         if(part>.5&&part<1.5)vAlpha*=mix(1.,flow.w,alive);
       }`,
@@ -109,7 +110,7 @@ try {
   });
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
-  let active = 0, transitionStart = null, transitionDuration = 1.45, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
+  let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
     const id = active >= 4 && active <= 6 ? active - 3 : 0;
@@ -121,20 +122,22 @@ try {
     const worldWidth = 2 * camera.position.z * Math.tan(42 * Math.PI / 360) * camera.aspect;
     uniforms.uNameScale.value = Math.min(.8, worldWidth / 17); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
   }
-  function change(index, showcase = false, instant = false) {
+  function change(index, instant = false) {
     if (!Number.isInteger(index) || !shapes[index] || (index === active && !instant)) return;
+    if (index !== 0) uniforms.uArrival.value = 1;
     const m = uniforms.uMorph.value;
     for (const [fromName, toName] of [['aFrom', 'aTo'], ['aColorFrom', 'aColorTo']]) {
       const from = geometry.getAttribute(fromName), to = geometry.getAttribute(toName);
       interpolateInto(from.array, to.array, m);
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
-    active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time; transitionDuration = showcase === true ? .55 : 1.45;
+    active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
     if (motion.matches || instant) { uniforms.uMorph.value = 1; transitionStart = null; uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
     if (document.hidden) { frame = 0; last = null; return; }
     const elapsed = last === null ? 0 : (now - last) / 1000, dt = Math.min(elapsed, .05); last = now; time += dt; uniforms.uTime.value = time;
+    uniforms.uArrival.value = Math.min(1, uniforms.uArrival.value + dt * 1.05);
     const follow = 1 - Math.exp(-dt * 4);
     uniforms.uNameWeight.value += ((active === 0 ? 1 : 0) - uniforms.uNameWeight.value) * follow;
     uniforms.uJelly.value += ((active === 3 ? 1 : 0) - uniforms.uJelly.value) * follow;
@@ -143,7 +146,7 @@ try {
     uniforms.uFlow.value += ((experience && transitionStart === null ? 1 : 0) - uniforms.uFlow.value) * follow;
     if (active === 1 || active === 2) uniforms.uSpin.value += dt * .08;
     else uniforms.uSpin.value += (Math.round(uniforms.uSpin.value / (Math.PI * 2)) * Math.PI * 2 - uniforms.uSpin.value) * follow;
-    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / transitionDuration); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
+    if (transitionStart !== null) { const t = Math.min(1, (time - transitionStart) / 1.45); uniforms.uMorph.value = t * t * (3 - 2 * t); if (t === 1) transitionStart = null; }
     uniforms.uPointer.value.lerp(pointer, Math.min(1, dt * 9)); uniforms.uForce.value += ((overlay ? 0 : 1) - uniforms.uForce.value) * Math.min(1, dt * 7);
     render(); if (elapsed > 0) fpsFrames++; fpsTime += elapsed; if (elapsed > .028) lowFrames++; else lowFrames = Math.max(0, lowFrames - 1);
     if (lowFrames > 90 && effectiveCount > 18000) { effectiveCount = effectiveCount > 24000 ? 24000 : 18000; geometry.setDrawRange(0, effectiveCount); renderer.setPixelRatio(1); resize(); lowFrames = 0; }
@@ -153,10 +156,10 @@ try {
   function resume() {
     cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1; if (motion.matches) syncFlow();
     document.querySelector('.interaction-hint').textContent = motion.matches ? 'Choose a project below' : 'Move to disturb\nClick to send a wave';
-    if (motion.matches) { uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
+    if (motion.matches) { uniforms.uArrival.value = 1; uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
-  addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.showcase === true, event.detail?.instant === true));
+  addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.instant === true));
   addEventListener('portfolio:theme', event => { uniforms.uLight.value = event.detail?.light ? 1 : 0; material.blending = uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending; render(); });
   addEventListener('portfolio:overlay', event => { overlay = !!event.detail?.open; pointer.set(100, 100); });
   function projectPointer(event) { const box = canvas.getBoundingClientRect(), height = 2 * camera.position.z * Math.tan(42 * Math.PI / 360); pointer.set(((event.clientX - box.left) / box.width - .5) * height * camera.aspect, (.5 - (event.clientY - box.top) / box.height) * height); }
@@ -170,6 +173,7 @@ try {
   const initialRoute = location.hash.slice(1).replace(/^work-/, '');
   const routeMode = initialRoute === 'resume' ? 'career' : initialRoute === 'experience' ? 'knowledge' : initialRoute;
   const initialWork = ['knowledge', 'replication', 'payments', 'career', 'contact'].indexOf(initialMode === 'projects' || !initialMode ? routeMode : initialMode);
-  const initialIndex = document.body.classList.contains('intro-playing') ? 0 : initialWork >= 0 ? 4 + initialWork : Number(document.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene ?? 0);
-  resize(); change(initialIndex, false, true); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
+  const initialIndex = initialWork >= 0 ? 4 + initialWork : Number(document.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene ?? 0);
+  uniforms.uArrival.value = initialIndex === 0 && !motion.matches ? 0 : 1;
+  resize(); change(initialIndex, true); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
 } catch { document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); document.querySelector('.interaction-hint').textContent = 'Choose a project below'; status.textContent = 'Explore a project below.'; }

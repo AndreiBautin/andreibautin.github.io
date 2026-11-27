@@ -45,7 +45,7 @@ test('changed story adapters invalidate their import and page URL without breaki
   fs.cpSync(dist, copy, { recursive: true });
   const before = fs.readFileSync(path.join(copy, 'story.js'), 'utf8');
   const page = fs.readFileSync(path.join(copy, 'index.html'), 'utf8');
-  fs.appendFileSync(path.join(copy, 'intro.js'), '\n');
+  fs.appendFileSync(path.join(copy, 'work-ui.js'), '\n');
   stamp(copy);
   const changed = fs.readFileSync(path.join(copy, 'story.js'), 'utf8');
   assert.notEqual(changed, before);

@@ -1,6 +1,6 @@
 // UI and direct project links do not depend on the graphics renderer.
 const projects = [
-  ['index', 'Software engineer', 'Andrei Bautin', '.NET, React, and Azure. Senior software engineer at 3Cloud.', './Andrei_Bautin_Resume.pdf', 'View resume'],
+  ['index', 'Software engineer', 'Andrei Bautin', '.NET, React, and Azure. Senior software engineer at 3Cloud.', './Andrei_Bautin_Resume.pdf', 'Explore my background'],
   ['terra', 'Procedural planet explorer', 'TERRA', 'Create a world from a seed. Fly from orbit down to its terrain.', 'https://andreibautin.github.io/planet-generator/', 'Open TERRA'],
   ['nacre', 'Liquid sculpture studio', 'NACRE', 'Pull, split, merge, and freeze liquid into sculptures.', 'https://liquid-sculpture-studio.andreibautin94.chatgpt.site/', 'Open NACRE'],
   ['pelagic', 'Interactive ocean life', 'PELAGIC', 'Meet a luminous jellyfish. Build an aquarium and watch its inhabitants respond.', 'https://pelagic.andreibautin94.chatgpt.site/', 'Open PELAGIC'],
@@ -30,17 +30,23 @@ try { setTheme(localStorage.getItem('portfolio-theme') === 'light'); } catch { s
 themeButton.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
 const buttons = [...document.querySelectorAll('[data-scene]')];
 const workModes = ['knowledge', 'replication', 'payments', 'career', 'contact'];
-let currentProject = 0, workMode = null, navigated = false;
+const workFallbacks = {
+  knowledge: ['Experience', 'Engineering knowledge assistant', 'An Azure RAG platform for searching engineering documentation.'],
+  replication: ['Experience', 'Asynchronous data replication', 'An asynchronous replication design using Azure Service Bus.'],
+  payments: ['Experience', 'Payment automation', 'Automated payment-processing workflows, including a microservice integrated with a bank.'],
+  career: ['Resume', 'Career & credentials', 'Senior software engineer in Denver. C#, .NET, React and Azure.'],
+  contact: ['Contact', 'Get in touch', 'Based in Denver, Colorado.'],
+};
+let currentProject = 0, workMode = null, fallbackMode = null;
 function markSection(section) {
   document.body.setAttribute('data-section', section);
   document.querySelectorAll('[data-section-link]').forEach(link => link.setAttribute('aria-current', link.dataset.sectionLink === section ? 'location' : 'false'));
 }
 function select(index, updateUrl = true) {
   if (!Number.isInteger(index) || !projects[index]) return;
-  currentProject = index; workMode = null;
-  if (updateUrl) navigated = true;
+  currentProject = index; workMode = null; fallbackMode = null;
   markSection(index === 0 ? 'home' : 'projects');
-  document.body.classList.remove('work-view');
+  document.body.classList.remove('work-view', 'work-fallback');
   dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: null } }));
   const [key, category, title, description, url, launch] = projects[index];
   document.body.classList.toggle('project-view', index !== 0);
@@ -50,20 +56,47 @@ function select(index, updateUrl = true) {
   document.getElementById('scene-description').textContent = description;
   const link = document.getElementById('scene-launch'); link.href = url; link.textContent = launch;
   const details = document.getElementById('scene-details'); details.dataset.open = index === 0 ? 'about' : 'project-info'; details.textContent = index === 0 ? 'Experience' : 'How it works';
+  details.hidden = index === 0;
+  document.getElementById('welcome-projects').hidden = index !== 0;
   document.querySelectorAll('[data-project-note]').forEach(note => { note.hidden = Number(note.dataset.projectNote) !== index; });
   if (updateUrl) history.replaceState(null, '', index === 0 ? location.pathname : `#${key}`);
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index } }));
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
-document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); dispatchEvent(new CustomEvent('portfolio:replay-intro')); });
-document.querySelector('[data-projects]')?.addEventListener('click', event => {
+document.querySelector('[data-home]').addEventListener('click', event => {
+  if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault(); select(0);
+});
+for (const link of [document.querySelector('[data-projects]'), document.getElementById('welcome-projects')]) link?.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   event.preventDefault(); select(currentProject || 1); document.getElementById('projects').focus({ preventScroll: true });
+});
+document.getElementById('scene-launch').addEventListener('click', event => {
+  if (currentProject !== 0 || workMode !== null || fallbackMode !== null || event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !document.body.classList.contains('work-ui-ready')) return;
+  event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));
 });
 function fromHash() {
   const key = location.hash.slice(1).replace(/^work-/, '');
   const mode = key === 'experience' ? 'knowledge' : key === 'resume' ? 'career' : key;
   if (workModes.includes(mode) && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode, updateUrl: false, instant: true } })); return; }
+  if (workModes.includes(mode)) {
+    fallbackMode = mode; workMode = null;
+    document.body.classList.remove('work-view', 'project-view');
+    document.body.classList.add('work-fallback');
+    markSection(mode === 'career' ? 'resume' : mode === 'contact' ? 'contact' : 'experience');
+    buttons.forEach(button => button.setAttribute('aria-pressed', 'false'));
+    const [category, title, description] = workFallbacks[mode];
+    document.getElementById('scene-category').textContent = category;
+    document.getElementById('scene-title').textContent = title;
+    document.getElementById('scene-description').textContent = description;
+    const launch = document.getElementById('scene-launch');
+    launch.href = mode === 'contact' ? 'mailto:andreibautin94@gmail.com' : './Andrei_Bautin_Resume.pdf';
+    launch.textContent = mode === 'contact' ? 'Send email' : 'View resume (PDF)';
+    document.getElementById('welcome-projects').hidden = true;
+    const details = document.getElementById('scene-details'); details.hidden = false; details.dataset.open = 'about'; details.textContent = 'About me';
+    dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode), instant: true } }));
+    return;
+  }
   if (location.hash === '#construct') { select(2, false); return; }
   if (location.hash === '#projects') { select(currentProject || 1, false); return; }
   select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false);
@@ -72,23 +105,19 @@ addEventListener('hashchange', fromHash); fromHash();
 addEventListener('portfolio:work-ready', () => {
   if (!document.body.classList.contains('work-ui-ready')) return;
   if (/^#(?:work-(?:knowledge|replication|payments|career|contact)|experience|career|resume|contact)$/.test(location.hash)) fromHash();
-  else if (!location.hash && !navigated && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career', updateUrl: false, instant: true } }));
 });
 addEventListener('portfolio:mode', event => {
   const mode = event.detail?.mode;
   if (mode === null) { if (workMode !== null) select(currentProject); return; }
   if (!workModes.includes(mode)) return;
-  if (event.detail?.updateUrl !== false) navigated = true;
+  fallbackMode = null; document.body.classList.remove('work-fallback');
   workMode = mode; document.body.classList.add('work-view');
   markSection(mode === 'career' ? 'resume' : mode === 'contact' ? 'contact' : 'experience');
   buttons.forEach(button => button.setAttribute('aria-pressed', 'false'));
   if (event.detail?.updateUrl !== false) history.replaceState(null, '', `#work-${mode}`);
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode), instant: event.detail?.instant === true } }));
 });
-addEventListener('portfolio:graphics-ready', () => { if (workMode !== null && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(workMode) } })); });
-addEventListener('portfolio:intro-complete', () => {
-  if (document.body.classList.contains('work-ui-ready')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career', updateUrl: !!location.hash } }));
-});
+addEventListener('portfolio:graphics-ready', () => { const mode = workMode ?? fallbackMode; if (mode !== null) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode), instant: true } })); });
 document.querySelector('[data-resume]').addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   if (!document.body.classList.contains('work-ui-ready')) return;
@@ -109,7 +138,7 @@ document.querySelectorAll('dialog').forEach(dialog => {
 });
 addEventListener('keydown', event => {
   if (event.defaultPrevented || document.querySelector('dialog[open]') || event.ctrlKey || event.metaKey || event.altKey) return;
-  if (workMode !== null && event.key === 'Escape') { select(currentProject); return; }
+  if ((workMode !== null || fallbackMode !== null) && event.key === 'Escape') { select(currentProject); return; }
   const index = ['1', '2', '3', '4'].indexOf(event.key);
   if (index >= 0) document.querySelectorAll('[data-section-link]')[index]?.click();
 });

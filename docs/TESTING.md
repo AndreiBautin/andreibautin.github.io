@@ -1,17 +1,16 @@
 # Testing
 
-Section navigation regressions execute the shipped UI script: default Resume,
-ordered header selection, remembered personal project, deep links, completion
-with a reload-consistent URL, late renderer readiness and consumed Escape.
-The intro tests cover the 10.8-second Resume-before-experience-before-projects sequence,
-one completion event, actual image selection, cancellation, keyboard access to
-Skip, reduced motion/data saving, hidden tabs and missing-work-UI restoration.
-The renderer frame test checks the showcase morph settles before the next beat;
-it does not judge visual quality. Native desktop and small-screen review remains
-a separate acceptance step. Opening regressions also exercise the actual async
-loader order, ready-before/after-mount, bounded no-renderer fallback, repeated
-loads without storage, full name hold after readiness and instant work startup.
+Welcome regressions execute the shipped UI and optional loader: idle and late
+readiness keep the name and URL unchanged, no tour is imported or scheduled,
+background opens Resume with native PDF fallback and modifier behavior, and
+projects opens the demo picker. Existing work, clipboard, deep-link and Escape
+coverage remains. Renderer frame tests check that the particle reveal clamps
+once, stays settled through prolonged idle, pauses while hidden and initializes
+direct targets instantly. These are behavioral checks, not a visual-quality claim.
 
+The historical native checks below describe earlier section/refresh milestones;
+the timed overview they mention has since been removed. Current welcome details
+and acceptance limits are in docs/WELCOME.md.
 Native fullscreen Chrome review on November 26 confirmed each top-level
 section, the three-project picker and local TERRA launch destination, the
 dedicated career/resume view with its PDF link, and the separate Contact view.
@@ -82,10 +81,7 @@ the body's work-view state. `scripts/work-shapes.test.cjs` covers finite bounded
 geometry, seeded identity, low counts and distinct targets. These tests establish
 state/geometry behavior, not the live WebGL appearance or mobile layout.
 
-`scripts/intro.test.cjs` checks exact timing, interruption, hidden-tab time,
-session/deep-link/motion/data policy, stale readiness and listener disposal. The
-intro is an optional stage enhancement; no test treats it as a real loading
-progress indicator. Browser review remains responsible for composition and feel.
+`scripts/opening.test.cjs` executes the optional loader and its failure/disposal paths. It permits only the work UI import and rejects automatic navigation timers.
 
 `scripts/presentation.test.cjs` protects the single-screen composition: the
 homepage contains one particle stage, with experience/contact behind explicit

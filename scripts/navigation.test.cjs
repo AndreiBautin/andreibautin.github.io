@@ -52,14 +52,15 @@ function fixture(hash = '') {
   const scenes = [];
   win.addEventListener('portfolio:scene', event => scenes.push(event.detail.index));
   const history = { replaceState(_state, _title, value) { location.hash = value.startsWith('#') ? value : ''; } };
+  const timers = [];
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/script.js'), 'utf8'), {
     document, location, history, HTMLDialogElement: Dialog, CustomEvent,
     addEventListener: win.addEventListener.bind(win), dispatchEvent: win.dispatchEvent.bind(win),
-    localStorage: { getItem() { return null; }, setItem() {} }, navigator: {}, setTimeout() {},
+    localStorage: { getItem() { return null; }, setItem() {} }, navigator: {}, setTimeout(fn) { timers.push(fn); },
   });
   const mode = key => win.dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: key } }));
   const ready = () => { body.classList.add('work-ui-ready'); win.dispatchEvent(new CustomEvent('portfolio:work-ready')); };
-  return { win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home };
+  return { win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home, ids, timers };
 }
 
 test('fallback experience remains a native dialog when enhancement is unavailable', () => {
@@ -68,18 +69,17 @@ test('fallback experience remains a native dialog when enhancement is unavailabl
   assert.equal(prevented, false, 'approved PDF must remain a direct fallback');
 });
 
-test('default entry is Resume but late enhancement cannot overwrite visitor navigation or an intro', () => {
+test('welcome stays on the name after enhancement, graphics readiness and idle time', () => {
   const f = fixture(); f.ready();
-  assert.equal(f.scenes.at(-1), 7);
+  assert.equal(f.scenes.at(-1), 0);
   assert.equal(f.location.hash, '', 'automatic default keeps the clean home URL');
-  assert.equal(f.resume.getAttribute('aria-current'), 'location');
+  assert.equal(f.sectionLinks.some(link => link.getAttribute('aria-current') === 'location'), false);
+  f.win.emit('portfolio:graphics-ready');
+  assert.equal(f.scenes.length, 1);
+  assert.equal(f.timers.length, 0, 'welcome must not schedule a slide or delayed route');
   f.buttons[2].emit('click'); const afterSelection = f.scenes.length; f.ready();
   assert.equal(f.scenes.length, afterSelection);
   assert.equal(f.location.hash, '#nacre');
-  const playing = fixture(); playing.body.classList.add('intro-playing');
-  const before = playing.scenes.length; playing.ready();
-  assert.equal(playing.scenes.length, before);
-  playing.win.emit('portfolio:graphics-ready'); assert.equal(playing.scenes.length, before);
 });
 
 test('professional scenes and Escape preserve the selected project', () => {
@@ -138,14 +138,18 @@ test('four ordered sections keep their own active state and remember the selecte
   assert.equal(f.sectionLinks.filter(link => link.getAttribute('aria-current') === 'location').length, 1);
 });
 
-test('intro completion lands on Resume with a reload-consistent URL, including explicit replay', () => {
-  for (const hash of ['', '#nacre', '#work-career']) {
-    const f = fixture(hash); f.ready();
-    f.win.emit('portfolio:intro-complete');
-    assert.equal(f.scenes.at(-1), 7);
-    assert.equal(f.location.hash, hash ? '#work-career' : '');
-    assert.equal(f.resume.getAttribute('aria-current'), 'location');
-  }
+test('welcome background choice opens Resume and project choice opens the demos', () => {
+  const f = fixture(); f.ready();
+  const background = f.ids.get('scene-launch');
+  assert.equal(background.textContent, 'Explore my background');
+  assert.equal(background.href, './Andrei_Bautin_Resume.pdf');
+  assert.equal(f.ids.get('scene-details').hidden, true);
+  background.emit('click'); assert.equal(f.scenes.at(-1), 7);
+  f.home.emit('click'); assert.equal(f.scenes.at(-1), 0);
+  assert.equal(f.ids.get('welcome-projects').hidden, false);
+  f.ids.get('welcome-projects').emit('click'); assert.equal(f.scenes.at(-1), 1);
+  assert.equal(f.ids.get('welcome-projects').hidden, true);
+  assert.equal(f.ids.get('scene-details').hidden, false);
 });
 
 test('explicit Projects deep link and early Home choice survive delayed enhancement', () => {
@@ -155,12 +159,42 @@ test('explicit Projects deep link and early Home choice survive delayed enhancem
   assert.equal(home.scenes.length, before); assert.equal(home.scenes.at(-1), 0);
 });
 
-test('late graphics readiness cannot replace a running professional showcase', () => {
-  const f = fixture(); f.ready(); f.body.classList.add('intro-playing');
-  f.win.emit('portfolio:scene', { detail: { index: 6 } }); const before = f.scenes.length;
-  f.win.emit('portfolio:graphics-ready'); assert.equal(f.scenes.length, before);
-  f.body.classList.remove('intro-playing'); f.win.emit('portfolio:graphics-ready');
+test('graphics readiness restores only the visitor-selected professional target', () => {
+  const f = fixture(); f.ready(); f.resume.emit('click');
+  f.win.emit('portfolio:graphics-ready');
   assert.equal(f.scenes.at(-1), 7);
+});
+
+test('background choice retains PDF fallback and modified native clicks', () => {
+  const fallback = fixture(); let prevented = false;
+  fallback.ids.get('scene-launch').emit('click', { preventDefault() { prevented = true; } });
+  assert.equal(prevented, false);
+  for (const flags of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }, { defaultPrevented: true }]) {
+    const f = fixture(); f.ready(); const count = f.scenes.length; prevented = false;
+    f.ids.get('scene-launch').emit('click', { ...flags, preventDefault() { prevented = true; } });
+    assert.equal(prevented, false); assert.equal(f.scenes.length, count);
+  }
+});
+
+test('professional destinations show a matching summary before optional UI is ready or if it never loads', () => {
+  for (const [hash, target, title] of [['#resume', 7, 'Career & credentials'], ['#experience', 4, 'Engineering knowledge assistant'], ['#work-replication', 5, 'Asynchronous data replication'], ['#work-payments', 6, 'Payment automation'], ['#contact', 8, 'Get in touch']]) {
+    const f = fixture(hash);
+    assert.equal(f.scenes.at(-1), target); assert.equal(f.ids.get('scene-title').textContent, title);
+    assert.equal(f.body.classList.contains('work-fallback'), true);
+    assert.equal(f.ids.get('scene-launch').href, target === 8 ? 'mailto:andreibautin94@gmail.com' : './Andrei_Bautin_Resume.pdf');
+    f.win.emit('portfolio:graphics-ready'); assert.equal(f.scenes.at(-1), target);
+    assert.equal(f.ids.get('scene-title').textContent, title); assert.equal(f.location.hash, hash);
+    f.ready(); assert.equal(f.scenes.at(-1), target); assert.equal(f.body.classList.contains('work-fallback'), false);
+    f.home.emit('click'); assert.equal(f.scenes.at(-1), 0);
+  }
+});
+
+test('modified Home clicks preserve native anchor behavior and the selected scene', () => {
+  for (const flags of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }, { defaultPrevented: true }]) {
+    const f = fixture('#nacre'); let prevented = false; const before = f.scenes.length;
+    f.home.emit('click', { ...flags, preventDefault() { prevented = true; } });
+    assert.equal(prevented, false); assert.equal(f.scenes.length, before); assert.equal(f.location.hash, '#nacre');
+  }
 });
 
 test('number shortcuts follow section order and a consumed Escape cannot leave the view again', () => {

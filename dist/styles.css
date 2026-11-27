@@ -18,6 +18,8 @@ body.light{color-scheme:light;--bg:#eaf0ec;--ink:#162a1d;--muted:#536c5c;--accen
 .scene-copy>p:last-of-type{font-size:16px}.work-list p{font-size:16px}.work-list h3{font-size:17px}.employer p{font-size:14px}.project-notes p{font-size:16px}
 
 .interaction-hint{white-space:pre-line}
+#welcome-projects{color:var(--muted);border-bottom-color:var(--line)}
+body.work-fallback .scene-picker{display:none}
 .nav-count{font:9px var(--mono);margin-right:9px;opacity:.55}
 .nav-shell nav>[aria-current="location"]{color:var(--accent);box-shadow:0 1px var(--accent)}
 @media(max-width:600px){.nav-count{display:none}.nav-shell{padding-inline:18px}.nav-shell nav{gap:12px}.nav-shell nav>a,.nav-shell nav>button{font-size:10px}.nav-shell .mark{font-size:21px}}

@@ -43,35 +43,21 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    startup, missing modules, no-script use or context loss. There is no reveal
    timer or readiness-dependent styling for that heading. Graphics errors use
    the existing status message; project and resume links never wait for graphics.
-5. **`story.js`** optionally mounts **`intro.js`**, whose pure **`intro-state.js`**
-   timeline advances through actual captures and scene events without selecting a
-   project or changing its URL. The compact overlay lives inside the particle
-   stage; navigation cancels it before taking effect. The renderer announces late
-   readiness so an active intro can resend its current beat. Module URLs are
-   versioned recursively, so a changed dependency invalidates the page URL.
-   It mounts **`work-ui.js`** inside the stage's hidden work panel before the
-   optional intro. The header orders Resume, Experience, Projects and Contact;
-   only Experience has the three professional subscene tabs. A clean entry
-   defaults to Resume. The 10.8-second intro showcases the name, Resume, three
-   professional forms and three projects, then returns to Resume. It runs once
-   per clean page load, without session suppression. Its clock waits for graphics
-   readiness (or a 2500ms fallback); a direct route starts on its actual target
-   instead of morphing from the name. The home mark reopens the overview. Showcase
-   scene events use a bounded 0.55-second morph so the forms can settle between
-   beats; ordinary navigation retains its 1.45-second morph. Skip and Escape
-   complete the intro; other navigation cancels it before taking effect. Modified
-   Resume clicks retain the PDF. See [Sections](SECTIONS.md) for routes and fallbacks.
-   Header navigation has its original dialog/PDF fallback until that mount
-   succeeds. **`script.js`** maps validated professional modes to the five
-   **`work-shapes.js`** targets in the same renderer. Startup tolerates having no
-   selected project button, because a work deep link clears that selection.
-   The renderer starts with target zero, then announces graphics readiness;
-   `script.js` resends the active work target after that announcement.
-   Back/Escape restores the
-   previously selected project; a late enhancement cannot reset a running intro.
-   The HUD's panel selectors are scoped below its container so the body state
-   class cannot acquire a panel's layout. Only panel details scroll when needed;
-   no professional section is appended to the page.
+5. **`story.js`** mounts **`work-ui.js`** in the hidden work panel and announces
+   readiness. **`script.js`** restores an explicit professional destination, or
+   leaves the welcome and any visitor selection alone. The header orders Resume,
+   Experience, Projects and Contact; only Experience has the three professional
+   tabs. There is no tour or automatic default section. **`hero.js`** forms the
+   welcome name once with a bounded seeded shader reveal in its existing loop;
+   reduced motion starts settled and hidden tabs pause. Scene selection completes
+   that reveal, then uses the normal 1.45-second morph. Direct routes initialize
+   their requested target without morphing from the name. The welcome's background
+   link retains its PDF fallback; its project choice opens the demo picker.
+   Work UI controls map to five **`work-shapes.js`** targets through `script.js`.
+   Header dialogs and direct links remain available without the enhancement or
+   renderer. Only panel details scroll; no sections are appended to the page.
+   See [Welcome](WELCOME.md) and [Sections](SECTIONS.md).
+
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.
 

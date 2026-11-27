@@ -7,11 +7,11 @@ jellyfish. The same dots transform between all four forms. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 
-Resume, Experience, Projects and Contact are separate views of this same stage,
-in that order. Resume opens first. An optional 10.8-second opening overview
-showcases the name, Resume, professional work and personal projects, then lands
-on Resume. It plays on clean page loads; explicit destinations bypass it.
-It respects reduced motion and data saving, with Skip and Replay controls.
+The welcome stays on the particle name after a brief formation. Choose
+**Explore my background** for Resume or **Explore projects** for the demos.
+The header orders Resume, Experience, Projects and Contact. Sections stay put
+until selected; there is no timed tour or automatic navigation. Reduced motion
+shows the settled name immediately.
 See [section navigation](docs/SECTIONS.md).
 The [opening handoff](docs/OPENING.md) explains renderer readiness and fallbacks.
 

@@ -32,7 +32,7 @@ details are ignored; re-dispatching the current mode is a no-op.
 Only knowledge, replication and payments appear in this tab row. Resume
 (`career`) and Contact are separate header sections with named regions and no
 professional tab row. See [Sections](SECTIONS.md) for the ordered navigation,
-default Resume entry and introductory showcase.
+persistent welcome and visitor-selected sections.
 
 Controls (tabs, Back to projects, Escape inside the panel, the in-panel
 Contact buttons) only *request* navigation by dispatching the same event; the
