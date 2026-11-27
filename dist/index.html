@@ -23,8 +23,8 @@
   <link rel="preload" href="./fonts/dm-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" href="./images/favicon.svg?v=outline-1" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./images/apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css?v=209b1ad200" />
-  <link rel="stylesheet" href="./work-ui.css?v=e537a72541" />
+  <link rel="stylesheet" href="./styles.css?v=9f6259f137" />
+  <link rel="stylesheet" href="./work-ui.css?v=fa41a7cd88" />
 </head>
 <body data-section="home">
   <a class="skip-link" href="#projects">Skip to projects</a>
@@ -32,10 +32,10 @@
   <main id="top">
     <section class="particle-stage" aria-label="Interactive portfolio">
       <canvas class="hero-tech" aria-hidden="true"></canvas>
-      <div id="work-panel" hidden></div>
+      <a id="scene-home" class="scene-back" href="#top" aria-label="Back to home"></a><div id="work-panel" hidden></div>
       <div class="model-controls" role="group" aria-label="Inspect the particle model"><button data-turn="left" aria-label="Rotate model left">Turn left</button><button data-turn="right" aria-label="Rotate model right">Turn right</button><button data-turn="closer">Zoom in</button><button data-turn="further">Zoom out</button><button data-turn="reset">Reset view</button></div>
       <h1 class="fallback-name">ANDREI<br>BAUTIN<span>.</span></h1>
-      <div class="scene-copy" aria-live="polite"><p class="scene-eyebrow" id="scene-category">Independent work</p><h2 id="scene-title">Andrei Bautin</h2><p id="scene-description">.NET, React, and Azure. Senior software engineer at 3Cloud.</p><div class="scene-actions"><a id="scene-launch" href="./Andrei_Bautin_Resume.pdf">Explore my background</a><button id="scene-details" data-open="about" aria-controls="project-info" aria-expanded="false" hidden>How it works</button><a id="scene-home" href="#top">Home</a></div></div>
+      <div class="scene-copy" aria-live="polite"><p class="scene-eyebrow" id="scene-category">Independent work</p><h2 id="scene-title">Andrei Bautin</h2><p id="scene-description">.NET, React, and Azure. Senior software engineer at 3Cloud.</p><div class="scene-actions"><a id="scene-launch" href="./Andrei_Bautin_Resume.pdf">Explore my background</a><button id="scene-details" data-open="about" aria-controls="project-info" aria-expanded="false" hidden>How it works</button></div></div>
     <aside id="project-info" class="project-inspector" aria-labelledby="project-info-title" hidden><div class="inspector-top"><p class="scene-eyebrow">Project field notes</p><button id="close-project-details" aria-label="Back to project">Back to project</button></div><h2 id="project-info-title" tabindex="-1">How it works</h2><div class="detail-steps" role="group" aria-label="Project details"><button data-detail-step="overview" aria-pressed="true">Overview</button><button data-detail-step="build" aria-pressed="false">Under the hood</button><button data-detail-step="preview" aria-pressed="false">Preview</button></div><div class="project-notes"><article data-project-note="1"><img data-detail-content="preview" hidden loading="lazy" decoding="async" src="./images/planet-wide.webp" alt="Terrain and clouds generated in TERRA" width="1760" height="608"><h3>TERRA</h3><p data-detail-content="overview">Create a world from a seed. Fly from orbit down to its terrain.</p><p data-detail-content="build" hidden>Terrain streams through Web Workers as a quadtree of patches. Rivers, towns, weather, and seasons come from deterministic generation. Custom shaders handle clouds, oceans, ice, and lava.</p><a href="https://andreibautin.github.io/planet-generator/">Open TERRA</a><a href="https://github.com/AndreiBautin/planet-generator">Source</a></article><article data-project-note="2" hidden><img data-detail-content="preview" hidden loading="lazy" decoding="async" src="./images/nacre-ribbon.webp" alt="A silver-lilac ribbon made in NACRE" width="1024" height="1024"><h3>NACRE</h3><p data-detail-content="overview">Pull, split, merge, and freeze liquid into sculptures.</p><p data-detail-content="build" hidden>WebGPU compute simulates particles. A density field turns them into a continuous surface. Frozen regions keep exact anchors while the rest of the liquid moves.</p><a href="https://liquid-sculpture-studio.andreibautin94.chatgpt.site/">Open NACRE</a></article><article data-project-note="3" hidden><img data-detail-content="preview" hidden loading="lazy" decoding="async" src="./images/pelagic-thumb.webp" alt="A translucent jellyfish in PELAGIC" width="1024" height="1024"><h3>PELAGIC</h3><p data-detail-content="overview">Meet a luminous jellyfish. Build an aquarium and watch its inhabitants respond.</p><p data-detail-content="build" hidden>Fixed-step simulations drive tentacles, schooling, feeding, and obstacle avoidance. Instanced fish, procedural anatomy, and translucent shaders run in WebGL with adaptive resolution.</p><a href="https://pelagic.andreibautin94.chatgpt.site/">Open PELAGIC</a></article></div></aside>
       <nav id="welcome-sections" class="scene-picker" aria-label="Explore portfolio"><a id="welcome-resume" href="./Andrei_Bautin_Resume.pdf"><span>Resume</span><small>Career &amp; credentials</small></a><button id="welcome-experience" data-open="about"><span>Experience</span><small>Professional work</small></button><a id="welcome-projects" href="#projects"><span>Projects</span><small>Independent work</small></a></nav>
       <nav id="projects" class="scene-picker" aria-label="Explore projects" tabindex="-1" hidden><button data-scene="1" aria-pressed="false"><span>TERRA</span><small>Planet explorer</small></button><button data-scene="2" aria-pressed="false"><span>NACRE</span><small>Liquid sculpture</small></button><button data-scene="3" aria-pressed="false"><span>PELAGIC</span><small>Ocean life</small></button></nav>
@@ -54,6 +54,6 @@
   </main>
   <script src="./script.js?v=27baf81dad" defer></script>
   <script type="module" src="./hero.js?v=0b6353400a"></script>
-  <script type="module" src="./story.js?v=50ab54cdf2"></script>
+  <script type="module" src="./story.js?v=a1f3db4a9c"></script>
 </body>
 </html>

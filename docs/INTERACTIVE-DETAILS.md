@@ -81,6 +81,10 @@ node's pulse without navigating or advancing the story automatically.
 
 ## Contact and presentation scale
 
+The in-stage Home action is a thin upper-left back arrow with a 44px hit area,
+an accessible Back to home label and visible keyboard focus. It returns to the
+welcome choices rather than following browser history.
+
 Contact joins the same gated loop as flow identity 5. Its open nexus ring turns,
 satellite bodies rotate, packet bands travel and curved connections carry pulses.
 A slow whole-shape precession, breathing and float make the scene visibly alive

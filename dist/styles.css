@@ -65,3 +65,10 @@ body[data-section="home"] .nav-shell{display:none}
 .home-link{font:12px var(--mono);color:var(--muted)}
 body:not(.field-unavailable) .field-footer{display:none}
 .nav-shell{display:none}
+body[data-section="home"] #scene-home,body.work-view #scene-home{display:none}
+:is(#scene-home,.scene-back){position:fixed;top:28px;left:calc(5vw - 12px);z-index:12;display:block;width:44px;height:44px;padding:0;border:0;color:var(--muted);pointer-events:auto}
+:is(#scene-home,.scene-back)::before{content:"";position:absolute;left:13px;top:21px;width:18px;border-top:1px solid currentColor}
+:is(#scene-home,.scene-back)::after{content:"";position:absolute;left:13px;top:17px;width:8px;height:8px;border-left:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg)}
+:is(#scene-home,.scene-back):hover{color:var(--accent);filter:drop-shadow(0 0 5px var(--accent))}
+:is(#scene-home,.scene-back):focus-visible{outline:1px solid var(--accent);outline-offset:2px;border-radius:50%}
+@media(max-width:600px){:is(#scene-home,.scene-back){left:13px;top:16px}}

@@ -128,7 +128,7 @@ test('mount builds a hidden, labelled HUD and flags the body; dispose removes ev
   for (const button of f.find((e) => e.tagName === 'BUTTON')) {
     assert.equal(button.getAttribute('type'), 'button');
     assert(button.listeners.some((l) => l.type === 'click'), `${button.textContent} has no click handler`);
-    assert(button.textContent.trim().length > 0, 'unlabelled button');
+    assert((button.getAttribute('aria-label') || button.textContent).trim().length > 0, 'unlabelled button');
   }
   assert.equal(f.win.listeners.length, listenersBefore + 1);
   dispose();
@@ -240,7 +240,8 @@ test('Home returns to the welcome choice while Escape retains the project return
   const { dispose } = ui.mountWorkUI(f.doc);
   f.send('replication');
   const back = f.byClass('work-back')[0];
-  assert.equal(back.textContent, 'Home');
+  assert.equal(back.textContent, '');
+  assert.equal(back.getAttribute('aria-label'), 'Back to home');
   back.focus();
   back.fire('click');
   assert.equal(f.seen.at(-1), null);

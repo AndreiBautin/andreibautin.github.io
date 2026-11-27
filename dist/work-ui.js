@@ -206,7 +206,7 @@ export function mountWorkUI(root = document) {
   const views = {};
   const hud = el('div', 'work-hud');
   const head = el('div', 'work-head');
-  const back = attrs(el('button', 'work-back', 'Home'), { type: 'button' });
+  const back = attrs(el('button', 'work-back scene-back'), { type: 'button', 'aria-label': 'Back to home' });
   s.on(back, 'click', () => navigate(null, 'home'));
   head.append(back);
   hud.append(head);
