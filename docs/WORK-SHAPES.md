@@ -41,7 +41,9 @@ context only.
 
 Career. Four nodes rise from lower left to upper right and grow slightly. Orbital rings
 and a few satellites sit on each node. The path between nodes is the connection. Only
-the latest node is gold. A dim baseline marks the ascent.
+the latest node is gold. Short tilted trails around each node replace the old
+baseline. The renderer spins the rings and sweeps pulses through the journey
+and trails; the geometry module itself remains deterministic and static.
 
 Contact. An open ring at the origin is the nexus, with a gap toward the top. Three
 orbs — upper left, upper right, and lower center — join it by arcs. Packets sit on

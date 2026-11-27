@@ -296,6 +296,8 @@ test('work views carry short factual copy, a three-step switcher and an abstract
 
 test('career offers four selectable milestones and the approved PDF', () => {
   const f = fixture();
+  const emphasized = [];
+  f.win.addEventListener('portfolio:career-step', event => emphasized.push(event.detail.index));
   const { dispose } = ui.mountWorkUI(f.doc);
   f.send('career');
   const v = f.view('career');
@@ -305,10 +307,12 @@ test('career offers four selectable milestones and the approved PDF', () => {
   assert.deepEqual(steps.map((s) => s.all((c) => c.classList.contains('work-when'))[0].textContent), ['May 2019', 'June 2019', 'Sept 2024', 'Credentials']);
   const detail = v.all((e) => e.getAttribute('role') === 'tabpanel')[0];
   steps[3].fire('click');
+  assert.equal(emphasized.at(-1), 3);
   assert.match(detail.textContent, /AZ-900.*AI-900/);
   steps[0].fire('keydown', { key: 'End' });
   assert.match(detail.textContent, /AI-900/);
   steps[3].fire('keydown', { key: 'Home' });
+  assert.equal(emphasized.at(-1), 0);
   assert.match(detail.textContent, /Colorado State University/);
   const pdf = v.all((e) => e.getAttribute('href') === './Andrei_Bautin_Resume.pdf');
   assert.equal(pdf.length, 1);

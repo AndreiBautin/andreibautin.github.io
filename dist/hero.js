@@ -19,7 +19,7 @@ try {
   for (let i = 0; i < mask.length; i++) mask[i] = pixels[i * 4 + 3];
   shapes[0] = createNameShape(mask, 1536, 768, count);
   try {
-    const { createWorkShapes } = await import('./work-shapes.js?v=4f5b338c8e');
+    const { createWorkShapes } = await import('./work-shapes.js?v=b4a24f7118');
     shapes.push(...createWorkShapes(count));
   } catch { /* Factual controls and the original four forms remain available. */ }
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -94,7 +94,7 @@ try {
             energy=.15+.35*pow(max(0.,sin(atan(rel.y,rel.x)-jt*.9+node)),3.)+selected*.4;
           }else{
             float journey=clamp((p.x+3.1)/6.25,0.,1.);
-            float pulse=fract(journey-jt*.12);
+            float pulse=fract((p.x+3.1)/6.25-jt*.12);
             energy=smoothstep(0.,.025,pulse)*(1.-smoothstep(.045,.2,pulse));
             d.y=sin(jt*.7+journey*4.2)*.12;d.z=sin(jt*.6+journey*6.)*.08;
           }
@@ -144,7 +144,7 @@ try {
   }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight; camera.aspect = width / Math.max(1, height); camera.position.set(0, 0, camera.aspect < 1 ? 18 : 15); camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false); uniforms.uRatio.value = renderer.getPixelRatio(); uniforms.uMobile.value = width < 900 ? 1 : 0;
+    renderer.setSize(width, height, false); uniforms.uRatio.value = renderer.getPixelRatio(); uniforms.uMobile.value = width < 900 || camera.aspect < 1 ? 1 : 0;
     const worldWidth = 2 * camera.position.z * Math.tan(42 * Math.PI / 360) * camera.aspect;
     uniforms.uNameScale.value = Math.min(.8, worldWidth / 17); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
   }

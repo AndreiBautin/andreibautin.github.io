@@ -298,7 +298,7 @@ function career(band, k, n, h, g) {
     };
   }
   // Short orbital trails: one tilted comet arc per milestone, centred on its
-  // node so the renderer can spin them about NODES[node] without a baseline.
+  // node; the renderer rocks them and sweeps light through their tag-2 band.
   const tilt = 0.85 + node * 0.28;
   const ang = TAU * (0.6 + node * 0.23) + u * 1.25;
   const radius = 0.8 + node * 0.03 + (h - 0.5) * 0.05 * (1 - u);

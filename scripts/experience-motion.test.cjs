@@ -88,6 +88,23 @@ test('welcome particles form once and remain on the name through prolonged idle 
   run.tick(1200); assert.equal(run.context.active, 0); assert.equal(run.context.uniforms.uArrival.value, 1);
 });
 
+test('portrait desktop framing keeps the bounded Resume geometry inside the view', () => {
+  const begin = source.indexOf('  function resize()'), end = source.indexOf('  function change(', begin);
+  for (const [width, height] of [[1024, 1366], [900, 1200], [390, 844], [1920, 1080]]) {
+    const camera = { aspect: 1, position: { z: 15, set(_x, _y, z) { this.z = z; } }, updateProjectionMatrix() {} };
+    const uniforms = Object.fromEntries(['uRatio', 'uMobile', 'uNameScale', 'uShapeScale'].map(key => [key, { value: 0 }]));
+    const context = vm.createContext({ Math, canvas: { clientWidth: width, clientHeight: height }, camera, uniforms, renderer: { setSize() {}, getPixelRatio() { return 1; } }, render() {} });
+    vm.runInContext(source.slice(begin, end), context); context.resize();
+    const compact = uniforms.uMobile.value, scale = compact ? uniforms.uShapeScale.value : 1;
+    // Conservative career extents, including orbital trails, projected through
+    // the actual resize-selected camera and stage scale/offset.
+    const depth = camera.position.z - 1.8 * scale;
+    const halfHeight = depth * Math.tan(42 * Math.PI / 360);
+    assert((4 * scale + (compact ? 0 : 1.4)) / (halfHeight * camera.aspect) < 1, `${width}x${height}: clipped horizontally`);
+    assert((2.7 * scale + (compact ? 2.1 : .5)) / halfHeight < 1, `${width}x${height}: clipped vertically`);
+  }
+});
+
 test('renderer initializes direct work routes and the welcome name without a tour', () => {
   const begin = source.lastIndexOf('  const initialMode =');
   const end = source.indexOf('\n} catch', begin);
