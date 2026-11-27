@@ -55,7 +55,7 @@ function select(index, updateUrl = true) {
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index } }));
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
-document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); });
+document.querySelector('[data-home]').addEventListener('click', event => { event.preventDefault(); select(0); dispatchEvent(new CustomEvent('portfolio:replay-intro')); });
 document.querySelector('[data-projects]')?.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   event.preventDefault(); select(currentProject || 1); document.getElementById('projects').focus({ preventScroll: true });
@@ -63,15 +63,16 @@ document.querySelector('[data-projects]')?.addEventListener('click', event => {
 function fromHash() {
   const key = location.hash.slice(1).replace(/^work-/, '');
   const mode = key === 'experience' ? 'knowledge' : key === 'resume' ? 'career' : key;
-  if (workModes.includes(mode) && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode, updateUrl: false } })); return; }
+  if (workModes.includes(mode) && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode, updateUrl: false, instant: true } })); return; }
   if (location.hash === '#construct') { select(2, false); return; }
   if (location.hash === '#projects') { select(currentProject || 1, false); return; }
   select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false);
 }
 addEventListener('hashchange', fromHash); fromHash();
 addEventListener('portfolio:work-ready', () => {
+  if (!document.body.classList.contains('work-ui-ready')) return;
   if (/^#(?:work-(?:knowledge|replication|payments|career|contact)|experience|career|resume|contact)$/.test(location.hash)) fromHash();
-  else if (!location.hash && !navigated && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'knowledge', updateUrl: false } }));
+  else if (!location.hash && !navigated && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career', updateUrl: false, instant: true } }));
 });
 addEventListener('portfolio:mode', event => {
   const mode = event.detail?.mode;
@@ -82,11 +83,11 @@ addEventListener('portfolio:mode', event => {
   markSection(mode === 'career' ? 'resume' : mode === 'contact' ? 'contact' : 'experience');
   buttons.forEach(button => button.setAttribute('aria-pressed', 'false'));
   if (event.detail?.updateUrl !== false) history.replaceState(null, '', `#work-${mode}`);
-  dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode) } }));
+  dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode), instant: event.detail?.instant === true } }));
 });
 addEventListener('portfolio:graphics-ready', () => { if (workMode !== null && !document.body.classList.contains('intro-playing')) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(workMode) } })); });
 addEventListener('portfolio:intro-complete', () => {
-  if (document.body.classList.contains('work-ui-ready')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'knowledge', updateUrl: !!location.hash } }));
+  if (document.body.classList.contains('work-ui-ready')) dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career', updateUrl: !!location.hash } }));
 });
 document.querySelector('[data-resume]').addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;

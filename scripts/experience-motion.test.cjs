@@ -77,25 +77,49 @@ test('showcase transition settles early enough to display the complete professio
   assert(run.context.uniforms.uFlow.value > .85);
 });
 
-test('renderer startup announces readiness when a work deep link leaves no project selected', () => {
-  const begin = source.lastIndexOf('  resize(); change(');
+test('renderer starts directly on the requested work target and keeps name only for the showcase', () => {
+  const begin = source.lastIndexOf('  const initialMode =');
   const end = source.indexOf('\n} catch', begin);
   assert(begin > 0 && end > begin);
-  for (const selected of [null, { dataset: { scene: '2' } }]) {
+  for (const [selected, mode, hash, intro, expected] of [[null, 'career', '', false, 7], [null, null, '#resume', false, 7], [null, null, '#work-payments', false, 6], [null, 'career', '', true, 0], [{ dataset: { scene: '2' } }, null, '#nacre', false, 2], [null, null, '', false, 0]]) {
     const calls = [];
     const context = vm.createContext({
       document: {
-        querySelector() { return selected; },
-        body: { classList: { add(name) { calls.push(name); } } },
+        querySelector(selector) { return selector === '#work-panel' ? { getAttribute: () => mode } : selected; },
+        body: { classList: { contains: () => intro, add(name) { calls.push(name); } } },
       },
+      location: { hash },
       resize() { calls.push('resize'); },
-      change(index) { calls.push(index); },
+      change(index, showcase, instant) { assert.equal(showcase, false); assert.equal(instant, true); calls.push(index); },
       render() { calls.push('render'); },
       resume() { calls.push('resume'); },
       CustomEvent: class { constructor(type) { this.type = type; } },
       dispatchEvent(event) { calls.push(event.type); },
     });
     vm.runInContext(source.slice(begin, end), context);
-    assert.deepEqual(calls, ['resize', selected ? 2 : 0, 'render', 'field-ready', 'resume', 'portfolio:graphics-ready']);
+    assert.deepEqual(calls, ['resize', expected, 'render', 'field-ready', 'resume', 'portfolio:graphics-ready']);
   }
+});
+
+test('instant startup paints the work target without the name-to-work morph', () => {
+  const begin = source.indexOf('  function change('), end = source.indexOf('  function draw(', begin);
+  const attributes = Object.fromEntries(['aFrom', 'aTo', 'aColorFrom', 'aColorTo'].map(key => [key, { array: new Float32Array(3) }]));
+  const context = vm.createContext({
+    active: 0, transitionStart: null, transitionDuration: 1.45, time: 0,
+    shapes: Array.from({ length: 9 }, () => ({ positions: new Float32Array([1, 2, 3]), colors: new Float32Array([1, 1, 1]) })),
+    geometry: { getAttribute: key => attributes[key] }, interpolateInto() {},
+    uniforms: Object.fromEntries(['uMorph', 'uWork', 'uNameWeight', 'uJelly'].map(key => [key, { value: key === 'uNameWeight' ? 1 : 0 }])),
+    motion: { matches: false }, syncFlow() {}, render() {},
+  });
+  vm.runInContext(source.slice(begin, end), context);
+  context.change(7, false, true);
+  assert.equal(context.active, 7); assert.equal(context.uniforms.uMorph.value, 1);
+  assert.equal(context.uniforms.uNameWeight.value, 0); assert.equal(context.transitionStart, null);
+  context.change(4);
+  assert.equal(context.uniforms.uMorph.value, 0); assert.equal(context.transitionDuration, 1.45);
+  context.change(4, false, true);
+  assert.equal(context.uniforms.uMorph.value, 1); assert.equal(context.transitionStart, null);
+  context.change(0); context.change(0, false, true);
+  assert.equal(context.uniforms.uMorph.value, 1); assert.equal(context.uniforms.uNameWeight.value, 1);
+  assert.equal(context.transitionStart, null, 'instant identity must settle the preceding Home selection');
 });

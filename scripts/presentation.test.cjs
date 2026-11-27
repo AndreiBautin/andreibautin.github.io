@@ -10,6 +10,6 @@ test('homepage stays a single scene with experience and contact behind explicit 
   assert.match(homepage, /<section class="particle-stage"/);
   assert.match(homepage, /<button data-open="about" data-section-link="experience">[\s\S]*?Experience<\/button>/);
   assert.match(homepage, /<button data-open="about" data-contact data-section-link="contact">[\s\S]*?Contact<\/button>/);
-  assert.match(homepage, /href="\.\/Andrei_Bautin_Resume\.pdf">(?:<span[^>]*>02<\/span>)?Resume<\/a>/);
+  assert.match(homepage, /href="\.\/Andrei_Bautin_Resume\.pdf">(?:<span[^>]*>01<\/span>)?Resume<\/a>/);
   assert.match(html, /<dialog id="about"/);
 });

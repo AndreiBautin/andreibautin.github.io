@@ -1,5 +1,5 @@
 // File pair: intro.js, intro-state.js and intro.css are coupled adapters.
-import { INTRO_BEATS, shouldStartIntro, createIntroState, advanceIntro, pauseIntro, interruptIntro, introBeat } from './intro-state.js?v=b829e54b6e';
+import { INTRO_BEATS, shouldStartIntro, createIntroState, advanceIntro, pauseIntro, interruptIntro, introBeat } from './intro-state.js?v=f08ed35a3e';
 
 export function mountIntro(root = document) {
   const doc = root.ownerDocument ?? root;
@@ -19,10 +19,8 @@ export function mountIntro(root = document) {
 
   const motion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
   const connection = win.navigator.connection;
-  const storageKey = 'portfolio-intro-seen-v2';
-  let seen = false;
-  try { seen = win.sessionStorage.getItem(storageKey) === '1'; } catch { seen = true; }
   let state = interruptIntro(createIntroState());
+  let waiting = false, warmup = null;
   let frame = null;
   let rendered = null;
   let initialScene = 0;
@@ -35,7 +33,7 @@ export function mountIntro(root = document) {
   }
   function scene(index) {
     dispatching = true;
-    try { win.dispatchEvent(new win.CustomEvent('portfolio:scene', { detail: { index, showcase: state.active } })); }
+    try { win.dispatchEvent(new win.CustomEvent('portfolio:scene', { detail: { index, showcase: state.active, instant: state.active && index === 0 } })); }
     finally { dispatching = false; }
   }
   function selectedScene() {
@@ -55,6 +53,9 @@ export function mountIntro(root = document) {
     state = interruptIntro(state);
     if (frame !== null) win.cancelAnimationFrame(frame);
     frame = null;
+    waiting = false;
+    if (warmup !== null) win.clearTimeout(warmup);
+    warmup = null;
     overlay.hidden = true;
     doc.body?.classList.remove('intro-playing');
     delete overlay.dataset.introBeat;
@@ -74,12 +75,20 @@ export function mountIntro(root = document) {
   }
   function tick(now) {
     frame = null;
-    if (!state.active || disposed) return;
+    if (!state.active || disposed || waiting) return;
     if (doc.hidden) { state = pauseIntro(state); return; }
     const next = advanceIntro(state, now);
     if (!next.active) { finish(); return; }
     state = next;
     try { paint(); frame = win.requestAnimationFrame(tick); } catch { stop(); }
+  }
+  function begin() {
+    if (!state.active || disposed || !waiting) return;
+    waiting = false;
+    if (warmup !== null) win.clearTimeout(warmup);
+    warmup = null;
+    state = pauseIntro(state);
+    if (!doc.hidden) frame = win.requestAnimationFrame(tick);
   }
   function replay() {
     if (disposed) return;
@@ -90,13 +99,14 @@ export function mountIntro(root = document) {
     state = createIntroState();
     rendered = null;
     try {
-      win.sessionStorage.setItem(storageKey, '1');
-    } catch { /* Explicit replay works even with storage denied. */ }
-    try {
       overlay.hidden = false;
       doc.body?.classList.add('intro-playing');
       paint();
-      if (!doc.hidden) frame = win.requestAnimationFrame(tick);
+      waiting = true;
+      // Let the name actually render before its visible hold begins. Links
+      // remain usable, and missing graphics cannot stall the tour forever.
+      if (doc.body?.classList.contains('field-ready') || doc.body?.classList.contains('field-unavailable')) begin();
+      else warmup = win.setTimeout(begin, 2500);
     } catch { stop(); }
   }
   function outside(event) {
@@ -110,9 +120,10 @@ export function mountIntro(root = document) {
   listen(skip, 'click', finish);
   listen(overlay, 'keydown', event => { if (event.key === 'Escape') { event.preventDefault(); finish(); } });
   listen(replayButton, 'click', replay);
+  listen(win, 'portfolio:replay-intro', replay);
   for (const type of ['pointerdown', 'keydown', 'click', 'wheel']) listen(doc, type, outside, { capture: true, passive: type !== 'keydown' });
   listen(win, 'portfolio:scene', () => { if (!dispatching) stop(false); });
-  listen(win, 'portfolio:graphics-ready', () => { if (state.active) scene(introBeat(state).index); });
+  listen(win, 'portfolio:graphics-ready', () => { if (state.active) { scene(introBeat(state).index); begin(); } });
   listen(win, 'hashchange', () => stop(false));
   listen(win, 'pagehide', () => stop());
   listen(doc, 'visibilitychange', () => {
@@ -120,11 +131,11 @@ export function mountIntro(root = document) {
     state = pauseIntro(state);
     if (frame !== null) win.cancelAnimationFrame(frame);
     frame = null;
-    if (!doc.hidden) frame = win.requestAnimationFrame(tick);
+    if (!doc.hidden && !waiting) frame = win.requestAnimationFrame(tick);
   });
   listen(motion, 'change', () => { if (motion.matches) stop(); });
   listen(connection, 'change', () => { if (connection.saveData) stop(); });
-  if (shouldStartIntro({ seen, reducedMotion: motion?.matches, saveData: connection?.saveData, hash: win.location.hash })) replay();
+  if (shouldStartIntro({ reducedMotion: motion?.matches, saveData: connection?.saveData, hash: win.location.hash })) replay();
   else overlay.hidden = true;
   return { replay, dispose() { stop(); disposed = true; removers.forEach(remove => remove()); } };
 }

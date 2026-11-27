@@ -121,8 +121,8 @@ try {
     const worldWidth = 2 * camera.position.z * Math.tan(42 * Math.PI / 360) * camera.aspect;
     uniforms.uNameScale.value = Math.min(.8, worldWidth / 17); uniforms.uShapeScale.value = Math.min(.65, worldWidth / 11.5); render();
   }
-  function change(index, showcase = false) {
-    if (!Number.isInteger(index) || !shapes[index] || index === active) return;
+  function change(index, showcase = false, instant = false) {
+    if (!Number.isInteger(index) || !shapes[index] || (index === active && !instant)) return;
     const m = uniforms.uMorph.value;
     for (const [fromName, toName] of [['aFrom', 'aTo'], ['aColorFrom', 'aColorTo']]) {
       const from = geometry.getAttribute(fromName), to = geometry.getAttribute(toName);
@@ -130,7 +130,7 @@ try {
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
     active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time; transitionDuration = showcase === true ? .55 : 1.45;
-    if (motion.matches) { uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
+    if (motion.matches || instant) { uniforms.uMorph.value = 1; transitionStart = null; uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
     if (document.hidden) { frame = 0; last = null; return; }
@@ -156,7 +156,7 @@ try {
     if (motion.matches) { uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
-  addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.showcase === true));
+  addEventListener('portfolio:scene', event => change(event.detail?.index, event.detail?.showcase === true, event.detail?.instant === true));
   addEventListener('portfolio:theme', event => { uniforms.uLight.value = event.detail?.light ? 1 : 0; material.blending = uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending; render(); });
   addEventListener('portfolio:overlay', event => { overlay = !!event.detail?.open; pointer.set(100, 100); });
   function projectPointer(event) { const box = canvas.getBoundingClientRect(), height = 2 * camera.position.z * Math.tan(42 * Math.PI / 360); pointer.set(((event.clientX - box.left) / box.width - .5) * height * camera.aspect, (.5 - (event.clientY - box.top) / box.height) * height); }
@@ -166,5 +166,10 @@ try {
   canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); cancelAnimationFrame(frame); document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); status.textContent = 'Graphics paused. Project links remain available.'; });
   canvas.addEventListener('webglcontextrestored', () => location.reload());
   addEventListener('pagehide', event => { cancelAnimationFrame(frame); if (!event.persisted) { geometry.dispose(); material.dispose(); renderer.dispose(); } }); addEventListener('pageshow', resume);
-  resize(); change(Number(document.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene ?? 0)); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
+  const initialMode = document.querySelector('#work-panel')?.getAttribute('data-work-mode');
+  const initialRoute = location.hash.slice(1).replace(/^work-/, '');
+  const routeMode = initialRoute === 'resume' ? 'career' : initialRoute === 'experience' ? 'knowledge' : initialRoute;
+  const initialWork = ['knowledge', 'replication', 'payments', 'career', 'contact'].indexOf(initialMode === 'projects' || !initialMode ? routeMode : initialMode);
+  const initialIndex = document.body.classList.contains('intro-playing') ? 0 : initialWork >= 0 ? 4 + initialWork : Number(document.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene ?? 0);
+  resize(); change(initialIndex, false, true); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
 } catch { document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); document.querySelector('.interaction-hint').textContent = 'Choose a project below'; status.textContent = 'Explore a project below.'; }

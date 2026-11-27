@@ -1,14 +1,16 @@
 # Testing
 
-Section navigation regressions execute the shipped UI script: default Experience,
+Section navigation regressions execute the shipped UI script: default Resume,
 ordered header selection, remembered personal project, deep links, completion
 with a reload-consistent URL, late renderer readiness and consumed Escape.
-The intro tests cover the nine-second professional-before-personal sequence,
+The intro tests cover the 10.8-second Resume-before-experience-before-projects sequence,
 one completion event, actual image selection, cancellation, keyboard access to
 Skip, reduced motion/data saving, hidden tabs and missing-work-UI restoration.
 The renderer frame test checks the showcase morph settles before the next beat;
 it does not judge visual quality. Native desktop and small-screen review remains
-a separate acceptance step.
+a separate acceptance step. Opening regressions also exercise the actual async
+loader order, ready-before/after-mount, bounded no-renderer fallback, repeated
+loads without storage, full name hold after readiness and instant work startup.
 
 Native fullscreen Chrome review on November 26 confirmed each top-level
 section, the three-project picker and local TERRA launch destination, the

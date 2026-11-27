@@ -6,13 +6,13 @@ routes. Nothing here changes the renderer, the CSP or the resume facts.
 
 | # | Section    | Header control                                   | Stage view (enhanced)                    | Fallback (no `work-ui-ready`)          |
 |---|------------|--------------------------------------------------|------------------------------------------|----------------------------------------|
-| 1 | Experience | `button[data-open=about][data-section-link=experience]` | `#work-panel`, mode `knowledge`, three subscene tabs | `dialog#about` opens at the top       |
-| 2 | Resume     | `a[data-resume][data-section-link=resume]`, `href` is the PDF | mode `career` (milestones + PDF link) | The link opens the PDF                 |
+| 1 | Resume     | `a[data-resume][data-section-link=resume]`, `href` is the PDF | mode `career` (milestones + PDF link) | The link opens the PDF                 |
+| 2 | Experience | `button[data-open=about][data-section-link=experience]` | `#work-panel`, mode `knowledge`, three subscene tabs | `dialog#about` opens at the top       |
 | 3 | Projects   | `a[data-projects][data-section-link=projects]`, `href="#projects"` | Last selected project, else TERRA; focus moves to `nav#projects` | Same picker without work UI; native anchor without JS |
 | 4 | Contact    | `button[data-open=about][data-contact][data-section-link=contact]` | mode `contact` (email, copy, LinkedIn, GitHub, PDF) | `dialog#about`, scrolled to `#contact` |
 
 The `01`-`04` counters are `aria-hidden`; the accessible names stay
-"Experience", "Resume", "Projects", "Contact".
+"Resume", "Experience", "Projects", "Contact".
 
 ## Experience subscenes
 
@@ -34,38 +34,39 @@ change the professional view.
   control. `home` (INDEX) marks no header control.
 - A visitor action writes the hash with `history.replaceState`: `#work-<mode>`
   or `#<project>`. Default entry leaves the clean home URL alone. Intro
-  completion keeps that clean URL, or writes `#work-knowledge` after replay
+  completion keeps that clean URL, or writes `#work-career` after replay
   from a deep link so the displayed view and a reload agree.
 - Accepted deep links: `#experience` (= `knowledge`), `#resume` and `#career`
   (= `career`), `#contact`, `#work-<mode>`, `#projects`, `#terra`, `#nacre`,
   `#construct` (= NACRE), `#pelagic`, `#top`. Any of them suppresses the intro.
 - Escape on the stage (outside a dialog) returns from a professional view to
-  the last selected project. Keys `1`-`4` activate Experience, Resume,
+  the last selected project. Keys `1`-`4` activate Resume, Experience,
   Projects and Contact, matching the header order. The home mark retains the
   original particle-name scene; Projects contains only the three demos.
 
 ## First entry
 
 With no hash and no visitor navigation yet, `portfolio:work-ready` lands on
-Experience (`knowledge`). `dist/story.js` mounts `work-ui.js` before importing
+Resume (`career`). `dist/story.js` mounts `work-ui.js` before importing
 `intro.js`, so this landing happens before the intro starts and the intro's
-`selectedScene()` records the Experience target as the scene to restore.
+`selectedScene()` records the Resume target as the scene to restore.
 
 ## Overview intro
 
-`dist/intro-state.js` defines one 9 s pass (`INTRO_DURATION = 9000`), seven
+`dist/intro-state.js` defines one 10.8 s pass (`INTRO_DURATION = 10800`), eight
 beats, each with a `section` label shown in `#intro-step` as
-`<section> / n of 7`:
+`<section> / n of 8`:
 
 | Start (ms) | Section    | Beat        | Scene |
 |------------|------------|-------------|-------|
 | 0          | Welcome    | identity    | 0     |
-| 900        | Experience | knowledge   | 4     |
-| 2200       | Experience | replication | 5     |
-| 3500       | Experience | payments    | 6     |
-| 4800       | Projects   | TERRA       | 1     |
-| 6200       | Projects   | NACRE       | 2     |
-| 7600       | Projects   | PELAGIC     | 3     |
+| 1600       | Resume     | career      | 7     |
+| 3000       | Experience | knowledge   | 4     |
+| 4200       | Experience | replication | 5     |
+| 5400       | Experience | payments    | 6     |
+| 6600       | Projects   | TERRA       | 1     |
+| 8000       | Projects   | NACRE       | 2     |
+| 9400       | Projects   | PELAGIC     | 3     |
 
 The intro only dispatches `portfolio:scene`; it never selects a project, a
 mode or a URL. While it plays, `.scene-copy`, `.work-hud` and `.work-tabs` are
@@ -75,15 +76,15 @@ Ending it:
 
 - **Completion, Skip intro, Escape inside the overlay**: `finish()` hides the
   overlay and dispatches `portfolio:intro-complete`; `dist/script.js` then
-  lands on Experience (`knowledge`). Escape is consumed so the same key cannot
+  lands on Resume (`career`). Escape is consumed so the same key cannot
   also leave that view. If work UI failed to mount, completion restores the
   original scene to keep its copy and particles consistent.
 - **Any other pointer, key, click or wheel, a hash change, or a scene from
   elsewhere**: `stop()` restores the scene recorded at start (or yields to
   the new choice). It does not dispatch `portfolio:intro-complete`. Tab and
   Shift+Tab continue the intro while allowing keyboard focus to reach Skip.
-- It runs at most once per session (`sessionStorage` `portfolio-intro-seen-v2`;
-  storage denied counts as seen). It does not start with reduced motion,
+- It runs once on each clean page load, with no session storage. It does not
+  start with reduced motion,
   Save-Data or a deep link, and stops if either preference turns on. A hidden
   tab pauses it. **Replay intro** starts it again when motion is allowed.
 
@@ -106,8 +107,8 @@ Ending it:
 | Missing piece                 | Result                                                               |
 |-------------------------------|----------------------------------------------------------------------|
 | WebGL / `dist/hero.js`        | Status message; every control and link still works.                  |
-| `dist/work-ui.js`             | Header uses dialogs and the PDF; first entry is INDEX, not Experience. |
-| `dist/intro.js`               | No intro, no Replay button; first entry is still Experience.         |
+| `dist/work-ui.js`             | Header uses dialogs and the PDF; first entry is INDEX, not Resume. |
+| `dist/intro.js`               | No intro, no Replay button; first entry is still Resume.         |
 | JavaScript                    | `<noscript>` project links, resume link, skip link to `#projects`.   |
 
 ## Accessibility

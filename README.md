@@ -7,11 +7,13 @@ jellyfish. The same dots transform between all four forms. Pointer movement
 disturbs the field; clicking sends an expanding wave. Live demos, resume,
 experience and contact remain direct controls. No account or backend.
 
-Experience, Resume, Projects and Contact are separate views of this same stage,
-in that order. Experience opens first. An optional nine-second first-session
-tour showcases professional work and personal projects, then lands on Experience.
+Resume, Experience, Projects and Contact are separate views of this same stage,
+in that order. Resume opens first. An optional 10.8-second opening overview
+showcases the name, Resume, professional work and personal projects, then lands
+on Resume. It plays on clean page loads; explicit destinations bypass it.
 It respects reduced motion and data saving, with Skip and Replay controls.
 See [section navigation](docs/SECTIONS.md).
+The [opening handoff](docs/OPENING.md) explains renderer readiness and fallbacks.
 
 ## Run it
 

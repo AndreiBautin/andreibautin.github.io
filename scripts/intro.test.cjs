@@ -14,21 +14,22 @@ async function modules(context = vm.createContext({})) {
 }
 test.before(async () => { policy = (await modules()).state; });
 
-test('nine-second overview shows professional experience before personal projects', () => {
+test('overview holds the name and leads with Resume before experience and projects', () => {
   let state = policy.createIntroState(100);
-  for (const [elapsed, key, index] of [[0, 'identity', 0], [899, 'identity', 0], [900, 'knowledge', 4], [2199, 'knowledge', 4], [2200, 'replication', 5], [3500, 'payments', 6], [4800, 'terra', 1], [6200, 'nacre', 2], [7600, 'pelagic', 3], [8999, 'pelagic', 3]]) {
+  for (const [elapsed, key, index] of [[0, 'identity', 0], [1599, 'identity', 0], [1600, 'career', 7], [2999, 'career', 7], [3000, 'knowledge', 4], [4200, 'replication', 5], [5400, 'payments', 6], [6600, 'terra', 1], [8000, 'nacre', 2], [9400, 'pelagic', 3], [10799, 'pelagic', 3]]) {
     state = policy.advanceIntro(state, elapsed + 100);
     assert.equal(policy.introBeat(state).key, key);
     assert.equal(policy.introBeat(state).index, index);
   }
-  state = policy.advanceIntro(state, 9100);
-  assert.equal(state.elapsed, 9000);
+  state = policy.advanceIntro(state, 10900);
+  assert.equal(state.elapsed, 10800);
   assert.equal(policy.introBeat(state), null);
 });
 
-test('policy skips seen sessions, motion, data saving and direct destinations', () => {
+test('normal entry always offers the tour; motion, data saving and explicit destinations skip it', () => {
   assert.equal(policy.shouldStartIntro(), true);
-  for (const options of [{ seen: true }, { reducedMotion: true }, { saveData: true }, ...['top', 'projects', 'terra', 'nacre', 'pelagic', 'construct', 'experience', 'resume', 'career', 'contact', 'work-payments'].map(key => ({ hash: `#${key}` }))]) {
+  assert.equal(policy.shouldStartIntro({ seen: true }), true, 'old session state cannot suppress the tour');
+  for (const options of [{ reducedMotion: true }, { saveData: true }, ...['top', 'projects', 'terra', 'nacre', 'pelagic', 'construct', 'experience', 'resume', 'career', 'contact', 'work-payments'].map(key => ({ hash: `#${key}` }))]) {
     assert.equal(policy.shouldStartIntro(options), false);
   }
   assert.equal(policy.shouldStartIntro({ hash: '#unrelated' }), true);
@@ -48,7 +49,7 @@ test('hostile clocks cannot corrupt progress; paused time is excluded; interrupt
   assert.equal(policy.advanceIntro(interrupted, Number.MAX_VALUE), interrupted);
   assert.equal(policy.introBeat(interrupted), null);
   for (const now of [NaN, Infinity, -1, '1']) assert.equal(policy.createIntroState(now).anchor, null);
-  assert.equal(policy.advanceIntro(policy.createIntroState(0), Number.MAX_VALUE).elapsed, 9000);
+  assert.equal(policy.advanceIntro(policy.createIntroState(0), Number.MAX_VALUE).elapsed, 10800);
 });
 
 class Target {
@@ -60,7 +61,7 @@ class Target {
   contains(node) { return node === this || (this.children ?? []).includes(node); }
   focus() { this.focused = true; }
 }
-function fixture({ denied = false, seen = false, hash = '', reduced = false, saveData = false, selected = 0, workReady = true } = {}) {
+function fixture({ denied = false, seen = false, hash = '', reduced = false, saveData = false, selected = 0, workReady = true, graphicsReady = true } = {}) {
   const doc = new Target(), win = new Target(), overlay = new Target(), replay = new Target(), skip = new Target(), message = new Target(), caption = new Target();
   const images = ['terra', 'nacre', 'pelagic'].map(key => Object.assign(new Target(), { dataset: { introImage: key } }));
   const motion = Object.assign(new Target(), { matches: reduced });
@@ -72,6 +73,7 @@ function fixture({ denied = false, seen = false, hash = '', reduced = false, sav
   overlay.children = [skip, message, caption, ...images];
   doc.defaultView = win;
   const classes = new Set(workReady ? ['work-ui-ready'] : []);
+  if (graphicsReady) classes.add('field-ready');
   doc.body = { classList: { add: key => classes.add(key), remove: key => classes.delete(key), contains: key => classes.has(key) } };
   doc.hidden = false;
   win.navigator = { connection };
@@ -83,24 +85,27 @@ function fixture({ denied = false, seen = false, hash = '', reduced = false, sav
   let id = 0;
   win.requestAnimationFrame = fn => { frames.set(++id, fn); return id; };
   win.cancelAnimationFrame = key => frames.delete(key);
+  const timers = new Map();
+  win.setTimeout = (fn, delay) => { assert.equal(delay, 2500); timers.set(++id, fn); return id; };
+  win.clearTimeout = key => timers.delete(key);
   win.addEventListener('portfolio:scene', event => scenes.push(event.detail.index));
   function frame(now) { const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(fn => fn(now)); }
-  return { doc, win, overlay, replay, skip, message, caption, images, frames, scenes, frame, motion, connection };
+  return { doc, win, overlay, replay, skip, message, caption, images, frames, scenes, frame, motion, connection, timers };
 }
 
 test('adapter showcases work then actual project images and completes once without stale restoration', async () => {
   const { adapter } = await modules(), f = fixture({ selected: 2 });
   let completions = 0; f.win.addEventListener('portfolio:intro-complete', () => completions++);
   adapter.mountIntro(f.doc);
-  f.frame(0); f.frame(900);
+  f.frame(0); f.frame(1600);
   assert.equal(f.images.every(image => image.hidden), true);
-  f.frame(2200); f.frame(3500); f.frame(4800);
+  f.frame(3000); f.frame(4200); f.frame(5400); f.frame(6600);
   assert.equal(f.images[0].hidden, false);
   assert.equal(f.images[1].hidden, true);
-  f.frame(6200); assert.equal(f.images[1].hidden, false);
-  f.frame(7600); assert.equal(f.images[2].hidden, false);
-  f.frame(9000); f.frame(15000);
-  assert.deepEqual(f.scenes, [0, 4, 5, 6, 1, 2, 3]);
+  f.frame(8000); assert.equal(f.images[1].hidden, false);
+  f.frame(9400); assert.equal(f.images[2].hidden, false);
+  f.frame(10800); f.frame(15000);
+  assert.deepEqual(f.scenes, [0, 7, 4, 5, 6, 1, 2, 3]);
   assert.equal(completions, 1);
   assert.equal(f.overlay.hidden, true);
   assert.equal(f.win.location.hash, '');
@@ -110,11 +115,11 @@ test('adapter showcases work then actual project images and completes once witho
 test('a late graphics renderer receives the current intro beat without interrupting it', async () => {
   const { adapter } = await modules(), f = fixture();
   adapter.mountIntro(f.doc);
-  f.frame(0); f.frame(900);
+  f.frame(0); f.frame(3000);
   f.win.emit('portfolio:graphics-ready');
   assert.deepEqual(f.scenes, [0, 4, 4]);
   assert.equal(f.overlay.hidden, false);
-  f.frame(2200);
+  f.frame(4200);
   assert.equal(f.scenes.at(-1), 5);
 });
 
@@ -151,15 +156,15 @@ test('hidden tabs pause beats, passive pointer movement does not cancel, skip wo
   assert.equal(f.frames.size, 0);
   f.doc.hidden = false; f.doc.emit('visibilitychange');
   f.frame(10000); assert.equal(f.overlay.dataset.introBeat, 'identity');
-  f.frame(10400); assert.equal(f.overlay.dataset.introBeat, 'knowledge');
+  f.frame(11100); assert.equal(f.overlay.dataset.introBeat, 'career');
   f.skip.emit('click'); assert.equal(f.overlay.hidden, true);
   mounted.replay(); assert.equal(f.overlay.hidden, false);
   f.skip.emit('click'); assert.equal(f.frames.size, 0);
 });
 
-test('denied storage and policy skip automatically, while explicit replay is repeatable', async () => {
+test('policy skips automatically, while explicit replay is repeatable', async () => {
   const { adapter } = await modules();
-  for (const options of [{ denied: true }, { seen: true }, { hash: '#contact' }, { reduced: true }, { saveData: true }]) {
+  for (const options of [{ hash: '#contact' }, { reduced: true }, { saveData: true }]) {
     const f = fixture(options), mounted = adapter.mountIntro(f.doc);
     assert.equal(f.overlay.hidden, true); assert.deepEqual(f.scenes, []);
     mounted.replay();
@@ -211,6 +216,46 @@ test('keyboard can reach Skip; Escape is consumed, and failed work enhancement r
   f.doc.emit('keydown', { key: 'Escape', target: f.replay, preventDefault() { prevented = true; } });
   assert.equal(prevented, true); assert.equal(f.overlay.hidden, true, 'Escape on Replay also finishes');
   const fallback = fixture({ workReady: false, selected: 2 }); adapter.mountIntro(fallback.doc);
-  fallback.frame(0); fallback.frame(9000);
+  fallback.frame(0); fallback.frame(10800);
   assert.equal(fallback.scenes.at(-1), 2);
+});
+
+test('cold renderer cannot consume the name hold; ready starts the complete tour', async () => {
+  const { adapter } = await modules(), f = fixture({ graphicsReady: false });
+  adapter.mountIntro(f.doc);
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.timers.size, 1);
+  f.frame(10000); assert.equal(f.overlay.dataset.introBeat, 'identity');
+  f.win.emit('portfolio:graphics-ready'); assert.equal(f.timers.size, 0);
+  f.frame(20000); f.frame(21599);
+  assert.equal(f.overlay.dataset.introBeat, 'identity');
+  f.frame(21600); assert.equal(f.overlay.dataset.introBeat, 'career');
+});
+
+test('missing renderer has a bounded fallback and navigation cancels its pending warmup', async () => {
+  const { adapter } = await modules(), f = fixture({ graphicsReady: false });
+  adapter.mountIntro(f.doc);
+  const fallback = [...f.timers.values()][0]; fallback();
+  f.frame(0); f.frame(3000); assert.equal(f.scenes.at(-1), 4);
+  const waiting = fixture({ graphicsReady: false }); adapter.mountIntro(waiting.doc);
+  const stale = [...waiting.timers.values()][0];
+  waiting.doc.emit('pointerdown', { target: new Target() }); stale();
+  assert.equal(waiting.frames.size, 0); assert.equal(waiting.timers.size, 0);
+  assert.equal(waiting.overlay.hidden, true);
+});
+
+test('repeat clean entries play even if storage is denied or a prior tour was seen', async () => {
+  const { adapter } = await modules();
+  for (const options of [{ denied: true }, { seen: true }]) {
+    const f = fixture(options); adapter.mountIntro(f.doc);
+    assert.equal(f.overlay.hidden, false);
+    assert.equal(f.scenes[0], 0);
+  }
+});
+
+test('home can explicitly reopen the complete overview from a direct section', async () => {
+  const { adapter } = await modules(), f = fixture({ hash: '#resume' }); adapter.mountIntro(f.doc);
+  assert.equal(f.overlay.hidden, true);
+  f.win.emit('portfolio:replay-intro'); assert.equal(f.overlay.hidden, false);
+  f.frame(0); f.frame(1600); assert.equal(f.scenes.at(-1), 7);
 });
