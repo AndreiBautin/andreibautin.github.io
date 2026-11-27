@@ -84,6 +84,7 @@ function select(index, updateUrl = true) {
   details.hidden = index === 0;
   document.getElementById('welcome-projects').hidden = index !== 0;
   document.getElementById('welcome-experience').hidden = index !== 0;
+  document.getElementById('welcome-sections').hidden = index !== 0;
   document.getElementById('projects').hidden = index === 0;
   document.querySelectorAll('[data-project-note]').forEach(note => { note.hidden = Number(note.dataset.projectNote) !== index; });
   if (keepDetails && index !== 0) openProjectDetails(false);
@@ -105,7 +106,7 @@ document.getElementById('scene-launch').addEventListener('click', event => {
 });
 // Home previews respond to intent only; they never navigate or cycle scenes.
 const homePreviews = [
-  ['scene-launch', 'Resume', 'Career & credentials', 'Explore my career milestones, Azure certifications and the full resume.'],
+  ['welcome-resume', 'Resume', 'Career & credentials', 'Explore my career milestones, Azure certifications and the full resume.'],
   ['welcome-experience', 'Experience', 'Engineering in practice', 'Explore the problem, my contribution and the outcome across three projects at 3Cloud.'],
   ['welcome-projects', 'Projects', 'Independent experiments', 'Explore TERRA, NACRE and PELAGIC, then open their working applications.'],
 ];
@@ -143,6 +144,7 @@ function fromHash(event) {
     launch.textContent = mode === 'contact' ? 'Send email' : 'View resume (PDF)';
     document.getElementById('welcome-projects').hidden = true;
     document.getElementById('welcome-experience').hidden = true;
+    document.getElementById('welcome-sections').hidden = true;
     closeProjectDetails();
     const details = document.getElementById('scene-details'); details.hidden = false; details.dataset.open = 'about'; details.textContent = 'About me';
     details.setAttribute('aria-controls', 'about');
@@ -166,13 +168,14 @@ addEventListener('portfolio:mode', event => {
   closeProjectDetails();
   fallbackMode = null; document.body.classList.remove('work-fallback');
   workMode = mode; document.body.classList.add('work-view');
+  document.getElementById('welcome-sections').hidden = true;
   markSection(mode === 'career' ? 'resume' : mode === 'contact' ? 'contact' : 'experience');
   buttons.forEach(button => button.setAttribute('aria-pressed', 'false'));
   if (event.detail?.updateUrl !== false) history.replaceState(null, '', `#work-${mode}`);
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode), instant: event.detail?.instant === true } }));
 });
 addEventListener('portfolio:graphics-ready', () => { const mode = workMode ?? fallbackMode; if (mode !== null) dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index: 4 + workModes.indexOf(mode), instant: true } })); });
-document.querySelector('[data-resume]').addEventListener('click', event => {
+for (const control of [document.querySelector('[data-resume]'), document.getElementById('welcome-resume')]) control.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   if (!document.body.classList.contains('work-ui-ready')) return;
   event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));

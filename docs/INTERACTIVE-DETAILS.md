@@ -11,6 +11,11 @@ previews the chosen section in the welcome copy; leaving restores the identity.
 This never changes the URL or particle target. Selection opens that section.
 The resume keeps its PDF and modified-click fallback. Experience keeps the
 nonmodal About panel if the optional professional module is unavailable.
+The controls use the same full-width `.scene-picker` row as Projects and
+Experience, with thin top rules and short subtitles. They have no card surface.
+Professional details use unboxed captions; resume milestones show compact dates
+with full descriptive accessible labels. The selected caption retains the degree,
+employer or certification facts and the approved PDF remains available.
 
 ## Project field notes
 

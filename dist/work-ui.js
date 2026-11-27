@@ -227,7 +227,7 @@ export function mountWorkUI(root = document) {
       section.append(sw.wrap, actions([resumeLink(), contactButton()]));
     } else if (key === 'career') {
       const sw = switcher(id, 'Career milestones', data.milestones, {
-        label(button, [when, what]) { button.append(el('span', 'work-when', when), el('span', 'work-what', what)); },
+        label(button, [when, what]) { button.setAttribute('aria-label', `${when}: ${what}`); button.append(el('span', 'work-when', when)); },
         detail(node, [, what, text]) { node.textContent = ''; node.append(el('strong', 'work-detail-title', what), el('p', null, text)); },
       });
       section.append(sw.wrap, actions([attrs(link('work-link work-primary', RESUME, 'Download resume (PDF)'), { type: 'application/pdf' }), contactButton()]));

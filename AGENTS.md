@@ -21,3 +21,5 @@
   details stay in the stage and remain open across project changes. No modal
   focus traps, including the professional fallback; text stays upright while
   particle models support explicit drag and keyboard-accessible turn controls.
+- Home uses the same thin-rule scene-picker as Projects and Experience. Keep
+  captions unboxed and resume milestones compact; models are the visual focus.

@@ -76,6 +76,23 @@ test('Home offers Experience directly, retaining its native fallback', () => {
   f.buttons[1].emit('click'); assert.equal(f.ids.get('welcome-experience').hidden, true);
 });
 
+test('the Home selector row routes Resume and never remains behind another section', () => {
+  const f = fixture(); const row = f.ids.get('welcome-sections');
+  assert.equal(row.hidden, false);
+  let prevented = false;
+  f.ids.get('welcome-resume').emit('click', { preventDefault() { prevented = true; } });
+  assert.equal(prevented, false, 'PDF fallback before professional enhancement');
+  f.ready(); f.ids.get('welcome-resume').emit('click');
+  assert.equal(f.scenes.at(-1), 7); assert.equal(row.hidden, true);
+  f.home.emit('click'); assert.equal(row.hidden, false);
+  const before = f.scenes.length;
+  f.ids.get('welcome-resume').emit('click', { ctrlKey: true, preventDefault() { throw new Error('modified PDF link intercepted'); } });
+  assert.equal(f.scenes.length, before);
+  f.ids.get('welcome-projects').emit('click'); assert.equal(row.hidden, true);
+  f.home.emit('click'); f.ids.get('welcome-experience').emit('click'); assert.equal(row.hidden, true);
+  assert.equal(fixture('#resume').ids.get('welcome-sections').hidden, true, 'early fallback route hides Home choices');
+});
+
 test('welcome context responds to focused choices without navigating or starting a tour', () => {
   const f = fixture(); f.ready(); const before = f.scenes.length;
   f.ids.get('welcome-experience').emit('focus');

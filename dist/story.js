@@ -1,6 +1,6 @@
 // Optional stage enhancements. The single-screen application works without them.
 let workUI = null, disposed = false;
-import('./work-ui.js?v=7950d9d1aa').then(module => {
+import('./work-ui.js?v=4ffac740ea').then(module => {
   if (disposed) return;
   workUI = module.mountWorkUI(document);
   dispatchEvent(new CustomEvent('portfolio:work-ready'));

@@ -13,9 +13,9 @@ particle scene or URL. See [Interactive details](INTERACTIVE-DETAILS.md).
 ## One visit
 
 `dist/index.html` supplies the introduction and real links before graphics load.
-Explore my background points to the approved resume PDF. Once the work UI is
+The bottom Resume selector points to the approved resume PDF. Once the work UI is
 ready, an ordinary primary click opens the Resume stage; modified clicks and
-unavailable enhancement keep the native PDF destination. Explore projects opens
+unavailable enhancement keep the native PDF destination. The Projects selector opens
 the last selected demo (TERRA initially) and focuses the project picker.
 
 The header remains Resume, Experience, Projects, Contact, with keys 1-4 in that

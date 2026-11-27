@@ -300,6 +300,7 @@ test('career offers four selectable milestones and the approved PDF', () => {
   const v = f.view('career');
   const steps = v.all((e) => e.getAttribute('role') === 'tab');
   assert.equal(steps.length, 4);
+  assert.match(steps[0].getAttribute('aria-label'), /May 2019: B.S., Applied Computing Technology/);
   assert.deepEqual(steps.map((s) => s.all((c) => c.classList.contains('work-when'))[0].textContent), ['May 2019', 'June 2019', 'Sept 2024', 'Credentials']);
   const detail = v.all((e) => e.getAttribute('role') === 'tabpanel')[0];
   steps[3].fire('click');

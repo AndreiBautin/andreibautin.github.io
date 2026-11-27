@@ -26,9 +26,8 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
 .work-step:hover{color:var(--ink)}
 .work-step[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 .work-when{display:block}
-.work-what{display:block;margin-top:3px;font:11px var(--font);text-transform:none;letter-spacing:0;max-width:150px}
-.work-hud>.work-view[data-work-mode="career"] .work-steps{display:grid;grid-template-columns:repeat(2,1fr);gap:0 14px}
-.work-detail{font-size:16px;line-height:1.65;color:var(--ink);padding:16px;min-height:100px;overflow:auto;overscroll-behavior:contain;border-left:2px solid var(--accent);background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 8%,transparent),transparent);border-radius:0 12px 12px 0}
+.work-hud>.work-view[data-work-mode="career"] .work-steps{display:flex;gap:6px 18px}
+.work-detail{font-size:14px;line-height:1.7;color:var(--ink);padding:12px 0 2px;min-height:64px;overflow:auto;overscroll-behavior:contain}
 .work-detail:focus{outline:none}
 .work-detail:focus-visible{outline:1px solid var(--line);outline-offset:2px}
 .work-detail p{margin:4px 0 0;color:var(--muted)}
