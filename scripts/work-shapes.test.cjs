@@ -12,7 +12,7 @@ test.before(async () => {
 });
 
 function accent(color) {
-  return color[0] > color[1] && color[0] > 0.55;
+  return color[0] > color[1] * 1.15 && color[0] > color[2] * 1.4;
 }
 
 test('five work scenes stay finite, tagged and inside the stage at maximum population', () => {
@@ -118,6 +118,26 @@ const TAG_SHARE = [0.6, 0.12, 0.28]; // bands [0.34, 0.26 | 0.12 | 0.2, 0.08] ma
 const TAU = Math.PI * 2;
 const NODES = [[-3.1, -1.82, 0.32], [-1.05, -0.55, -0.8], [1.15, 0.72, 0.9], [3.15, 1.78, -0.22]];
 const DEST = [[-3.15, 1.2, 0.72], [3.25, 1.02, -0.58], [0.15, -2.05, 0.9]];
+
+test('Resume nodes keep lit and shadowed faces at phone and desktop populations', () => {
+  for (const count of [18000, 42000]) {
+    const shape = shapes.createWorkShapes(count)[3];
+    NODES.forEach((center, node) => {
+      const faces = [[], []], radius = 0.34 + node * 0.035;
+      for (let i = 0; i < count; i++) {
+        if (shape.positions[i * 4 + 3] !== 0) continue;
+        const rel = center.map((value, axis) => shape.positions[i * 4 + axis] - value);
+        if (Math.abs(Math.hypot(...rel) - radius) > 0.001) continue;
+        const facing = (rel[0] * 0.4 + rel[1] * 0.6 + rel[2] * 0.7) / radius;
+        if (Math.abs(facing) > 0.6) faces[facing > 0 ? 1 : 0].push(shape.colors[i * 3 + 1]);
+      }
+      faces.forEach(face => assert(face.length > 50));
+      const mean = values => values.reduce((sum, value) => sum + value, 0) / values.length;
+      assert(mean(faces[1]) > mean(faces[0]) * 2, 'uniformly luminous spheres lose their depth');
+      assert(mean(faces[0]) > 0.1, 'shadow side must remain visible');
+    });
+  }
+});
 let desktop;
 const full = () => desktop ??= shapes.createWorkShapes(DESKTOP, 69);
 

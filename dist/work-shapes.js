@@ -1,5 +1,4 @@
-// work-shapes.js supplies the five professional targets to hero.js.
-// Browser-free deterministic targets for five full-stage professional scenes.
+// Deterministic, browser-free professional targets for hero.js.
 // positions.w is a motif tag: 0 body/anchor, 1 moving packet, 2 connection.
 
 export function hash(value, salt = 17) {
@@ -267,7 +266,8 @@ function career(band, k, n, h, g) {
   const [node, u] = slot(k, n, 4);
   if (band === 0) {
     const ball = localSphere(k, n, 4, 0.34 + node * 0.035, h);
-    return { at: add(NODES[node], ball), color: tone(node === 3 ? GOLD : SAGE, g) };
+    const light = 0.35 + 0.65 * Math.max(0, (ball[0] * 0.4 + ball[1] * 0.6 + ball[2] * 0.7) / (0.34 + node * 0.035));
+    return { at: add(NODES[node], ball), color: tone(node === 3 ? GOLD : SAGE, g).map(value => value * light * (node === 3 ? 1.1 : 1.5)) };
   }
   if (band === 1) {
     const ang = TAU * u + h;
@@ -297,8 +297,7 @@ function career(band, k, n, h, g) {
       color: tone(CYAN, 1 - h),
     };
   }
-  // Short orbital trails: one tilted comet arc per milestone, centred on its
-  // node; the renderer rocks them and sweeps light through their tag-2 band.
+  // Tilted milestone trails; motion belongs to the renderer.
   const tilt = 0.85 + node * 0.28;
   const ang = TAU * (0.6 + node * 0.23) + u * 1.25;
   const radius = 0.8 + node * 0.03 + (h - 0.5) * 0.05 * (1 - u);
@@ -357,8 +356,7 @@ export function createWorkShapes(count, seed = 69) {
   if (!Number.isInteger(count) || count < 1 || count > 60000) throw new RangeError('Particle count outside bounds');
   if (!Number.isInteger(seed)) throw new TypeError('Seed must be a finite integer');
   const counts = allocate(count, BANDS);
-  // A quality drop draws a prefix of the buffers. Fairly interleave motifs so
-  // that every prefix keeps core, structure, connections and moving packets.
+  // Interleave bands so adaptive prefixes keep every motif.
   const order = counts.map(() => []), debt = counts.map(() => 0);
   for (let i = 0; i < count; i++) {
     let chosen = 0;
@@ -376,8 +374,7 @@ export function createWorkShapes(count, seed = 69) {
       const n = counts[band];
       const stride = spatialStride(n);
       for (let k = 0; k < n; k++) {
-        // A coprime traversal visits every sample exactly once while spreading
-        // each prefix around the whole object, not just its first quadrant.
+        // Coprime sampling spreads each motif through every prefix.
         const sample = scene(band, k * stride % n, n, hash(cursor, seed + sceneIndex * 13), hash(cursor, seed + 101 + band));
         paint(shape, order[band][k], sample.at, TAG[band], sample.color);
         cursor++;

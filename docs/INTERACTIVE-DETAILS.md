@@ -79,6 +79,13 @@ scene morph settles and uses the existing paused/reduced-motion frame lifecycle.
 Selecting a resume milestone updates `portfolio:career-step` and emphasizes that
 node's pulse without navigating or advancing the story automatically.
 
+Resume uses smaller particle footprints and lower opacity than the other scenes
+to limit additive overlap in its dense rings. Its spheres carry deterministic
+local directional shading, preserving shadow faces and the gold credential node.
+Selected milestones receive a restrained light sweep rather than a broad white
+boost. Exposure follows the existing flow fade and stays consistent in reduced
+motion; it does not alter the project models or their palette.
+
 ## Contact and presentation scale
 
 The content subheader carries a thin back arrow with a 44px hit area, an accessible
