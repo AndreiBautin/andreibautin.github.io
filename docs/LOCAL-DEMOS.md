@@ -1,5 +1,13 @@
 # Local demo links
 
+Each demo now supplies its own same-tab Portfolio return link: TERRA to `#terra`,
+NACRE (playground and archive) to `#nacre`, and PELAGIC to `#pelagic`.
+It restores that project's portfolio scene instead of the welcome name.
+The app uses the local portfolio only from its exact pinned HTTP loopback
+origin; hosted/direct visits use the public portfolio URL. Browser fullscreen
+is retained by same-tab navigation; element fullscreen follows browser rules.
+No publishing is performed by these local source changes.
+
 On the local portfolio, the TERRA, NACRE and PELAGIC links open the local
 development servers of those apps, so a source fix in a local checkout can be
 reached from the local portfolio. The published site is unchanged.
