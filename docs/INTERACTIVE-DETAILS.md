@@ -51,8 +51,11 @@ Turn and zoom buttons provide keyboard equivalents. Reset view clears manual
 rotation and zoom. Selecting another scene resets inspection. The welcome name
 supports the same right-drag, wheel and keyboard controls while staying on Home.
 Manual inspection rotates the full particle geometry, including the name.
-There is no permanent interaction-instruction label over the scene. The subtle
-turn, zoom and reset controls remain available alongside mouse inspection.
+There is no permanent interaction-instruction label over the scene. Turn, zoom
+and reset controls are visually clipped until keyboard focus enters their group,
+then remain visible while focus is within it. Mouse inspection stays active.
+The footer contact shortcut is removed; Contact remains in section navigation
+and the professional panels, with native email and profile links.
 
 Reduced motion disables automatic animation and waves; explicit inspection
 still renders on demand. Controls appear only after successful graphics startup

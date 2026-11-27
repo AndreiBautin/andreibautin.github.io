@@ -38,6 +38,7 @@ body.work-fallback .scene-picker{display:none}
 .field-ready .hero-tech{touch-action:none;cursor:grab}.field-ready .hero-tech:active{cursor:grabbing}
 .model-controls{display:none;position:absolute;right:5vw;bottom:170px;gap:8px 16px;flex-wrap:wrap;max-width:90vw;z-index:2}
 body.field-ready .model-controls{display:flex}
+.model-controls:not(:focus-within){width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none}
 .model-controls button{font:11px var(--mono);color:var(--muted);padding:8px 0;border-bottom:1px solid var(--line)}
 .model-controls button:hover{color:var(--accent);border-color:var(--accent)}
 @media(max-width:600px){.model-controls{top:135px;bottom:auto;right:25px}.model-controls button{font-size:10px;padding:7px}}

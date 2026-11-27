@@ -25,4 +25,6 @@
   captions unboxed and resume milestones compact; models are the visual focus.
 - All particle models, including the Home name, support right-drag and wheel
   inspection. Home hides duplicate header section links; retain AB and theme,
-  the bottom section choices and direct contact link. Other sections keep the header.
+  and the bottom section choices. Other sections keep the header and Contact.
+- Avoid persistent interaction instructions and footer contact shortcuts. Model
+  controls reveal only on keyboard focus; right-drag and wheel remain active.
