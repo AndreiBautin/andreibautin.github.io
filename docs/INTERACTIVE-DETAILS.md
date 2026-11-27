@@ -16,6 +16,9 @@ Experience, with thin top rules and short subtitles. They have no card surface.
 Professional details use unboxed captions; resume milestones show compact dates
 with full descriptive accessible labels. The selected caption retains the degree,
 employer or certification facts and the approved PDF remains available.
+Home has no top branding, role/location label, theme toggle or duplicate menu.
+Other sections retain a quiet Home link and the section menu. A saved theme
+preference still loads without requiring a visible theme control.
 
 ## Project field notes
 

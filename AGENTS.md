@@ -24,7 +24,7 @@
 - Home uses the same thin-rule scene-picker as Projects and Experience. Keep
   captions unboxed and resume milestones compact; models are the visual focus.
 - All particle models, including the Home name, support right-drag and wheel
-  inspection. Home hides duplicate header section links; retain AB and theme,
-  and the bottom section choices. Other sections keep the header and Contact.
+  inspection. Home has no header branding, role/location label or theme toggle;
+  retain bottom section choices. Other sections keep Home, header links and Contact.
 - Avoid persistent interaction instructions and footer contact shortcuts. Model
   controls reveal only on keyboard focus; right-drag and wheel remain active.

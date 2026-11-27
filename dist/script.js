@@ -20,14 +20,14 @@ if (onLocalPortfolio) {
 const themeButton = document.querySelector('.theme-toggle');
 function setTheme(light) {
   document.body.classList.toggle('light', light);
-  themeButton.setAttribute('aria-pressed', String(light));
-  themeButton.setAttribute('aria-label', light ? 'Use dark theme' : 'Use light theme');
+  themeButton?.setAttribute('aria-pressed', String(light));
+  themeButton?.setAttribute('aria-label', light ? 'Use dark theme' : 'Use light theme');
   document.querySelector('link[rel="icon"]').href = light ? './images/favicon-light.svg?v=outline-1' : './images/favicon.svg?v=outline-1';
   try { localStorage.setItem('portfolio-theme', light ? 'light' : 'dark'); } catch { /* Optional storage. */ }
   dispatchEvent(new CustomEvent('portfolio:theme', { detail: { light } }));
 }
 try { setTheme(localStorage.getItem('portfolio-theme') === 'light'); } catch { setTheme(false); }
-themeButton.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
+themeButton?.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
 const buttons = [...document.querySelectorAll('[data-scene]')];
 const workModes = ['knowledge', 'replication', 'payments', 'career', 'contact'];
 const workFallbacks = {
