@@ -223,9 +223,17 @@ export function mountWorkUI(root = document) {
     if (data.lede) section.append(el('p', 'work-lede', data.lede));
     if (data.steps) {
       section.append(art(key));
+      const copies = data.steps.map(text => attrs(el('span', 'work-copy-step', text), { 'aria-hidden': 'true' }));
       const sw = switcher(id, `${data.title}: problem, contribution and outcome`, data.steps.map((text, i) => [STEPS[i], text]), {
         label(button, [name]) { button.textContent = name; },
-        detail(node, [, text]) { node.textContent = text; },
+        detail(node, [, text]) {
+          if (!node.classList.contains('work-detail-stack')) { node.classList.add('work-detail-stack'); node.append(...copies); }
+          copies.forEach(copy => {
+            const active = copy.textContent === text;
+            copy.classList.toggle('work-copy-active', active);
+            copy.setAttribute('aria-hidden', String(!active));
+          });
+        },
       });
       section.append(sw.wrap, actions([resumeLink(), contactButton()]));
     } else if (key === 'career') {

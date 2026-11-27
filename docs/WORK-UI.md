@@ -77,7 +77,10 @@ loop. Rotation and zoom preserve the selected milestone.
 Every tab row is `role=tablist` with roving tabindex and automatic activation:
 ArrowLeft/ArrowRight wrap, Home/End jump.
 
-Detail text updates directly without a fade or entrance animation and grows naturally.
+Experience details crossfade in place over 300ms. The three text layers share a
+grid cell that reserves the tallest step's space, keeping the tabs and surrounding
+copy still. Only the selected text is exposed to assistive technology; reduced
+motion switches immediately.
 The outer work view owns scrolling on constrained screens; the switcher and
 detail never create a second scrollbar when changing steps.
 
