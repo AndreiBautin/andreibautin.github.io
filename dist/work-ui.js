@@ -225,7 +225,7 @@ export function mountWorkUI(root = document) {
       section.append(art(key));
       const sw = switcher(id, `${data.title}: problem, contribution and outcome`, data.steps.map((text, i) => [STEPS[i], text]), {
         label(button, [name]) { button.textContent = name; },
-        detail(node, [, text]) { node.textContent = ''; node.append(el('span', 'work-reveal', text)); },
+        detail(node, [, text]) { node.textContent = text; },
       });
       section.append(sw.wrap, actions([resumeLink(), contactButton()]));
     } else if (key === 'career') {

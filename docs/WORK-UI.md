@@ -77,7 +77,7 @@ loop. Rotation and zoom preserve the selected milestone.
 Every tab row is `role=tablist` with roving tabindex and automatic activation:
 ArrowLeft/ArrowRight wrap, Home/End jump.
 
-Detail text grows naturally and fades in without a translating overflow area.
+Detail text updates directly without a fade or entrance animation and grows naturally.
 The outer work view owns scrolling on constrained screens; the switcher and
 detail never create a second scrollbar when changing steps.
 
