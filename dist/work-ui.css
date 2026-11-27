@@ -8,6 +8,7 @@ body.work-view .scene-copy,body.work-view #projects{display:none}
 .work-hud{position:absolute;z-index:2;left:5vw;top:150px;bottom:150px;width:min(32vw,430px);min-width:300px;display:flex;flex-direction:column;justify-content:flex-end;gap:14px;pointer-events:none}
 .work-hud>*{pointer-events:auto}
 .work-head{display:flex}
+.work-head #section-navigation{margin:0}
 .work-hud>.work-view{display:flex;flex-direction:column;flex:0 1 auto;min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;padding:12px 0;background:transparent}
 .work-eyebrow{font:10px var(--mono);text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin:0 0 8px}
 .work-title{font-size:21px;font-weight:500;letter-spacing:-.03em;line-height:1.25;margin:0 0 8px}

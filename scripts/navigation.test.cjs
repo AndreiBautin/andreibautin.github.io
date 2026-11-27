@@ -22,6 +22,7 @@ function fixture(hash = '') {
     hasAttribute(key) { return this.attributes.has(key); }
     focus() { document.activeElement = this; }
     scrollIntoView() {}
+    prepend(child) { if (child.parentElement) child.parentElement.children = child.parentElement.children.filter(node => node !== child); this.children ??= []; this.children.unshift(child); child.parentElement = this; }
     click() { this.emit('click'); }
   }
   class Dialog extends Element {
@@ -39,18 +40,20 @@ function fixture(hash = '') {
   sectionLinks.forEach((link, i) => { link.dataset.sectionLink = ['resume', 'experience', 'projects', 'contact'][i]; });
   const details = new Element({ open: 'about' });
   const welcomeExperience = new Element({ open: 'about' });
+  const welcomeContact = new Element({ open: 'about' }); welcomeContact.setAttribute('data-contact', '');
   const detailSteps = ['overview', 'build', 'preview'].map(detailStep => new Element({ detailStep }));
   const detailContents = ['overview', 'build', 'preview'].map(detailContent => new Element({ detailContent }));
   const about = new Dialog(), projectInfo = new Dialog();
-  const ids = new Map([['about', about], ['project-info', projectInfo], ['scene-details', details], ['welcome-experience', welcomeExperience]]);
+  const ids = new Map([['about', about], ['project-info', projectInfo], ['scene-details', details], ['welcome-experience', welcomeExperience], ['welcome-contact', welcomeContact]]);
   const notes = [1, 2, 3].map(n => new Element({ projectNote: String(n) }));
+  const sceneCopy = new Element();
   const document = {
     body, activeElement: body,
     getElementById(id) { if (!ids.has(id)) ids.set(id, new Element()); return ids.get(id); },
     querySelector(selector) {
-      return selector === '.theme-toggle' ? theme : selector === 'link[rel="icon"]' ? icon : selector === '[data-home]' ? home : selector === '[data-resume]' ? resume : selector === '[data-projects]' ? projectsLink : selector === 'dialog[open]' ? [about, projectInfo].find(d => d.open) : null;
+      return selector === '.scene-copy' ? sceneCopy : selector === '.theme-toggle' ? theme : selector === 'link[rel="icon"]' ? icon : selector === '[data-home]' ? home : selector === '[data-resume]' ? resume : selector === '[data-projects]' ? projectsLink : selector === 'dialog[open]' ? [about, projectInfo].find(d => d.open) : null;
     },
-    querySelectorAll(selector) { return selector === '[data-detail-step]' ? detailSteps : selector === '[data-detail-content]' ? detailContents : selector === '[data-section-link]' ? sectionLinks : selector === '[data-scene]' ? buttons : selector === '[data-project-note]' ? notes : selector === '[data-open]' ? [experience, contact, details, welcomeExperience] : selector === 'dialog' ? [about] : []; },
+    querySelectorAll(selector) { return selector === '[data-detail-step]' ? detailSteps : selector === '[data-detail-content]' ? detailContents : selector === '[data-section-link]' ? sectionLinks : selector === '[data-scene]' ? buttons : selector === '[data-project-note]' ? notes : selector === '[data-open]' ? [experience, contact, details, welcomeExperience, welcomeContact] : selector === 'dialog' ? [about] : []; },
   };
   const location = { pathname: '/', hash };
   const scenes = [];
@@ -74,6 +77,26 @@ test('Home offers Experience directly, retaining its native fallback', () => {
   assert.equal(f.scenes.at(-1), 4); assert.equal(f.about.open, false);
   f.home.emit('click'); assert.equal(f.ids.get('welcome-experience').hidden, false);
   f.buttons[1].emit('click'); assert.equal(f.ids.get('welcome-experience').hidden, true);
+});
+
+test('one content navigation follows details and every professional section, with Contact reachable from Home', () => {
+  const f = fixture(); f.ready();
+  const navigation = f.ids.get('section-navigation'), copy = f.document.querySelector('.scene-copy');
+  assert.equal(navigation.parentElement, copy);
+  f.buttons[2].emit('click'); f.ids.get('scene-details').emit('click');
+  assert.equal(navigation.parentElement, f.ids.get('project-info'));
+  f.contact.emit('click');
+  assert.equal(navigation.parentElement, f.ids.get('work-navigation'));
+  assert.equal(f.ids.get('project-info').hidden, true);
+  f.resume.emit('click'); assert.equal(f.location.hash, '#work-career');
+  f.experience.emit('click'); assert.equal(f.location.hash, '#work-knowledge');
+  f.projectsLink.emit('click'); assert.equal(f.location.hash, '#nacre');
+  assert.equal(navigation.parentElement, copy);
+  assert.equal(f.document.activeElement, f.ids.get('projects'));
+  f.home.emit('click'); assert.equal(f.document.activeElement, f.ids.get('welcome-resume'));
+  f.ids.get('welcome-contact').emit('click');
+  assert.equal(f.scenes.at(-1), 8);
+  assert.equal(f.contact.getAttribute('aria-current'), 'location');
 });
 
 test('the Home selector row routes Resume and never remains behind another section', () => {

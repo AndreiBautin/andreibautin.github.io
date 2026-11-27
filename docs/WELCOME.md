@@ -1,10 +1,10 @@
 # Welcome
 
 The home screen holds the particle name after one brief formation. Its short
-introduction and three choices remain visible until the visitor selects a section.
+introduction and four choices remain visible until the visitor selects a section.
 There is no timed tour, countdown, Skip or Replay control.
 The bottom personal-project picker is hidden in the initial HTML and on every
-return home. It appears only after choosing Projects; the three welcome choices
+return home. It appears only after choosing Projects; the four welcome choices
 remain the starting point.
 Explore experience opens the professional section directly. Hovering or focusing
 the choices previews their context in the welcome copy without changing the
@@ -16,10 +16,12 @@ particle scene or URL. See [Interactive details](INTERACTIVE-DETAILS.md).
 The bottom Resume selector points to the approved resume PDF. Once the work UI is
 ready, an ordinary primary click opens the Resume stage; modified clicks and
 unavailable enhancement keep the native PDF destination. The Projects selector opens
-the last selected demo (TERRA initially) and focuses the project picker.
+the last selected demo (TERRA initially) and focuses the project picker. Contact
+opens the contact stage, retaining the nonmodal contact fallback before mounting.
 
-The header remains Resume, Experience, Projects, Contact, with keys 1-4 in that
-order. The home mark returns to the name. Each chosen section stays put, with
+The interior subheader offers Resume, Experience, Projects, Contact, with keys
+1-4 in that order. Its back arrow sits above the copy and returns to the name.
+Home uses its four bottom choices instead. Each chosen section stays put, with
 its own particle form and readable controls. Images belong to project details.
 
 ## Implementation

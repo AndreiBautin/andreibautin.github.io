@@ -65,7 +65,9 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    and applies bounded manual inspection in the shader before stage positioning.
    Text stays upright and native turn/reset buttons remain keyboard accessible.
    See [Interactive details](INTERACTIVE-DETAILS.md) for event/fallback behavior.
-   Header tabs remain hidden throughout. Professional panels request
+   A shared content subheader moves above the current copy or project inspector;
+   its four direct section choices reflect the active section. Home instead uses
+   four bottom choices. The back arrow restores the welcome. Professional panels request
    `portfolio:mode` with `mode:null,destination:home`; the classic script restores
    the welcome and focuses its first section choice. Projects expose an in-stage
    Home action. Resume uses flow identity 4 for orbiting rings, bobbing milestones

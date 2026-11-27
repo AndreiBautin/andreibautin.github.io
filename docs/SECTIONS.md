@@ -1,9 +1,10 @@
 # Sections
 
 The page is one fullscreen particle stage. A clean URL holds the welcome name
-and its three choices; no section is selected automatically. The section order is
+and its four choices; no section is selected automatically. The section order is
 Resume, Experience, Projects and Contact, with number keys 1-4 in the same order.
-Header tabs stay hidden. In-stage Home actions return to the name and stay there.
+Interior sections show a compact subheader directly above their content. Its
+back arrow returns to the name; four links switch sections without that detour.
 
 | Section | Enhanced view | Fallback |
 | --- | --- | --- |
@@ -18,14 +19,17 @@ Explore my background uses the same career mode as Resume once the professional
 UI is ready. Its href always remains the approved PDF, so modified clicks and
 missing enhancement retain native navigation. Explore projects selects a demo
 and focuses the picker. Explore experience opens knowledge mode, retaining a
-nonmodal panel fallback. All three choices and the header work without graphics.
+nonmodal panel fallback. Contact opens its own stage or nonmodal fallback. All
+four choices and the subheader work without graphics.
 See [Welcome](WELCOME.md) for the bounded particle entrance and fallback details.
 
 ## State and routes
 
 `dist/script.js` owns scene and section state. `portfolio:mode` requests a
 professional view; valid modes map to renderer targets 4-8. `markSection` sets
-body data-section and aria-current=location on the selected header control.
+body data-section and aria-current=location on the selected subheader control.
+`placeNavigation` moves the shared node to the current copy, professional host
+or open inspector, avoiding duplicate controls and listeners.
 The welcome has no selected header item. Late module or graphics readiness
 restores explicit destinations without replacing a visitor's selection.
 

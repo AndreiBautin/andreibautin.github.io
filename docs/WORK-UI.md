@@ -19,6 +19,8 @@ to the main page (`dist/script.js`, `dist/hero.js`); this module draws no canvas
 - Mounting adds `body.work-ui-ready`; main can then route Experience, Resume
   and Contact clicks to modes instead of the dialog. Disposal removes it.
   Without the module everything still works through the existing dialog.
+- `#work-navigation` hosts the page's shared section subheader above the copy.
+  The module's standalone back button hides only while that shared node is present.
 
 ## Event contract
 

@@ -104,7 +104,7 @@ test('serve.cjs exposes only the closed token, only to its loopback origin, and 
 function page({ protocol = 'http:', hostname = '127.0.0.1', port = '4357', visibilityState = 'visible', boot } = {}) {
   class Node {
     constructor() { this.dataset = {}; this.classList = { add() {}, remove() {}, toggle() {}, contains: () => false }; }
-    setAttribute() {} addEventListener() {} focus() {} scrollIntoView() {}
+    setAttribute() {} addEventListener() {} focus() {} scrollIntoView() {} prepend(child) { child.parentElement = this; }
   }
   const docListeners = [], timers = new Map(), requests = [], answers = [];
   let nextTimer = 1, reloads = 0;

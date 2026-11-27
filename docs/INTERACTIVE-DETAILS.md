@@ -81,9 +81,15 @@ node's pulse without navigating or advancing the story automatically.
 
 ## Contact and presentation scale
 
-The in-stage Home action is a thin upper-left back arrow with a 44px hit area,
-an accessible Back to home label and visible keyboard focus. It returns to the
-welcome choices rather than following browser history.
+The content subheader carries a thin back arrow with a 44px hit area, an accessible
+Back to home label and visible keyboard focus. It sits above the section copy,
+alongside Resume, Experience, Projects and Contact links with an active underline.
+One shared navigation node moves between the scene copy, professional HUD and
+project details so routing and focus use the same controls everywhere. The arrow
+returns to the welcome choices rather than following browser history. Home keeps
+four matching bottom choices (two columns on phones) and hides the interior
+subheader. Scrolling project notes keeps that row sticky. Only `#scene-summary`
+announces project copy changes; the relocated navigation is outside its live region.
 
 Contact joins the same gated loop as flow identity 5. Its open nexus ring turns,
 satellite bodies rotate, packet bands travel and curved connections carry pulses.

@@ -40,10 +40,18 @@ const workFallbacks = {
 let currentProject = 0, workMode = null, fallbackMode = null;
 const projectPanel = document.getElementById('project-info');
 let aboutOpener = null;
+function placeNavigation() {
+  const target = workMode !== null ? document.getElementById('work-navigation') : !projectPanel.hidden ? projectPanel : document.querySelector('.scene-copy');
+  const navigation = document.getElementById('section-navigation');
+  if (target && navigation.parentElement !== target) target.prepend(navigation);
+  const standaloneBack = target?.querySelector?.('.work-back');
+  if (standaloneBack) standaloneBack.hidden = true;
+}
 function closeProjectDetails(restoreFocus = false) {
   projectPanel.hidden = true;
   document.body.classList.remove('project-details-view');
   document.getElementById('scene-details').setAttribute('aria-expanded', 'false');
+  placeNavigation();
   if (restoreFocus) document.getElementById('scene-details').focus({ preventScroll: true });
 }
 function projectStep(key) {
@@ -55,6 +63,7 @@ function openProjectDetails(focusTitle = true) {
   projectStep('overview'); projectPanel.hidden = false;
   document.body.classList.add('project-details-view');
   document.getElementById('scene-details').setAttribute('aria-expanded', 'true');
+  placeNavigation();
   if (focusTitle) document.getElementById('project-info-title').focus({ preventScroll: true });
 }
 document.querySelectorAll('[data-detail-step]').forEach(button => button.addEventListener('click', () => projectStep(button.dataset.detailStep)));
@@ -62,6 +71,7 @@ document.getElementById('close-project-details').addEventListener('click', () =>
 function markSection(section) {
   document.body.setAttribute('data-section', section);
   document.querySelectorAll('[data-section-link]').forEach(link => link.setAttribute('aria-current', link.dataset.sectionLink === section ? 'location' : 'false'));
+  placeNavigation();
 }
 function select(index, updateUrl = true) {
   if (!Number.isInteger(index) || !projects[index]) return;
@@ -70,7 +80,7 @@ function select(index, updateUrl = true) {
   closeProjectDetails();
   currentProject = index; workMode = null; fallbackMode = null;
   markSection(index === 0 ? 'home' : 'projects');
-  document.querySelector('.scene-copy')?.setAttribute('aria-live', index === 0 ? 'off' : 'polite');
+  document.getElementById('scene-summary').setAttribute('aria-live', index === 0 ? 'off' : 'polite');
   document.body.classList.remove('work-view', 'work-fallback');
   dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: null } }));
   const [key, category, title, description, url, launch] = projects[index];
@@ -93,7 +103,7 @@ function select(index, updateUrl = true) {
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index } }));
 }
 buttons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.scene))));
-for (const control of [document.querySelector('[data-home]'), document.getElementById('scene-home')]) control.addEventListener('click', event => {
+for (const control of new Set([document.querySelector('[data-home]'), document.getElementById('scene-home')].filter(Boolean))) control.addEventListener('click', event => {
   if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   event.preventDefault(); select(0); document.getElementById('welcome-resume').focus({ preventScroll: true });
 });
@@ -110,6 +120,7 @@ const homePreviews = [
   ['welcome-resume', 'Resume', 'Career & credentials', 'Explore my career milestones, Azure certifications and the full resume.'],
   ['welcome-experience', 'Experience', 'Engineering in practice', 'Explore the problem, my contribution and the outcome across three projects at 3Cloud.'],
   ['welcome-projects', 'Projects', 'Independent experiments', 'Explore TERRA, NACRE and PELAGIC, then open their working applications.'],
+  ['welcome-contact', 'Contact', 'Get in touch', 'Find my email, LinkedIn and GitHub, or download the full resume.'],
 ];
 function welcomePreview(copy) {
   if (currentProject !== 0 || workMode !== null || fallbackMode !== null) return;
