@@ -108,6 +108,7 @@ test('mount builds a hidden, labelled HUD and flags the body; dispose removes ev
   assert(!f.body.classList.contains('work-view'));
   assert.equal(f.doc.activeElement, f.body, 'mount must not move focus');
   const tablist = f.byClass('work-tabs')[0];
+  assert(tablist.classList.contains('scene-picker'), 'Experience shares the Projects layout');
   assert.equal(tablist.getAttribute('role'), 'tablist');
   assert.equal(tablist.getAttribute('aria-label'), 'Professional work');
   for (const mode of MODES) {
@@ -115,6 +116,8 @@ test('mount builds a hidden, labelled HUD and flags the body; dispose removes ev
     assert(f.view(mode).hidden);
     if (!EXPERIENCE.includes(mode)) { assert.equal(f.tab(mode), undefined); continue; }
     const t = f.tab(mode);
+    assert.deepEqual(t.children.map(child => child.tagName), ['SPAN', 'SMALL']);
+    assert(t.children[1].textContent.length > 0, 'each tab has a readable subtitle');
     assert.equal(t.getAttribute('role'), 'tab');
     assert.equal(t.getAttribute('aria-controls'), `work-ui-${mode}`);
     assert(t.textContent.length > 0);
@@ -414,7 +417,7 @@ test('module and stylesheet keep to the policy and scope', () => {
   for (const prelude of preludes) for (const selector of prelude.split(',')) {
     const s = selector.trim();
     assert(s !== '.work-view' && !s.startsWith('.work-view['), 'panel layout must not match the body work-view state class');
-    assert(/^\.work-/.test(s) || /^body\.work-view \.scene-(copy|picker)$/.test(s), `selector outside the .work-* scope: ${s}`);
+    assert(/^\.work-/.test(s) || /^body\.work-view (\.scene-copy|#projects)$/.test(s), `selector outside the .work-* scope: ${s}`);
   }
   assert(!/(^|[^-\w])(html|body|main)\s*\{/.test(rules), 'no page-level overrides');
   assert(!/\.(nav-shell|particle-stage|hero-tech)\b/.test(rules));

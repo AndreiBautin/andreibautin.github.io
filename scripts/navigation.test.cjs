@@ -60,7 +60,7 @@ function fixture(hash = '') {
   });
   const mode = key => win.dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: key } }));
   const ready = () => { body.classList.add('work-ui-ready'); win.dispatchEvent(new CustomEvent('portfolio:work-ready')); };
-  return { win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home, ids, timers };
+  return { document, win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home, ids, timers };
 }
 
 test('fallback experience remains a native dialog when enhancement is unavailable', () => {
@@ -102,7 +102,7 @@ test('career/contact routes use their distinct scenes and reject malformed mode 
   const before = f.scenes.length;
   for (const value of [undefined, {}, 'toString', 5]) f.mode(value);
   assert.equal(f.scenes.length, before);
-  f.mode(null); assert.equal(f.scenes.at(-1), 0);
+  f.mode(null); assert.equal(f.scenes.at(-1), 1);
 });
 test('modified resume clicks keep the native PDF destination without changing the active scene', () => {
   for (const flags of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }, { defaultPrevented: true }]) {
@@ -140,6 +140,7 @@ test('four ordered sections keep their own active state and remember the selecte
 
 test('welcome background choice opens Resume and project choice opens the demos', () => {
   const f = fixture(); f.ready();
+  assert.equal(f.ids.get('projects').hidden, true);
   const background = f.ids.get('scene-launch');
   assert.equal(background.textContent, 'Explore my background');
   assert.equal(background.href, './Andrei_Bautin_Resume.pdf');
@@ -148,8 +149,25 @@ test('welcome background choice opens Resume and project choice opens the demos'
   f.home.emit('click'); assert.equal(f.scenes.at(-1), 0);
   assert.equal(f.ids.get('welcome-projects').hidden, false);
   f.ids.get('welcome-projects').emit('click'); assert.equal(f.scenes.at(-1), 1);
+  assert.equal(f.ids.get('projects').hidden, false);
   assert.equal(f.ids.get('welcome-projects').hidden, true);
   assert.equal(f.ids.get('scene-details').hidden, false);
+  f.home.emit('click');
+  assert.equal(f.ids.get('projects').hidden, true);
+});
+
+test('skip navigation exposes and focuses the picker; panel return opens a visible first demo', () => {
+  const f = fixture(); f.ready();
+  f.location.hash = '#projects'; f.win.emit('hashchange');
+  assert.equal(f.ids.get('projects').hidden, false);
+  assert.equal(f.document.activeElement, f.ids.get('projects'));
+  assert.equal(f.scenes.at(-1), 1);
+  f.home.emit('click'); f.resume.emit('click'); f.mode(null);
+  assert.equal(f.scenes.at(-1), 1);
+  assert.equal(f.ids.get('projects').hidden, false);
+  f.home.emit('click'); f.resume.emit('click'); f.win.emit('keydown', { key: 'Escape' });
+  assert.equal(f.ids.get('projects').hidden, false);
+  assert.equal(f.scenes.at(-1), 1);
 });
 
 test('explicit Projects deep link and early Home choice survive delayed enhancement', () => {

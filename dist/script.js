@@ -58,6 +58,7 @@ function select(index, updateUrl = true) {
   const details = document.getElementById('scene-details'); details.dataset.open = index === 0 ? 'about' : 'project-info'; details.textContent = index === 0 ? 'Experience' : 'How it works';
   details.hidden = index === 0;
   document.getElementById('welcome-projects').hidden = index !== 0;
+  document.getElementById('projects').hidden = index === 0;
   document.querySelectorAll('[data-project-note]').forEach(note => { note.hidden = Number(note.dataset.projectNote) !== index; });
   if (updateUrl) history.replaceState(null, '', index === 0 ? location.pathname : `#${key}`);
   dispatchEvent(new CustomEvent('portfolio:scene', { detail: { index } }));
@@ -75,7 +76,7 @@ document.getElementById('scene-launch').addEventListener('click', event => {
   if (currentProject !== 0 || workMode !== null || fallbackMode !== null || event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !document.body.classList.contains('work-ui-ready')) return;
   event.preventDefault(); dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: 'career' } }));
 });
-function fromHash() {
+function fromHash(event) {
   const key = location.hash.slice(1).replace(/^work-/, '');
   const mode = key === 'experience' ? 'knowledge' : key === 'resume' ? 'career' : key;
   if (workModes.includes(mode) && document.body.classList.contains('work-ui-ready')) { dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode, updateUrl: false, instant: true } })); return; }
@@ -98,7 +99,7 @@ function fromHash() {
     return;
   }
   if (location.hash === '#construct') { select(2, false); return; }
-  if (location.hash === '#projects') { select(currentProject || 1, false); return; }
+  if (location.hash === '#projects') { select(currentProject || 1, false); if (event?.type === 'hashchange') document.getElementById('projects').focus({ preventScroll: true }); return; }
   select(Math.max(0, projects.findIndex(project => `#${project[0]}` === location.hash)), false);
 }
 addEventListener('hashchange', fromHash); fromHash();
@@ -108,7 +109,7 @@ addEventListener('portfolio:work-ready', () => {
 });
 addEventListener('portfolio:mode', event => {
   const mode = event.detail?.mode;
-  if (mode === null) { if (workMode !== null) select(currentProject); return; }
+  if (mode === null) { if (workMode !== null) select(currentProject || 1); return; }
   if (!workModes.includes(mode)) return;
   fallbackMode = null; document.body.classList.remove('work-fallback');
   workMode = mode; document.body.classList.add('work-view');
@@ -138,7 +139,7 @@ document.querySelectorAll('dialog').forEach(dialog => {
 });
 addEventListener('keydown', event => {
   if (event.defaultPrevented || document.querySelector('dialog[open]') || event.ctrlKey || event.metaKey || event.altKey) return;
-  if ((workMode !== null || fallbackMode !== null) && event.key === 'Escape') { select(currentProject); return; }
+  if ((workMode !== null || fallbackMode !== null) && event.key === 'Escape') { select(currentProject || 1); return; }
   const index = ['1', '2', '3', '4'].indexOf(event.key);
   if (index >= 0) document.querySelectorAll('[data-section-link]')[index]?.click();
 });

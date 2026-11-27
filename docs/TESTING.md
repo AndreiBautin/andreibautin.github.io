@@ -122,6 +122,12 @@ shows on first click, which is the cost accepted.
 
 ## Deliberately not tested
 
+Navigation regressions cover the hidden welcome picker, explicit Projects/Skip
+navigation, and returning from professional panels to a visible demo. The work
+HUD fixture checks shared title/subtitle tab structure and roving keyboard focus.
+Native desktop review checks the two picker layouts; physical mobile rendering
+and screen-reader acceptance remain separate checks.
+
 - **Browser rendering and layout.** No headless browser in the gate: it
   would be the slowest and flakiest part of verify for a site whose layout
   changes rarely and is checked by eye at each change.

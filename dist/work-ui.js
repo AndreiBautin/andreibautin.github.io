@@ -23,6 +23,7 @@ export const MESSAGES = Object.freeze({
 });
 
 const TAB_LABELS = Object.freeze({ knowledge: 'Knowledge assistant', replication: 'Replication', payments: 'Payments', career: 'Career', contact: 'Contact' });
+const TAB_SUBTITLES = Object.freeze({ knowledge: 'Azure RAG platform', replication: 'Azure Service Bus', payments: 'Workflow automation' });
 const STEPS = ['Problem', 'My contribution', 'Outcome'];
 
 // Facts only: dist/index.html and Andrei_Bautin_Resume.pdf are the sources.
@@ -241,8 +242,12 @@ export function mountWorkUI(root = document) {
     hud.append(section);
   }
 
-  const tabs = attrs(el('div', 'work-tabs'), { role: 'tablist', 'aria-label': 'Professional work' });
-  const tabButtons = EXPERIENCE.map((key) => attrs(el('button', 'work-tab', TAB_LABELS[key]), { type: 'button', role: 'tab', id: `work-ui-tab-${key}`, 'aria-controls': `work-ui-${key}`, 'aria-selected': 'false', tabindex: '-1' }));
+  const tabs = attrs(el('div', 'work-tabs scene-picker'), { role: 'tablist', 'aria-label': 'Professional work' });
+  const tabButtons = EXPERIENCE.map((key) => {
+    const button = attrs(el('button', 'work-tab'), { type: 'button', role: 'tab', id: `work-ui-tab-${key}`, 'aria-controls': `work-ui-${key}`, 'aria-selected': 'false', tabindex: '-1' });
+    button.append(el('span', null, TAB_LABELS[key]), el('small', null, TAB_SUBTITLES[key]));
+    return button;
+  });
   tabRow(tabs, tabButtons, (index) => navigate(EXPERIENCE[index], 'tab'));
 
   s.on(panel, 'keydown', (event) => {

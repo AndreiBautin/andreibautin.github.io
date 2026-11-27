@@ -3,6 +3,9 @@
 The home screen holds the particle name after one brief formation. Its short
 introduction and two choices remain visible until the visitor selects a section.
 There is no timed tour, countdown, Skip or Replay control.
+The bottom personal-project picker is hidden in the initial HTML and on every
+return home. It appears only after choosing Projects; the two welcome choices
+remain the starting point.
 
 ## One visit
 

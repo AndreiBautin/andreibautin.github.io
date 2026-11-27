@@ -34,6 +34,12 @@ Only knowledge, replication and payments appear in this tab row. Resume
 professional tab row. See [Sections](SECTIONS.md) for the ordered navigation,
 persistent welcome and visitor-selected sections.
 
+Experience uses the shared `.scene-picker` grid from `dist/styles.css`: three
+equal columns, a title and subtitle, and the same spacing, active border and
+responsive sizing as Projects. `work-ui.css` hides only the personal picker
+while professional views are open. Back to projects and Escape restore the last
+selected demo, or TERRA if none was selected, before focusing its picker.
+
 Controls (tabs, Back to projects, Escape inside the panel, the in-panel
 Contact buttons) only *request* navigation by dispatching the same event; the
 module shows what the event says, so a main listener that redirects wins.
