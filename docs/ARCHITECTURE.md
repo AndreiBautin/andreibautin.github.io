@@ -18,7 +18,7 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    a block image. The stamp also versions hero.js imports before hashing the
    hero itself, so a new GPU export or particle target cannot reuse an old URL.
 3. **`script.js`** owns theme, project selection, direct links, hash navigation,
-   and native dialogs. A project button validates an index, updates the copy
+   and the in-stage project inspector. A project button validates an index, updates the copy
    and launch link, then dispatches `portfolio:scene`. Experience and contact
    retain the resume facts in accessible HTML; no renderer owns their state.
 4. **`hero.js`** imports the integrity-pinned Three.js subset, technology marks,
@@ -52,11 +52,19 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    reduced motion starts settled and hidden tabs pause. Scene selection completes
    that reveal, then uses the normal 1.45-second morph. Direct routes initialize
    their requested target without morphing from the name. The welcome's background
-   link retains its PDF fallback; its project choice opens the demo picker.
+   link retains its PDF fallback; direct Experience and Projects choices open
+   their sections. Focus/hover previews describe those choices without routing.
    Work UI controls map to five **`work-shapes.js`** targets through `script.js`.
    Header dialogs and direct links remain available without the enhancement or
    renderer. Only panel details scroll; no sections are appended to the page.
    See [Welcome](WELCOME.md) and [Sections](SECTIONS.md).
+
+   Project How it works opens the `aside#project-info` in this same stage.
+   `script.js` selects Overview, Under the hood or Preview; the bottom picker
+   changes its article without dismissing it. `hero.js` captures primary drags
+   and applies bounded manual inspection in the shader before stage positioning.
+   Text stays upright and native turn/reset buttons remain keyboard accessible.
+   See [Interactive details](INTERACTIVE-DETAILS.md) for event/fallback behavior.
 
 6. A missing path gets **`404.html`**, with `404.css` and `404.js` (the
    theme applied before paint) as files so the CSP can forbid inline code.

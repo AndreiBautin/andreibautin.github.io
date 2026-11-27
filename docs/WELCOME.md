@@ -1,11 +1,14 @@
 # Welcome
 
 The home screen holds the particle name after one brief formation. Its short
-introduction and two choices remain visible until the visitor selects a section.
+introduction and three choices remain visible until the visitor selects a section.
 There is no timed tour, countdown, Skip or Replay control.
 The bottom personal-project picker is hidden in the initial HTML and on every
-return home. It appears only after choosing Projects; the two welcome choices
+return home. It appears only after choosing Projects; the three welcome choices
 remain the starting point.
+Explore experience opens the professional section directly. Hovering or focusing
+the choices previews their context in the welcome copy without changing the
+particle scene or URL. See [Interactive details](INTERACTIVE-DETAILS.md).
 
 ## One visit
 
@@ -44,7 +47,7 @@ selected panel title or project picker. Copy email retains its status feedback.
 
 No JavaScript: native resume and project anchors plus the noscript project list
 remain available. No professional enhancement: the background action follows
-the PDF; Experience and Contact retain the dialog fallback. Professional deep
+the PDF; Experience and Contact retain the nonmodal panel fallback. Professional deep
 links show a matching summary and target before enhancement, and keep that
 summary if the import fails. No renderer: status
 and factual links remain available. Optional professional geometry failure does

@@ -21,7 +21,7 @@ const RESUME = './Andrei_Bautin_Resume.pdf';
 
 // The project-details links exactly as index.html ships them.
 function shippedNotes() {
-  const dialog = html.match(/<dialog id="project-info"[\s\S]*?<\/dialog>/)[0];
+  const dialog = html.match(/<aside id="project-info"[\s\S]*?<\/aside>/)[0];
   return [...dialog.matchAll(/<article data-project-note="(\d)"[^>]*>([\s\S]*?)<\/article>/g)].map(([, note, body]) => ({
     note: Number(note),
     links: [...body.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map(([, href, text]) => ({ href, text })),

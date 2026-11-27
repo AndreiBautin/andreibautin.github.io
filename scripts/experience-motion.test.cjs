@@ -110,8 +110,9 @@ test('instant startup paints the work target without the name-to-work morph', ()
     shapes: Array.from({ length: 9 }, () => ({ positions: new Float32Array([1, 2, 3]), colors: new Float32Array([1, 1, 1]) })),
     geometry: { getAttribute: key => attributes[key] }, interpolateInto() {},
     uniforms: Object.fromEntries(['uMorph', 'uArrival', 'uWork', 'uNameWeight', 'uJelly'].map(key => [key, { value: key === 'uNameWeight' ? 1 : 0 }])),
-    motion: { matches: false }, syncFlow() {}, render() {},
+    motion: { matches: false }, endDrag() {}, inspectionHint() {}, syncFlow() {}, render() {},
   });
+  context.uniforms.uInspect = { value: { set() {} } };
   vm.runInContext(source.slice(begin, end), context);
   context.change(7, true);
   assert.equal(context.active, 7); assert.equal(context.uniforms.uMorph.value, 1);
@@ -123,4 +124,49 @@ test('instant startup paints the work target without the name-to-work morph', ()
   context.change(0); context.change(0, true);
   assert.equal(context.uniforms.uMorph.value, 1); assert.equal(context.uniforms.uNameWeight.value, 1);
   assert.equal(context.transitionStart, null, 'instant identity must settle the preceding Home selection');
+});
+
+function inspection() {
+  const listeners = new Map(), captures = new Set(), turns = new Map();
+  const angle = { x: 0, y: 0, set(x, y) { this.x = x; this.y = y; } };
+  let waves = 0, renders = 0;
+  const context = vm.createContext({
+    Math, active: 4, overlay: false, time: 2,
+    uniforms: { uInspect: { value: angle }, uWave: { value: { set() { waves++; } } } },
+    motion: { matches: false }, pointer: { set() {} }, projectPointer() {}, render() { renders++; },
+    canvas: { addEventListener(type, fn) { listeners.set(type, fn); }, setPointerCapture(id) { captures.add(id); }, hasPointerCapture(id) { return captures.has(id); }, releasePointerCapture(id) { captures.delete(id); } },
+    document: { querySelectorAll() { return ['left', 'right', 'reset'].map(turn => ({ dataset: { turn }, addEventListener(_type, fn) { turns.set(turn, fn); } })); } },
+  });
+  const begin = source.indexOf('  let drag = null;'), end = source.indexOf("  addEventListener('resize'", begin);
+  vm.runInContext(source.slice(begin, end), context);
+  const send = (type, extra = {}) => listeners.get(type)({ button: 0, isPrimary: true, pointerId: 1, clientX: 100, clientY: 100, ...extra });
+  return { context, angle, send, turns, captures, get waves() { return waves; }, get renders() { return renders; } };
+}
+
+test('drag inspection separates waves from rotation and cancels cleanly', () => {
+  const f = inspection();
+  f.send('pointerdown'); f.send('pointermove', { clientX: 103 }); f.send('pointerup');
+  assert.equal(f.angle.x, 0); assert.equal(f.waves, 1); assert.equal(f.captures.size, 0);
+  f.send('pointerdown'); f.send('pointermove', { pointerId: 2, clientX: 200 });
+  assert.equal(f.angle.x, 0, 'another pointer cannot steer the captured model');
+  f.send('pointermove', { clientX: 200, clientY: 10000 }); f.send('pointerup');
+  assert(f.angle.x > 0); assert.equal(f.angle.y, Math.PI / 3); assert.equal(f.waves, 1);
+  const before = f.angle.x;
+  f.send('pointerdown'); f.send('pointercancel'); f.send('pointermove', { clientX: 300 });
+  assert.equal(f.angle.x, before);
+  assert.equal(f.captures.size, 0);
+  f.send('pointerdown'); f.send('lostpointercapture'); f.send('pointerup');
+  assert.equal(f.waves, 1);
+  f.send('pointerdown'); f.send('pointermove', { clientX: NaN });
+  assert.equal(f.angle.x, before, 'malformed synthetic input cannot poison the view');
+});
+
+test('rotation controls render manually in reduced motion and reset the view', () => {
+  const f = inspection(); f.context.motion.matches = true;
+  f.turns.get('right')(); assert.equal(f.angle.x, .3); assert(f.renders > 0);
+  f.turns.get('left')(); assert.equal(f.angle.x, 0);
+  f.send('pointerdown'); f.send('pointermove', { clientX: 200 }); f.send('pointerup');
+  assert(f.angle.x > 0); assert.equal(f.waves, 0);
+  f.turns.get('reset')(); assert.equal(f.angle.x, 0); assert.equal(f.angle.y, 0);
+  f.context.active = 0; f.turns.get('right')(); assert.equal(f.angle.x, 0);
 });

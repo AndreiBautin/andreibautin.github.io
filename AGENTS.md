@@ -17,3 +17,7 @@
 - The approved opening is a calm welcome: one renderer-only name formation,
   then ambient interaction. Never cycle sections or auto-land on Resume after
   loading. Resume, Experience, Projects and Contact change only on selection.
+- Home choices preview their context on focus/hover without routing. Project
+  details stay in the stage and remain open across project changes. No modal
+  focus traps, including the professional fallback; text stays upright while
+  particle models support explicit drag and keyboard-accessible turn controls.

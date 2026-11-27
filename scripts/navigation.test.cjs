@@ -26,7 +26,8 @@ function fixture(hash = '') {
   }
   class Dialog extends Element {
     constructor() { super(); this.closeButton = new Element(); }
-    showModal() { this.open = true; }
+    show() { this.open = true; }
+    showModal() { throw new Error('Portfolio panels must not trap the scene in a modal'); }
     close() { this.open = false; this.emit('close'); }
     querySelector() { return this.closeButton; }
   }
@@ -37,8 +38,11 @@ function fixture(hash = '') {
   const sectionLinks = [resume, experience, projectsLink, contact];
   sectionLinks.forEach((link, i) => { link.dataset.sectionLink = ['resume', 'experience', 'projects', 'contact'][i]; });
   const details = new Element({ open: 'about' });
+  const welcomeExperience = new Element({ open: 'about' });
+  const detailSteps = ['overview', 'build', 'preview'].map(detailStep => new Element({ detailStep }));
+  const detailContents = ['overview', 'build', 'preview'].map(detailContent => new Element({ detailContent }));
   const about = new Dialog(), projectInfo = new Dialog();
-  const ids = new Map([['about', about], ['project-info', projectInfo], ['scene-details', details]]);
+  const ids = new Map([['about', about], ['project-info', projectInfo], ['scene-details', details], ['welcome-experience', welcomeExperience]]);
   const notes = [1, 2, 3].map(n => new Element({ projectNote: String(n) }));
   const document = {
     body, activeElement: body,
@@ -46,7 +50,7 @@ function fixture(hash = '') {
     querySelector(selector) {
       return selector === '.theme-toggle' ? theme : selector === 'link[rel="icon"]' ? icon : selector === '[data-home]' ? home : selector === '[data-resume]' ? resume : selector === '[data-projects]' ? projectsLink : selector === 'dialog[open]' ? [about, projectInfo].find(d => d.open) : null;
     },
-    querySelectorAll(selector) { return selector === '[data-section-link]' ? sectionLinks : selector === '[data-scene]' ? buttons : selector === '[data-project-note]' ? notes : selector === '[data-open]' ? [experience, contact, details] : selector === 'dialog' ? [about, projectInfo] : []; },
+    querySelectorAll(selector) { return selector === '[data-detail-step]' ? detailSteps : selector === '[data-detail-content]' ? detailContents : selector === '[data-section-link]' ? sectionLinks : selector === '[data-scene]' ? buttons : selector === '[data-project-note]' ? notes : selector === '[data-open]' ? [experience, contact, details, welcomeExperience] : selector === 'dialog' ? [about] : []; },
   };
   const location = { pathname: '/', hash };
   const scenes = [];
@@ -60,13 +64,64 @@ function fixture(hash = '') {
   });
   const mode = key => win.dispatchEvent(new CustomEvent('portfolio:mode', { detail: { mode: key } }));
   const ready = () => { body.classList.add('work-ui-ready'); win.dispatchEvent(new CustomEvent('portfolio:work-ready')); };
-  return { document, win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home, ids, timers };
+  return { detailSteps, detailContents, document, win, body, buttons, experience, contact, resume, about, location, scenes, mode, ready, projectsLink, sectionLinks, home, ids, timers };
 }
 
-test('fallback experience remains a native dialog when enhancement is unavailable', () => {
+test('Home offers Experience directly, retaining its native fallback', () => {
+  const f = fixture();
+  f.ids.get('welcome-experience').emit('click'); assert.equal(f.about.open, true);
+  f.about.close(); f.ready(); f.ids.get('welcome-experience').emit('click');
+  assert.equal(f.scenes.at(-1), 4); assert.equal(f.about.open, false);
+  f.home.emit('click'); assert.equal(f.ids.get('welcome-experience').hidden, false);
+  f.buttons[1].emit('click'); assert.equal(f.ids.get('welcome-experience').hidden, true);
+});
+
+test('welcome context responds to focused choices without navigating or starting a tour', () => {
+  const f = fixture(); f.ready(); const before = f.scenes.length;
+  f.ids.get('welcome-experience').emit('focus');
+  assert.equal(f.ids.get('scene-title').textContent, 'Engineering in practice');
+  assert.equal(f.scenes.length, before); assert.equal(f.location.hash, '');
+  f.ids.get('welcome-experience').emit('blur');
+  assert.equal(f.ids.get('scene-title').textContent, 'Andrei Bautin');
+  f.ids.get('welcome-projects').emit('pointerenter');
+  assert.equal(f.ids.get('scene-title').textContent, 'Independent experiments');
+  f.buttons[2].emit('click'); f.ids.get('welcome-projects').emit('pointerleave');
+  assert.equal(f.ids.get('scene-title').textContent, 'NACRE', 'stale hover cannot overwrite a selected scene');
+  assert.equal(f.timers.length, 0);
+});
+
+test('project field notes are nonmodal, explorable and close on navigation or Escape', () => {
+  const f = fixture(); f.buttons[2].emit('click');
+  const details = f.ids.get('scene-details'), panel = f.ids.get('project-info');
+  details.emit('click');
+  assert.equal(panel.hidden, false); assert.equal(panel.open, undefined, 'must not showModal');
+  assert.equal(f.document.activeElement, f.ids.get('project-info-title'));
+  assert.deepEqual(f.detailContents.map(content => content.hidden), [false, true, true]);
+  f.detailSteps[1].emit('click');
+  assert.deepEqual(f.detailContents.map(content => content.hidden), [true, false, true]);
+  f.detailSteps[2].emit('click');
+  assert.deepEqual(f.detailContents.map(content => content.hidden), [true, true, false]);
+  f.win.emit('keydown', { key: 'Escape' });
+  assert.equal(panel.hidden, true); assert.equal(f.document.activeElement, details);
+  assert.equal(f.location.hash, '#nacre');
+  details.emit('click'); f.buttons[3].emit('click'); assert.equal(panel.hidden, false);
+  assert.deepEqual(f.detailContents.map(content => content.hidden), [false, true, true]);
+  details.emit('click'); f.ready(); f.experience.emit('click'); assert.equal(panel.hidden, true);
+});
+
+test('fallback experience stays nonmodal when enhancement is unavailable', () => {
   const f = fixture(); f.experience.emit('click'); assert.equal(f.about.open, true);
+  f.win.emit('keydown', { key: 'Escape' }); assert.equal(f.about.open, false);
   let prevented = false; f.resume.dispatchEvent({ type: 'click', preventDefault() { prevented = true; } });
   assert.equal(prevented, false, 'approved PDF must remain a direct fallback');
+});
+
+test('a fallback panel cannot remain over a later project or professional selection', () => {
+  const f = fixture(); f.experience.emit('click');
+  f.win.emit('keydown', { key: '3' });
+  assert.equal(f.about.open, false); assert.equal(f.scenes.at(-1), 1);
+  f.home.emit('click'); f.experience.emit('click'); f.ready(); f.resume.emit('click');
+  assert.equal(f.about.open, false); assert.equal(f.scenes.at(-1), 7);
 });
 
 test('welcome stays on the name after enhancement, graphics readiness and idle time', () => {

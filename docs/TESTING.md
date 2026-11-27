@@ -128,6 +128,13 @@ HUD fixture checks shared title/subtitle tab structure and roving keyboard focus
 Native desktop review checks the two picker layouts; physical mobile rendering
 and screen-reader acceptance remain separate checks.
 
+Interactive-details regressions cover direct Experience on Home, intent previews
+that cannot overwrite a later selection, nonmodal project notes, step visibility,
+project switching and Escape focus return. Inspection tests execute the renderer's
+actual pointer listeners with injected events and render calls, covering capture
+identity, threshold, cancel/lost capture, pitch limits and reduced-motion manual
+rendering. Native GPU/drag and preview checks complement these state checks.
+
 - **Browser rendering and layout.** No headless browser in the gate: it
   would be the slowest and flakiest part of verify for a site whose layout
   changes rarely and is checked by eye at each change.

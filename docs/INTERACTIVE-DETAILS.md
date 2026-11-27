@@ -1,0 +1,57 @@
+# Interactive details
+
+The fullscreen particle stage remains the application. Information changes in
+response to a visitor's choice, with no timed tour or scrolling homepage.
+This integrates Claude's task 06 flow review, revised against the final source.
+
+## Home
+
+Three controls lead to Resume, Experience and Projects. Hover or keyboard focus
+previews the chosen section in the welcome copy; leaving restores the identity.
+This never changes the URL or particle target. Selection opens that section.
+The resume keeps its PDF and modified-click fallback. Experience keeps the
+nonmodal About panel if the optional professional module is unavailable.
+
+## Project field notes
+
+`dist/script.js` opens `aside#project-info` inside the particle stage from
+How it works. The aside replaces project copy, with no backdrop, focus trap or
+renderer pause. Its Overview, Under the hood and Preview buttons expose one
+content block at a time. Launch/source links and the bottom picker stay usable.
+Changing projects keeps the notes open, selects the new article and starts at
+Overview. Back to project or Escape closes the notes and focuses How it works;
+Home or a professional destination closes them. The professional Back to
+projects action returns to the last demo, or TERRA if none was selected.
+
+`dist/index.html` retains the actual descriptions and captures; no facts are
+generated. The panel needs only the classic UI script, so it works if graphics
+or professional imports fail. Without JavaScript, the noscript links and PDF
+remain. Short/narrow viewports scroll the panel internally, not the page.
+
+## Model inspection
+
+`dist/hero.js` handles primary-pointer capture on the canvas. A six-pixel drag
+threshold separates rotation from a click wave. Rotation applies before the
+shader positions the model in the stage; text never rotates. Yaw wraps and
+pitch is bounded to 60 degrees each way. Cancel/lost capture, scene changes and
+context loss release capture and end dragging. Nonfinite coordinates are ignored.
+The turn buttons offer keyboard-accessible yaw and Reset view clears manual
+rotation. Selecting another scene resets inspection. The welcome name remains
+ambient and has no manual rotation controls.
+
+Reduced motion disables automatic animation and waves; explicit inspection
+still renders on demand. Controls appear only after successful graphics startup
+and disappear on context loss. Manual rotation and text navigation are independent.
+Professional Problem / My contribution / Outcome choices reveal the selected
+account in place; the reveal animation is disabled for reduced motion.
+
+## Evidence and limits
+
+Navigation tests execute the shipped classic script: direct Home Experience,
+intent previews, stale hover after navigation, detail-step visibility, retained
+notes on project changes, Escape/focus return and professional transitions.
+Renderer tests execute the actual pointer handlers: threshold, pointer identity,
+bounded pitch, cancellation, manual reduced-motion renders and reset. These do
+not establish GPU appearance. Native Chrome review checks the actual stage,
+field notes, preview images, model drag and turn controls separately. Physical
+mobile, touch and screen-reader acceptance remain open.

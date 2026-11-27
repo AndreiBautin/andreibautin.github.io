@@ -1,23 +1,24 @@
 # Sections
 
 The page is one fullscreen particle stage. A clean URL holds the welcome name
-and its two choices; no section is selected automatically. The header orders
+and its three choices; no section is selected automatically. The header orders
 Resume, Experience, Projects and Contact, with number keys 1-4 in the same order.
 The home mark returns to the name and stays there.
 
 | Section | Enhanced view | Fallback |
 | --- | --- | --- |
 | Resume | Career and credentials, mode career, with approved PDF link | Native PDF anchor |
-| Experience | Knowledge assistant, replication and payments tabs | About/experience dialog |
+| Experience | Knowledge assistant, replication and payments tabs | Nonmodal About/experience panel |
 | Projects | Last selected demo, or TERRA initially; focuses project picker | Direct project links and noscript list |
-| Contact | Email, copy, LinkedIn, GitHub and PDF | About dialog, scrolled to contact |
+| Contact | Email, copy, LinkedIn, GitHub and PDF | Nonmodal About panel, scrolled to contact |
 
 ## Welcome actions
 
 Explore my background uses the same career mode as Resume once the professional
 UI is ready. Its href always remains the approved PDF, so modified clicks and
 missing enhancement retain native navigation. Explore projects selects a demo
-and focuses the picker. Both choices and the header work without graphics.
+and focuses the picker. Explore experience opens knowledge mode, retaining a
+nonmodal panel fallback. All three choices and the header work without graphics.
 See [Welcome](WELCOME.md) for the bounded particle entrance and fallback details.
 
 ## State and routes

@@ -35,7 +35,7 @@ try {
   const material = new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, blending: uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending,
     vertexShader: `
       attribute vec4 aFrom;attribute vec4 aTo;attribute vec3 aColorFrom;attribute vec3 aColorTo;attribute float aSeed;
-      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork;uniform vec2 uPointer;uniform vec3 uWave;
+      uniform float uTime,uMorph,uArrival,uForce,uRatio,uMotion,uMobile,uNameScale,uShapeScale,uSpin,uJelly,uNameWeight,uWork,uFlow,uFlowWork;uniform vec2 uPointer,uInspect;uniform vec3 uWave;
       varying vec3 vColor;varying float vAlpha;
       mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
       vec2 laneCenter(float y){if(y>1.08)return vec2(1.62,.57);if(y>0.)return vec2(.54,.19);if(y<-1.08)return vec2(-1.62,-.57);return vec2(-.54,-.19);}
@@ -95,6 +95,7 @@ try {
         vec4 flow=experienceFlow(uFlowWork,p,part,aSeed,jt);
         float alive=uFlow*uMotion;p+=flow.xyz*alive;
         if(part<2.5){p.xz*=1.+sin(jt*1.6)*.04*uJelly;if(part>.5&&part<1.5){float l=max(0.,1.6-p.y);p.x+=sin(l*1.4+jt*.8+atan(p.z,p.x)*2.)*l*.09*uJelly;p.z+=cos(l*1.1+jt*.6)*l*.06*uJelly;}p.y+=sin(jt*.45)*.12*uJelly;}
+        p.yz=turn(uInspect.y*(1.-uNameWeight))*p.yz;p.xz=turn(uInspect.x*(1.-uNameWeight))*p.xz;
         p*=mix(1.,mix(uShapeScale,uNameScale,uNameWeight),uMobile);p.x+=mix(1.4,0.,uMobile);p.y+=mix(.5,2.1,uMobile);
         float t=uTime*uMotion;p+=vec3(sin(p.y*1.4+t*.45+aSeed*5.),cos(p.x*1.1+t*.3+aSeed*5.),sin(t*.4+p.x))*.035*uMotion;
         vec2 delta=p.xy-uPointer;float influence=exp(-dot(delta,delta)*.65)*uForce*uMotion;p.xy+=vec2(delta.y,-delta.x)*influence*.65;p.z+=influence*1.4;
@@ -109,8 +110,12 @@ try {
     fragmentShader: `precision highp float;uniform float uLight;varying vec3 vColor;varying float vAlpha;void main(){float radius=length(gl_PointCoord-.5);float alpha=(1.-smoothstep(.15,.5,radius))*vAlpha;if(alpha<.015)discard;gl_FragColor=vec4(mix(vColor,vColor*.2,uLight),alpha);}`,
   });
   const field = new THREE.Points(geometry, material); field.frustumCulled = false; scene.add(field);
+  uniforms.uInspect = { value: new THREE.Vector2(0, 0) };
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
+  function inspectionHint() {
+    document.querySelector('.interaction-hint').textContent = active === 0 ? (motion.matches ? 'Choose a section to explore' : 'Move to disturb\nClick to send a wave') : (motion.matches ? 'Drag to inspect\nUse rotation controls below' : 'Drag to inspect\nClick to send a wave');
+  }
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
     const id = active >= 4 && active <= 6 ? active - 3 : 0;
@@ -124,6 +129,7 @@ try {
   }
   function change(index, instant = false) {
     if (!Number.isInteger(index) || !shapes[index] || (index === active && !instant)) return;
+    uniforms.uInspect.value.set(0, 0); endDrag();
     if (index !== 0) uniforms.uArrival.value = 1;
     const m = uniforms.uMorph.value;
     for (const [fromName, toName] of [['aFrom', 'aTo'], ['aColorFrom', 'aColorTo']]) {
@@ -132,6 +138,7 @@ try {
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
     active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
+    inspectionHint();
     if (motion.matches || instant) { uniforms.uMorph.value = 1; transitionStart = null; uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
@@ -155,7 +162,7 @@ try {
   }
   function resume() {
     cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1; if (motion.matches) syncFlow();
-    document.querySelector('.interaction-hint').textContent = motion.matches ? 'Choose a project below' : 'Move to disturb\nClick to send a wave';
+    inspectionHint();
     if (motion.matches) { uniforms.uArrival.value = 1; uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
@@ -163,10 +170,47 @@ try {
   addEventListener('portfolio:theme', event => { uniforms.uLight.value = event.detail?.light ? 1 : 0; material.blending = uniforms.uLight.value ? THREE.NormalBlending : THREE.AdditiveBlending; render(); });
   addEventListener('portfolio:overlay', event => { overlay = !!event.detail?.open; pointer.set(100, 100); });
   function projectPointer(event) { const box = canvas.getBoundingClientRect(), height = 2 * camera.position.z * Math.tan(42 * Math.PI / 360); pointer.set(((event.clientX - box.left) / box.width - .5) * height * camera.aspect, (.5 - (event.clientY - box.top) / box.height) * height); }
-  canvas.addEventListener('pointermove', projectPointer); canvas.addEventListener('pointerleave', () => pointer.set(100, 100));
-  canvas.addEventListener('pointerdown', event => { if (motion.matches) return; projectPointer(event); uniforms.uWave.value.set(pointer.x, pointer.y, time); });
+  let drag = null;
+  function endDrag() {
+    const id = drag?.id; drag = null;
+    if (id !== undefined && canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+  }
+  function rotate(dx, dy) {
+    const angle = uniforms.uInspect.value;
+    angle.x = (angle.x + dx) % (Math.PI * 2);
+    angle.y = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, angle.y + dy));
+    render();
+  }
+  canvas.addEventListener('pointermove', event => {
+    if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+    projectPointer(event);
+    if (!drag || drag.id !== event.pointerId || active === 0) return;
+    const x = event.clientX - drag.x, y = event.clientY - drag.y;
+    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return;
+    drag.moved = true; drag.x = event.clientX; drag.y = event.clientY;
+    rotate(x * .008, y * .008);
+  });
+  canvas.addEventListener('pointerleave', () => pointer.set(100, 100));
+  canvas.addEventListener('pointerdown', event => {
+    if (event.button !== 0 || overlay || !event.isPrimary || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false };
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener('pointerup', event => {
+    if (!drag || drag.id !== event.pointerId) return;
+    if (!drag.moved && !motion.matches) { projectPointer(event); uniforms.uWave.value.set(pointer.x, pointer.y, time); }
+    endDrag();
+  });
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('lostpointercapture', endDrag);
+  document.querySelectorAll('[data-turn]').forEach(button => button.addEventListener('click', () => {
+    if (!active) return;
+    const direction = button.dataset.turn;
+    if (direction === 'reset') { uniforms.uInspect.value.set(0, 0); render(); }
+    else if (direction === 'left' || direction === 'right') rotate(direction === 'left' ? -.3 : .3, 0);
+  }));
   addEventListener('resize', resize); motion.addEventListener('change', resume); document.addEventListener('visibilitychange', resume);
-  canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); cancelAnimationFrame(frame); document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); status.textContent = 'Graphics paused. Project links remain available.'; });
+  canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); endDrag(); cancelAnimationFrame(frame); document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); status.textContent = 'Graphics paused. Project links remain available.'; });
   canvas.addEventListener('webglcontextrestored', () => location.reload());
   addEventListener('pagehide', event => { cancelAnimationFrame(frame); if (!event.persisted) { geometry.dispose(); material.dispose(); renderer.dispose(); } }); addEventListener('pageshow', resume);
   const initialMode = document.querySelector('#work-panel')?.getAttribute('data-work-mode');

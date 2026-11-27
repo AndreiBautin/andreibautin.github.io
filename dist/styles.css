@@ -33,3 +33,35 @@ body.work-fallback .scene-picker{display:none}
 /* Short viewports keep one stage; only the active copy can scroll. */
 @media(max-height:640px){.stage-top{display:none}.scene-copy{top:100px;bottom:140px;overflow:auto;overscroll-behavior:contain;pointer-events:auto}.scene-copy h2{font-size:24px;margin-bottom:8px}.scene-eyebrow{margin-bottom:8px}.scene-actions{margin-top:12px}.scene-picker{bottom:55px}.scene-picker button{padding-top:10px}.scene-picker small{display:none}}
 @media(max-width:600px) and (max-height:640px){.scene-copy{top:84px;bottom:164px}.scene-picker{bottom:60px}}
+
+/* Case studies stay beside the live scene, with no backdrop or focus trap. */
+#about{inset:auto auto 170px 5vw;margin:0;width:min(780px,90vw);max-height:calc(100svh - 310px);box-shadow:none;border-radius:3px 18px 18px 3px;border-left:2px solid var(--accent)}
+@media(max-width:600px){#about{left:25px;bottom:145px;width:calc(100vw - 50px);max-height:calc(100svh - 240px)}}
+.field-ready .hero-tech{touch-action:none;cursor:grab}.field-ready .hero-tech:active{cursor:grabbing}
+.model-controls{display:none;position:absolute;right:5vw;bottom:170px;gap:8px;z-index:2}
+body.field-ready:not([data-section="home"]) .model-controls{display:flex}
+.model-controls button{font:11px var(--mono);color:var(--muted);padding:9px 12px;border:1px solid var(--line);border-radius:5px;background:var(--bg)}
+.model-controls button:hover{color:var(--accent);border-color:var(--accent)}
+@media(max-width:600px){.model-controls{top:135px;bottom:auto;right:25px}.model-controls button{font-size:10px;padding:7px}}
+body.project-details-view .scene-copy{display:none}
+.project-inspector{position:absolute;z-index:2;left:5vw;bottom:170px;max-height:calc(100svh - 350px);width:min(34vw,470px);overflow:auto;overscroll-behavior:contain;padding:24px;border:1px solid var(--line);border-left:2px solid var(--accent);background:linear-gradient(130deg,color-mix(in srgb,var(--panel) 94%,transparent),color-mix(in srgb,var(--bg) 82%,transparent));border-radius:3px 18px 18px 3px;scrollbar-width:thin}
+.inspector-top{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.inspector-top .scene-eyebrow{margin:0}
+.inspector-top button{font:11px var(--mono);color:var(--muted);padding:8px 0}
+.project-inspector>h2{font-size:28px;letter-spacing:-.04em;font-weight:500;margin:20px 0}
+.detail-steps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.detail-steps button{padding:9px 12px;border:1px solid var(--line);border-radius:5px;font-size:12px;color:var(--muted)}
+.detail-steps button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.project-inspector .project-notes h3{font:500 20px var(--mono);margin:16px 0}
+.project-inspector .project-notes p{font-size:16px;line-height:1.75;margin:12px 0 20px}
+.project-inspector .project-notes article>img{height:180px;margin:8px 0 16px}
+.project-inspector [data-detail-content]:not([hidden]){animation:detail-arrive .35s ease-out both}
+body[data-section="home"] .scene-copy{max-width:510px}
+body[data-section="home"] .scene-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:10px}
+body[data-section="home"] .scene-actions>*{padding:15px 12px;min-width:0;border:1px solid var(--line);border-radius:3px 12px 12px 3px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,transparent),transparent);text-align:left;font-size:13px;line-height:1.5;transition:transform .2s,border-color .2s}
+body[data-section="home"] .scene-actions>*:hover,body[data-section="home"] .scene-actions>*:focus-visible{transform:translateY(-4px);border-color:var(--accent)}
+@keyframes detail-arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){.project-inspector{width:min(43vw,470px)}}
+@media(max-width:600px){.project-inspector{left:25px;right:25px;width:auto;top:auto;bottom:145px;max-height:44svh;padding:16px}.project-inspector>h2{font-size:22px;margin:12px 0}.detail-steps{margin-bottom:10px}.detail-steps button{font-size:11px;padding:7px 9px}.project-inspector .project-notes article>img{height:120px}body[data-section="home"] .scene-actions>*{font-size:12px;padding:12px 8px}}
+@media(max-height:640px){.project-inspector{top:94px;bottom:140px;max-height:none}}
+@media(prefers-reduced-motion:reduce){.project-inspector [data-detail-content]:not([hidden]){animation:none}body[data-section="home"] .scene-actions>*:hover,body[data-section="home"] .scene-actions>*:focus-visible{transform:none}}
