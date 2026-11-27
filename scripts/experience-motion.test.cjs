@@ -110,7 +110,7 @@ test('instant startup paints the work target without the name-to-work morph', ()
     shapes: Array.from({ length: 9 }, () => ({ positions: new Float32Array([1, 2, 3]), colors: new Float32Array([1, 1, 1]) })),
     geometry: { getAttribute: key => attributes[key] }, interpolateInto() {},
     uniforms: Object.fromEntries(['uMorph', 'uArrival', 'uWork', 'uNameWeight', 'uJelly'].map(key => [key, { value: key === 'uNameWeight' ? 1 : 0 }])),
-    motion: { matches: false }, endDrag() {}, inspectionHint() {}, syncFlow() {}, render() {},
+    motion: { matches: false }, endDrag() {}, syncFlow() {}, render() {},
   });
   context.uniforms.uInspect = { value: { set() {} } };
   context.uniforms.uZoom = { value: 1 };

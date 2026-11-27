@@ -115,9 +115,6 @@ try {
   uniforms.uZoom = { value: 1 };
   const motion = matchMedia('(prefers-reduced-motion: reduce)'), pointer = new THREE.Vector2(100, 100);
   let active = 0, transitionStart = null, frame = 0, last = null, time = 0, overlay = false, fpsFrames = 0, fpsTime = 0, lowFrames = 0, effectiveCount = count;
-  function inspectionHint() {
-    document.querySelector('.interaction-hint').textContent = 'Hold right-click to rotate\nScroll to zoom';
-  }
   function render() { renderer.render(scene, camera); }
   function syncFlow() {
     const id = active >= 4 && active <= 6 ? active - 3 : 0;
@@ -140,7 +137,6 @@ try {
       from.needsUpdate = true; to.array.set(toName === 'aTo' ? shapes[index].positions : shapes[index].colors); to.needsUpdate = true;
     }
     active = index; uniforms.uWork.value = index >= 4 ? index - 3 : 0; uniforms.uMorph.value = motion.matches ? 1 : 0; transitionStart = time;
-    inspectionHint();
     if (motion.matches || instant) { uniforms.uMorph.value = 1; transitionStart = null; uniforms.uNameWeight.value = index === 0 ? 1 : 0; uniforms.uJelly.value = index === 3 ? 1 : 0; syncFlow(); render(); }
   }
   function draw(now) {
@@ -164,7 +160,6 @@ try {
   }
   function resume() {
     cancelAnimationFrame(frame); last = null; uniforms.uMotion.value = motion.matches ? 0 : 1; if (motion.matches) syncFlow();
-    inspectionHint();
     if (motion.matches) { uniforms.uArrival.value = 1; uniforms.uMorph.value = 1; transitionStart = null; status.textContent = 'Reduced motion'; render(); }
     else if (!document.hidden) frame = requestAnimationFrame(draw);
   }
@@ -234,4 +229,4 @@ try {
   const initialIndex = initialWork >= 0 ? 4 + initialWork : Number(document.querySelector('[data-scene][aria-pressed="true"]')?.dataset.scene ?? 0);
   uniforms.uArrival.value = initialIndex === 0 && !motion.matches ? 0 : 1;
   resize(); change(initialIndex, true); render(); document.body.classList.add('field-ready'); resume(); dispatchEvent(new CustomEvent('portfolio:graphics-ready'));
-} catch { document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); document.querySelector('.interaction-hint').textContent = 'Choose a project below'; status.textContent = 'Explore a project below.'; }
+} catch { document.body.classList.remove('field-ready'); document.body.classList.add('field-unavailable'); status.textContent = 'Explore a project below.'; }
