@@ -104,51 +104,12 @@ function Get-MinimumNodeMajor([string]$RepoRoot) {
   return [int]$digits.Groups[1].Value
 }
 
-function Get-OwnedDescendants($Process) {
-  # Children by recorded parent id, but only those created after the process
-  # this launcher started. Windows keeps a dead process's id as the parent
-  # of its surviving children, so a reused id can name processes this
-  # launcher never started; taskkill /T would stop those too.
-  $owned = New-Object System.Collections.Generic.List[int]
-  try { $since = $Process.StartTime } catch { return $owned }
-  try {
-    $all = @(Get-CimInstance -ClassName Win32_Process -Property ProcessId, ParentProcessId, CreationDate -ErrorAction Stop)
-  } catch {
-    return $owned
-  }
-  $parents = New-Object System.Collections.Generic.Queue[int]
-  $parents.Enqueue($Process.Id)
-  while ($parents.Count -gt 0) {
-    $parent = $parents.Dequeue()
-    foreach ($candidate in $all) {
-      if ([int]$candidate.ParentProcessId -ne $parent) { continue }
-      $id = [int]$candidate.ProcessId
-      if ($id -eq $Process.Id -or $owned.Contains($id)) { continue }
-      if ($null -eq $candidate.CreationDate -or $candidate.CreationDate -lt $since) { continue }
-      $owned.Add($id)
-      $parents.Enqueue($id)
-    }
-  }
-  return $owned
-}
+# Stopping what this launcher started, and only that (scripts/launcher-cleanup.ps1).
+. (Join-Path $PSScriptRoot "scripts\launcher-cleanup.ps1")
 
 function Stop-LaunchedProcess($Process) {
-  if ($null -eq $Process) { return }
-  # Only the process this launcher started, plus processes it started after
-  # it began. Descendants first, then the launched process by its own handle,
-  # so a reused process id cannot redirect the stop.
-  $descendants = Get-OwnedDescendants -Process $Process
-  for ($at = $descendants.Count - 1; $at -ge 0; $at -= 1) {
-    Stop-Process -Id $descendants[$at] -Force -ErrorAction SilentlyContinue
-  }
-  try {
-    if (-not $Process.HasExited) {
-      $Process.Kill()
-      [void]$Process.WaitForExit(3000)
-    }
-  } catch {
-    Write-Info "The launched process could not be stopped: $($_.Exception.Message)"
-  }
+  if ($null -eq $Process) { return [pscustomobject]@{ Stopped = $true; StoppedIds = @(); Failures = @() } }
+  return Stop-OwnedTree -Root $Process -Adapter (New-ProcessAdapter)
 }
 
 function Complete-Reuse([int]$LocalPort) {
@@ -246,11 +207,12 @@ while ((Get-Date) -lt $deadline) {
   if ($exited) {
     $codeText = ""
     try { $codeText = [string]$process.ExitCode } catch { $codeText = "unknown" }
-    Stop-LaunchedProcess -Process $process
+    $stop = Stop-LaunchedProcess -Process $process
     if (Test-PortfolioIdentity -LocalPort $Port -ExpectedMarker $Marker) {
       Complete-Reuse -LocalPort $Port
     }
-    Fail 1 "The preview process started by this launcher exited ($codeText) before http://127.0.0.1:$Port/ accepted the portfolio. No other process was stopped."
+    $left = if ($stop.Stopped) { "" } else { " Cleanup was not confirmed: $($stop.Failures -join ' ')" }
+    Fail 1 "The preview process started by this launcher exited ($codeText) before http://127.0.0.1:$Port/ accepted the portfolio.$left No other process was stopped."
   }
   if (Test-PortfolioIdentity -LocalPort $Port -ExpectedMarker $Marker) {
     $ready = $true
@@ -263,9 +225,13 @@ if (-not $ready) {
   # Said before the cleanup, so the reason is on record even if stopping
   # the server goes wrong.
   Write-Info "Timed out after $ReadyTimeoutSec seconds; stopping the process this launcher started (PID $($process.Id))."
-  Stop-LaunchedProcess -Process $process
+  $stop = Stop-LaunchedProcess -Process $process
   if (Test-PortfolioIdentity -LocalPort $Port -ExpectedMarker $Marker) {
     Complete-Reuse -LocalPort $Port
+  }
+  if (-not $stop.Stopped) {
+    # Code 4 says the launched process was stopped; that could not be confirmed.
+    Fail 1 "Timed out after $ReadyTimeoutSec seconds waiting for $url, and stopping the process this launcher started was not confirmed: $($stop.Failures -join ' ') No other process was stopped."
   }
   Fail 4 "Timed out after $ReadyTimeoutSec seconds waiting for $url to serve this portfolio. The process this launcher started was stopped. No other process was stopped."
 }

@@ -315,6 +315,88 @@ test('times out a noisy server with a child, stops both, and leaves an unrelated
   }
 });
 
+// The launcher's own cleanup function (scripts/launcher-cleanup.ps1), run in
+// PowerShell against a fake process table: which processes it stops, in what
+// order, and whether it says the stop was confirmed. No real process is touched.
+const cleanup = path.join(root, 'scripts', 'launcher-cleanup.ps1');
+
+function stopWithFake({ rows, procs, snapshotFails = false }) {
+  const quote = (value) => `'${String(value).replace(/'/g, "''")}'`;
+  const at = (seconds) => `([datetime]'2026-11-28T10:00:00').AddSeconds(${seconds})`;
+  const table = procs.map((p) => `$procs[${p.id}] = @{ Alive = $true; Start = ${at(p.start)}; Refuse = $${p.refuse ? 'true' : 'false'} }`).join('\n');
+  const listing = rows.map((r) => `[pscustomobject]@{ Id = ${r.id}; Parent = ${r.parent}; Created = ${at(r.created)} }`).join(', ');
+  const script = `
+$ErrorActionPreference = 'Stop'
+. ${quote(cleanup)}
+$procs = @{}
+${table}
+$killed = New-Object System.Collections.Generic.List[int]
+$rows = @(${listing})
+$adapter = @{
+  Snapshot = { if (${snapshotFails ? '$true' : '$false'}) { throw 'listing unavailable' }; $rows }
+  Open = { param([int]$Id) if ($procs.ContainsKey($Id)) { [pscustomobject]@{ Id = $Id } } else { $null } }
+  StartOf = { param($Handle) $procs[[int]$Handle.Id].Start }
+  Kill = { param($Handle) $p = $procs[[int]$Handle.Id]; if ($p.Refuse) { throw 'Access is denied.' }; $p.Alive = $false; $killed.Add([int]$Handle.Id) }
+  WaitExit = { param($Handle, [int]$Ms) -not $procs[[int]$Handle.Id].Alive }
+}
+$result = Stop-OwnedTree -Root ([pscustomobject]@{ Id = 100 }) -Adapter $adapter
+[pscustomobject]@{ Stopped = $result.Stopped; Failures = @($result.Failures); Killed = @($killed) } | ConvertTo-Json -Compress
+`;
+  const run = spawnSync('powershell.exe', ['-NoProfile', '-Command', script], { encoding: 'utf8', windowsHide: true });
+  assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
+  const out = JSON.parse(run.stdout.trim());
+  return { stopped: out.Stopped, failures: [].concat(out.Failures ?? []), killed: [].concat(out.Killed ?? []) };
+}
+
+test('cleanup stops the launched tree deepest first, and nothing else', () => {
+  const result = stopWithFake({
+    procs: [{ id: 100, start: 0 }, { id: 200, start: 1 }, { id: 300, start: 2 }, { id: 400, start: 3 }],
+    rows: [
+      { id: 200, parent: 100, created: 1 },
+      { id: 300, parent: 200, created: 2 },
+      { id: 400, parent: 999, created: 3 },
+    ],
+  });
+  assert.equal(result.stopped, true, result.failures.join(' '));
+  assert.deepEqual(result.killed, [300, 200, 100]);
+});
+
+test('cleanup reports a stop that did not happen instead of claiming it', () => {
+  const child = stopWithFake({
+    procs: [{ id: 100, start: 0 }, { id: 200, start: 1, refuse: true }, { id: 300, start: 2 }],
+    rows: [{ id: 200, parent: 100, created: 1 }, { id: 300, parent: 200, created: 2 }],
+  });
+  assert.equal(child.stopped, false);
+  assert.match(child.failures.join(' '), /Process 200 did not stop/);
+  assert.deepEqual(child.killed, [300, 100]);
+  const launched = stopWithFake({ procs: [{ id: 100, start: 0, refuse: true }], rows: [] });
+  assert.equal(launched.stopped, false);
+  assert.match(launched.failures.join(' '), /Process 100 did not stop/);
+  const unlisted = stopWithFake({ procs: [{ id: 100, start: 0 }], rows: [], snapshotFails: true });
+  assert.equal(unlisted.stopped, false);
+  assert.match(unlisted.failures.join(' '), /Could not list/);
+  assert.deepEqual(unlisted.killed, [100]);
+});
+
+test('cleanup never stops an id reused by another process', () => {
+  // Listed as the launched process's child, but the id now belongs to a
+  // process created later: the handle's creation time does not match.
+  const reused = stopWithFake({
+    procs: [{ id: 100, start: 0 }, { id: 200, start: 5 }],
+    rows: [{ id: 200, parent: 100, created: 1 }],
+  });
+  assert.equal(reused.stopped, true, reused.failures.join(' '));
+  assert.deepEqual(reused.killed, [100]);
+  // Created after the launched process but before its listed parent: a
+  // survivor of an earlier process that had the parent's id.
+  const stale = stopWithFake({
+    procs: [{ id: 100, start: 0 }, { id: 200, start: 3 }, { id: 300, start: 2 }],
+    rows: [{ id: 200, parent: 100, created: 3 }, { id: 300, parent: 200, created: 2 }],
+  });
+  assert.equal(stale.stopped, true, stale.failures.join(' '));
+  assert.deepEqual(stale.killed, [200, 100]);
+});
+
 test('a detached preview still answers after the launcher exits', async (t) => {
   const port = await freePort();
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-detach-'));

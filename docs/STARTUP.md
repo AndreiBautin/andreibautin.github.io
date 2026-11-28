@@ -42,10 +42,10 @@ the resolved Node executable and full server path, including spaces.
 | Code | Meaning |
 |---|---|
 | 0 | Ready, or an already-running portfolio preview was reused |
-| 1 | The server entry is missing, or the process this launcher started exited early |
+| 1 | The server entry is missing, the process this launcher started exited early, or stopping it after a timeout could not be confirmed |
 | 2 | Node.js is missing or older than the version in `package.json` |
 | 3 | Port 4357 is occupied by something that is not this portfolio |
-| 4 | The process this launcher started never became ready in time |
+| 4 | The process this launcher started never became ready in time, and was confirmed stopped |
 
 ## How a running preview is recognized
 
@@ -56,23 +56,36 @@ sends. A listening socket with any other response is refused.
 
 The launcher starts the server through `ShellExecute`, in a `cmd /k` window,
 so the preview is not a child of the launcher process. A later tool turn that
-ends the launcher does not own that window. On a timeout, only the process
-this launch created is stopped, by its own process handle, together with the
-processes it started: descendants by recorded parent id that were created
-after it. Windows keeps a dead process's id as the parent of its surviving
+ends the launcher does not own that window. On a timeout, only what this
+launch started is stopped (`scripts/launcher-cleanup.ps1`, dot-sourced by the
+launcher): the launched process, by its own handle, and its descendants. A
+descendant is a process whose recorded parent is an owned process and that
+was created at or after that parent; the check is made against each parent
+in turn. Windows keeps a dead process's id as the parent of its surviving
 children, so a reused id can name processes this launch never started;
-`taskkill /T` would have stopped those too, and is no longer used. The
-launcher does not search the port for a pid to kill. The timeout is reported
-before that cleanup runs, so the reason is on record even if the stop goes
-wrong. An attached server's output is drained by .NET's own tasks rather
-than PowerShell script blocks, so closing its pipes calls nothing back into
-the launcher as it exits.
+`taskkill /T` would have stopped those too, and is no longer used. Before a
+descendant is stopped it is opened by handle and its creation time is checked
+against the listing, so an id reused after the listing is never stopped.
+Every stop is confirmed by waiting for the process to exit. Exit 4 means the
+launched process was confirmed stopped; if any owned process did not stop,
+or its children could not be listed, the launcher exits 1 and names what
+was not confirmed. The launcher does not search the port for a pid to kill.
 
-`scripts/startup.test.cjs` covers that stop with a server that writes to
-both pipes and starts a child: both are stopped and a process the test
-started itself is left running. A failed launcher assertion reports the exit
-code, any signal, the elapsed time and everything the launcher wrote to
-stdout and stderr.
+The timeout is reported before that cleanup runs, so the reason is on record
+even if the stop goes wrong. An attached server's output is drained by .NET's
+own tasks rather than PowerShell script blocks, so closing its pipes calls
+nothing back into the launcher as it exits.
+
+`scripts/startup.test.cjs` covers the stop twice. Natively, a server that
+writes to both pipes and starts a child times out: both are stopped and a
+process the test started itself is left running. Against a fake process
+table, `Stop-OwnedTree` itself is run in PowerShell: it stops a tree deepest
+first and nothing outside it, reports a child, the launched process or the
+listing that could not be stopped or read instead of claiming success, and
+leaves an id reused after the listing and a survivor created before its
+listed parent alone. A failed launcher assertion reports the exit code, any
+signal, the elapsed time and everything the launcher wrote to stdout and
+stderr.
 
 `start-app.ps1` holds the same behavior for tests. Its extra switches
 (`-Port`, `-Root`, `-ServeEntry`, `-Attached`, `-BrowserSink`,
