@@ -47,16 +47,27 @@ Camp changes and character progress belong to the saved world, keyed by seed
 and generation settings. The existing Pages URL retains its browser origin
 and uses the hosted API; the hosted app uses that same API directly.
 
-Release integration and acceptance are still in progress. Native local checks
-confirm a rendered planet, flight, drop, Craft keyboard navigation, a real ice
-cast leaving a solid slab, cursor release, and takeoff. A complete harvested
-and built outpost has not yet been accepted in the native browser. Full-pack
-resource retention and a forest landing concern are being reviewed before
-release. Do not treat the local checks as public deployment acceptance.
+The integrated gate passed 605 tests in 100 files, including real worker-patch
+regressions for floating in inland water and full-pack resource retention.
+The [public Worker app](https://terra.andreibautin94.chatgpt.site) was checked
+without login: planet, streamed terrain, flight, drop, Craft, and floating water
+in native Chrome. Local native checks also confirmed ice and fire casts, cursor
+release, and takeoff. A separate 79-request public API fixture sequence checked
+harvesting, crafting, building, dismantling once, excavation, power cost and
+progress, camp travel, JSON reload, death, and recovery once. Renderer-tree and
+near-death fixtures make that an API test, not a native playthrough.
+
+A complete harvested and built outpost, sustained native movement, touch, and
+long play remain unaccepted in the native browser. Full packs now refuse an
+action that would discard its source; partial supply-bag recovery keeps the
+remainder. Deep rivers and lakes use the drawn water sheet for floating.
 
 This is a bounded survival extension: four camps per saved world, with finite
-construction, excavation, and resource records. It is not a finished Minecraft
-replacement or a scientific terrain/ecology simulation. Thaumara remains tabled.
+construction, excavation, and resource records. A fifth unrecovered death bag
+discards the oldest; there is no dedicated camp-return navigator yet. Survival
+props, creatures, and emissive fire effects use simple proxy graphics. It is
+not a finished Minecraft replacement or a scientific terrain/ecology simulation.
+Thaumara remains tabled.
 
 ## Evidence boundaries
 
