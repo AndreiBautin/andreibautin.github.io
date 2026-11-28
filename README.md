@@ -43,6 +43,8 @@ One scene, four forms. TERRA | Procedural Planet Explorer; NACRE | Liquid
 Sculpture Studio; PELAGIC | Interactive Ocean Life. The particle forms are
 purpose-built previews, not embedded copies of the applications. Actual
 project captures and engineering details appear under How it works.
+See [interactive app scope and acceptance](docs/INTERACTIVE-SUITE.md) for what
+the live demos do and which checks remain incomplete.
 
 The scene uses shader animation and analytic pointer forces, not a physical
 fluid solver. Reduced motion keeps a still with instant scene changes. If

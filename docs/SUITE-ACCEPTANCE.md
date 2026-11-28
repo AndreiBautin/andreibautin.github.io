@@ -1,5 +1,9 @@
 # Five-app acceptance queue
 
+Historical November 25-26 intake. Later user decisions replaced several scopes
+below, including removal of the aquarium and tabling Thaumara. For the current
+interactive app scope and observed evidence, see [Interactive suite](INTERACTIVE-SUITE.md).
+
 ## Resumed priority: November 26
 
 The user explicitly prioritized the portfolio and standalone demo apps over the
