@@ -33,8 +33,10 @@ same test gates the local preview refresh (docs/LOCAL-PREVIEW.md).
 - The scene launch link (`Open TERRA`, `Open NACRE`, `Open PELAGIC`) and the
   matching `Open ...` link in the "How it works" dialog. A detail link is
   rewritten only when its `href` is exactly one of the published URLs above.
-- Nothing else: the resume PDF, email, LinkedIn and GitHub links, the TERRA
-  `Source` link (`https://github.com/AndreiBautin/planet-generator`), all labels
+- Nothing else: the resume PDF, email, LinkedIn and GitHub links, the three
+  `Source` links (TERRA: `https://github.com/AndreiBautin/planet-generator`,
+  NACRE: `https://github.com/AndreiBautin/nacre`,
+  PELAGIC: `https://github.com/AndreiBautin/pelagic`), all labels
   and facts are untouched. `index.html` still ships only the published URLs, as
   does its `<noscript>` list, which never runs script.
 - Hosting metadata (`.openai/hosting.json`, Open Graph URLs) is not changed.

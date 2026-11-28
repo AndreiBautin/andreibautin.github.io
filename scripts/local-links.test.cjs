@@ -112,6 +112,8 @@ test('the shipped links are the published demo URLs', () => {
   assert.deepEqual(notes.map(n => n.note), [1, 2, 3]);
   notes.forEach(({ links }, i) => assert.equal(links[0].href, PUBLIC[order[i]], `${order[i]} details link`));
   assert.deepEqual(notes[0].links[1], { href: 'https://github.com/AndreiBautin/planet-generator', text: 'Source' });
+  assert.deepEqual(notes[1].links[1], { href: 'https://github.com/AndreiBautin/nacre', text: 'Source' });
+  assert.deepEqual(notes[2].links[1], { href: 'https://github.com/AndreiBautin/pelagic', text: 'Source' });
   // noscript keeps the published URLs; it never runs script.js.
   const noscript = html.match(/<noscript>[\s\S]*?<\/noscript>/)[0];
   for (const url of Object.values(PUBLIC)) assert(noscript.includes(`href="${url}"`), url);
