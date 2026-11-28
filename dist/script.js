@@ -3,7 +3,7 @@ const projects = [
   ['index', 'Software engineer', 'Andrei Bautin', '7+ years building enterprise applications with .NET, React, and Azure.', './Andrei_Bautin_Resume.pdf', 'Explore my background'],
   ['terra', 'Procedural planet explorer', 'TERRA', 'Create a world from a seed. Fly from orbit down to its terrain.', 'https://andreibautin.github.io/planet-generator/', 'Open TERRA'],
   ['nacre', 'Liquid sculpture studio', 'NACRE', 'Pull, split, merge, and freeze liquid into sculptures.', 'https://liquid-sculpture-studio.andreibautin94.chatgpt.site/', 'Open NACRE'],
-  ['pelagic', 'Interactive ocean life', 'PELAGIC', 'Orbit a luminous ocean scene. Add jellyfish, schooling fish, and rays.', 'https://pelagic.andreibautin94.chatgpt.site/', 'Open PELAGIC'],
+  ['pelagic', 'Interactive ocean life', 'PELAGIC', 'Inspect a luminous jellyfish: layered anatomy, flowing oral arms, and living light.', 'https://pelagic.andreibautin94.chatgpt.site/', 'Open PELAGIC'],
 ];
 // The exact local portfolio origin, http://127.0.0.1:4357 or http://localhost:4357.
 // Anything unreadable or any other origin, lookalikes included, is not local.
