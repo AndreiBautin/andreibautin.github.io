@@ -34,12 +34,19 @@ function runLauncher(args) {
       cwd: root,
       windowsHide: true,
     });
+    const started = Date.now();
     let out = '';
     child.stdout.on('data', (chunk) => { out += chunk; });
     child.stderr.on('data', (chunk) => { out += chunk; });
     // 'exit' rather than 'close': an attached preview inherits the launcher
     // pipes and would keep 'close' pending for the life of the server.
-    child.on('exit', (code) => resolve({ code, out }));
+    child.on('exit', (code, signal) => resolve({
+      code,
+      out,
+      // For a failed assertion: how the launcher ended, how long it took,
+      // and everything it wrote to stdout and stderr.
+      why: `exit ${String(code)}${signal ? ` signal ${signal}` : ''} after ${Date.now() - started} ms\n${out}`,
+    }));
   });
 }
 
@@ -252,7 +259,7 @@ test('times out a server that never accepts and stops only that process', async 
     const result = await runLauncher([
       '-Port', String(port), '-Root', dir, '-Attached', '-NoBrowser', '-ReadyTimeoutSec', '2',
     ]);
-    assert.equal(result.code, 4, result.out);
+    assert.equal(result.code, 4, result.why);
     assert.match(result.out, /No other process was stopped/);
     const pid = launchedPid(result.out);
     assert.ok(pid > 0);
@@ -263,6 +270,48 @@ test('times out a server that never accepts and stops only that process', async 
   } finally {
     await new Promise((resolve) => bystander.close(resolve));
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('times out a noisy server with a child, stops both, and leaves an unrelated process', async () => {
+  const port = await freePort();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portfolio-timeout-tree-'));
+  const childFile = path.join(dir, 'child.pid');
+  // Never listens; writes to both pipes all the time and starts a child of
+  // its own, so the stop has a tree to take down and output in flight.
+  fs.writeFileSync(path.join(dir, 'serve.cjs'), `
+    const { spawn } = require('node:child_process');
+    const fs = require('node:fs');
+    const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
+    fs.writeFileSync(${JSON.stringify(childFile)}, String(child.pid));
+    setInterval(() => {
+      process.stdout.write('out '.repeat(200) + '\\n');
+      process.stderr.write('err '.repeat(200) + '\\n');
+    }, 20);
+  `);
+  // Started by the test, not by the launcher: it must survive the stop.
+  const unrelated = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore', windowsHide: true });
+  let childPid = 0;
+  try {
+    const result = await runLauncher([
+      '-Port', String(port), '-Root', dir, '-Attached', '-NoBrowser', '-ReadyTimeoutSec', '3',
+    ]);
+    assert.equal(result.code, 4, result.why);
+    assert.match(result.out, /stopping the process this launcher started/);
+    assert.match(result.out, /No other process was stopped/);
+    const pid = launchedPid(result.out);
+    assert.ok(pid > 0, result.why);
+    childPid = Number(fs.readFileSync(childFile, 'utf8'));
+    assert.ok(childPid > 0, 'the server started its child');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    assert.equal(alive(pid), false, `launched server ${pid} still running\n${result.why}`);
+    assert.equal(alive(childPid), false, `server's child ${childPid} still running\n${result.why}`);
+    assert.equal(alive(unrelated.pid), true, 'a process the launcher did not start was stopped');
+  } finally {
+    // Only processes this test started or the fixture recorded.
+    stopPid(childPid);
+    if (alive(unrelated.pid)) unrelated.kill();
+    removeDir(dir);
   }
 });
 

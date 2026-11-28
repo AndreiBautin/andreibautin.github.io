@@ -104,10 +104,51 @@ function Get-MinimumNodeMajor([string]$RepoRoot) {
   return [int]$digits.Groups[1].Value
 }
 
+function Get-OwnedDescendants($Process) {
+  # Children by recorded parent id, but only those created after the process
+  # this launcher started. Windows keeps a dead process's id as the parent
+  # of its surviving children, so a reused id can name processes this
+  # launcher never started; taskkill /T would stop those too.
+  $owned = New-Object System.Collections.Generic.List[int]
+  try { $since = $Process.StartTime } catch { return $owned }
+  try {
+    $all = @(Get-CimInstance -ClassName Win32_Process -Property ProcessId, ParentProcessId, CreationDate -ErrorAction Stop)
+  } catch {
+    return $owned
+  }
+  $parents = New-Object System.Collections.Generic.Queue[int]
+  $parents.Enqueue($Process.Id)
+  while ($parents.Count -gt 0) {
+    $parent = $parents.Dequeue()
+    foreach ($candidate in $all) {
+      if ([int]$candidate.ParentProcessId -ne $parent) { continue }
+      $id = [int]$candidate.ProcessId
+      if ($id -eq $Process.Id -or $owned.Contains($id)) { continue }
+      if ($null -eq $candidate.CreationDate -or $candidate.CreationDate -lt $since) { continue }
+      $owned.Add($id)
+      $parents.Enqueue($id)
+    }
+  }
+  return $owned
+}
+
 function Stop-LaunchedProcess($Process) {
   if ($null -eq $Process) { return }
-  # Only the process this launcher started, plus children of that process.
-  & taskkill.exe /PID $Process.Id /T /F *> $null
+  # Only the process this launcher started, plus processes it started after
+  # it began. Descendants first, then the launched process by its own handle,
+  # so a reused process id cannot redirect the stop.
+  $descendants = Get-OwnedDescendants -Process $Process
+  for ($at = $descendants.Count - 1; $at -ge 0; $at -= 1) {
+    Stop-Process -Id $descendants[$at] -Force -ErrorAction SilentlyContinue
+  }
+  try {
+    if (-not $Process.HasExited) {
+      $Process.Kill()
+      [void]$Process.WaitForExit(3000)
+    }
+  } catch {
+    Write-Info "The launched process could not be stopped: $($_.Exception.Message)"
+  }
 }
 
 function Complete-Reuse([int]$LocalPort) {
@@ -166,14 +207,14 @@ if ($Attached) {
   $startInfo.RedirectStandardError = $true
   $process = New-Object System.Diagnostics.Process
   $process.StartInfo = $startInfo
-  $discard = [System.Diagnostics.DataReceivedEventHandler]{ }
-  $process.add_OutputDataReceived($discard)
-  $process.add_ErrorDataReceived($discard)
   if (-not $process.Start()) {
     Fail 1 "Could not start the portfolio server process."
   }
-  $process.BeginOutputReadLine()
-  $process.BeginErrorReadLine()
+  # Drain the server's output into nothing on .NET's own tasks. No
+  # PowerShell script block runs on those threads, so closing the pipes
+  # when the server stops calls nothing back into this runspace as it exits.
+  [void]$process.StandardOutput.BaseStream.CopyToAsync([System.IO.Stream]::Null)
+  [void]$process.StandardError.BaseStream.CopyToAsync([System.IO.Stream]::Null)
 } else {
   # ShellExecute starts the preview outside this launcher process so a
   # transient terminal or tool turn can exit without owning the server.
@@ -219,6 +260,9 @@ while ((Get-Date) -lt $deadline) {
 }
 
 if (-not $ready) {
+  # Said before the cleanup, so the reason is on record even if stopping
+  # the server goes wrong.
+  Write-Info "Timed out after $ReadyTimeoutSec seconds; stopping the process this launcher started (PID $($process.Id))."
   Stop-LaunchedProcess -Process $process
   if (Test-PortfolioIdentity -LocalPort $Port -ExpectedMarker $Marker) {
     Complete-Reuse -LocalPort $Port

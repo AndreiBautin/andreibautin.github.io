@@ -57,8 +57,22 @@ sends. A listening socket with any other response is refused.
 The launcher starts the server through `ShellExecute`, in a `cmd /k` window,
 so the preview is not a child of the launcher process. A later tool turn that
 ends the launcher does not own that window. On a timeout, only the process
-id this launch created is stopped, including its child processes. The
-launcher does not search the port for a pid to kill.
+this launch created is stopped, by its own process handle, together with the
+processes it started: descendants by recorded parent id that were created
+after it. Windows keeps a dead process's id as the parent of its surviving
+children, so a reused id can name processes this launch never started;
+`taskkill /T` would have stopped those too, and is no longer used. The
+launcher does not search the port for a pid to kill. The timeout is reported
+before that cleanup runs, so the reason is on record even if the stop goes
+wrong. An attached server's output is drained by .NET's own tasks rather
+than PowerShell script blocks, so closing its pipes calls nothing back into
+the launcher as it exits.
+
+`scripts/startup.test.cjs` covers that stop with a server that writes to
+both pipes and starts a child: both are stopped and a process the test
+started itself is left running. A failed launcher assertion reports the exit
+code, any signal, the elapsed time and everything the launcher wrote to
+stdout and stderr.
 
 `start-app.ps1` holds the same behavior for tests. Its extra switches
 (`-Port`, `-Root`, `-ServeEntry`, `-Attached`, `-BrowserSink`,
