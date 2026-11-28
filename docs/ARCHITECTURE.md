@@ -51,7 +51,10 @@ unchanged; the scripts in `scripts/` generate parts of it ahead of time and
    welcome name once with a bounded seeded shader reveal in its existing loop;
    reduced motion starts settled and hidden tabs pause. Scene selection completes
    that reveal, then uses the normal 1.45-second morph. Direct routes initialize
-   their requested target without morphing from the name. The welcome's background
+   their requested target without morphing from the name.
+   The canvas fades in only after its first successful render, softening the
+   return from a demo without delaying project links; reduced motion is instant.
+   The welcome's background
    link retains its PDF fallback; direct Experience and Projects choices open
    their sections. Focus/hover previews describe those choices without routing.
    Work UI controls map to five **`work-shapes.js`** targets through `script.js`.
